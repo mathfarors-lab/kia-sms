@@ -60,6 +60,16 @@ class Student extends Model
                     ->withTimestamps();
     }
 
+    public function invoices(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
+    public function scholarships(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Scholarship::class);
+    }
+
     public function examMarks(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(ExamMark::class);

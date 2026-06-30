@@ -27,7 +27,7 @@ class RolePermissionSeeder extends Seeder
             'marks.entry', 'marks.view',
             // Finance
             'invoices.view', 'invoices.create', 'invoices.manage',
-            'payments.record', 'fee-structures.manage',
+            'payments.record', 'fees.manage',
             // Library
             'books.manage', 'book-issues.manage',
             // Settings
@@ -49,7 +49,7 @@ class RolePermissionSeeder extends Seeder
                 'academic-years.manage', 'classes.manage', 'sections.manage', 'subjects.manage',
                 'attendance.view', 'attendance.mark',
                 'exams.view', 'exams.manage', 'exams.publish', 'marks.view',
-                'invoices.view', 'fee-structures.manage',
+                'invoices.view', 'fees.manage',
                 'admissions.view', 'admissions.manage',
                 'settings.manage',
             ],
@@ -63,7 +63,7 @@ class RolePermissionSeeder extends Seeder
             'accountant' => [
                 'students.view',
                 'invoices.view', 'invoices.create', 'invoices.manage',
-                'payments.record', 'fee-structures.manage',
+                'payments.record', 'fees.manage',
             ],
 
             'librarian' => [

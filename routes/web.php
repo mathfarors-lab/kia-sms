@@ -16,6 +16,11 @@ use App\Http\Controllers\GradeScaleController;
 use App\Http\Controllers\ExamController;
 use App\Http\Controllers\ExamMarkController;
 use App\Http\Controllers\ReportCardController;
+use App\Http\Controllers\FeeStructureController;
+use App\Http\Controllers\ScholarshipController;
+use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\FinanceReportController;
 use Illuminate\Support\Facades\Route;
 
 // Home → redirect to login or dashboard
@@ -93,9 +98,29 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/exams/{exam}/students/{student}/report-card', [ReportCardController::class, 'show'])->name('report-card.show');
     Route::get('/exams/{exam}/students/{student}/report-card/pdf', [ReportCardController::class, 'pdf'])->name('report-card.pdf');
 
+    // Finance — Fee Structures & Scholarships
+    Route::resource('fee-structures', FeeStructureController::class)->except(['show']);
+    Route::resource('scholarships', ScholarshipController::class)->except(['show']);
+
+    // Invoices
+    Route::get('/invoices', [InvoiceController::class, 'index'])->name('invoices.index');
+    Route::get('/invoices/generate', [InvoiceController::class, 'create'])->name('invoices.create');
+    Route::post('/invoices/generate', [InvoiceController::class, 'generate'])->name('invoices.generate');
+    Route::get('/invoices/{invoice}', [InvoiceController::class, 'show'])->name('invoices.show');
+
+    // Payments
+    Route::get('/invoices/{invoice}/pay', [PaymentController::class, 'create'])->name('payments.create');
+    Route::post('/invoices/{invoice}/pay', [PaymentController::class, 'store'])->name('payments.store');
+    Route::get('/payments/{payment}/receipt', [PaymentController::class, 'receipt'])->name('payments.receipt');
+    Route::get('/payments/{payment}/receipt/pdf', [PaymentController::class, 'receiptPdf'])->name('payments.receipt-pdf');
+
+    // Finance reports
+    Route::get('/finance', [FinanceReportController::class, 'dashboard'])->name('finance.dashboard');
+    Route::get('/finance/report', [FinanceReportController::class, 'report'])->name('finance.report');
+    Route::get('/finance/export/excel', [FinanceReportController::class, 'exportExcel'])->name('finance.export-excel');
+    Route::get('/finance/export/pdf', [FinanceReportController::class, 'exportPdf'])->name('finance.export-pdf');
+
     // Remaining placeholders
-    Route::get('/invoices',       fn() => view('placeholder', ['title' => 'Invoices']))->name('invoices.index');
-    Route::get('/fee-structures', fn() => view('placeholder', ['title' => 'Fee Structures']))->name('fee-structures.index');
     Route::get('/books',          fn() => view('placeholder', ['title' => 'Library']))->name('books.index');
     Route::get('/users',          fn() => view('placeholder', ['title' => 'Users']))->name('users.index');
 
