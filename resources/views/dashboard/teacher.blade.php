@@ -1,0 +1,15 @@
+<x-app-layout>
+    <x-slot name="title">{{ __('Teacher Dashboard') }}</x-slot>
+    <div class="kia-page-header">
+        <h1 class="kia-page-title">{{ __('Teacher Dashboard') }}</h1>
+    </div>
+    <div class="kia-card">
+        <div class="kia-card-body">
+            <div class="kia-empty">
+                <h3>{{ __('My Timetable') }}</h3>
+                <p>{{ __('Timetable and attendance marking coming in Phase 2.') }}</p>
+                <a href="{{ route('attendance.index') }}" class="btn btn-primary">{{ __('Mark Attendance') }}</a>
+            </div>
+        </div>
+    </div>
+</x-app-layout>

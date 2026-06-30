@@ -1,0 +1,884 @@
+/* =====================================================
+   KIA School — Design System
+   Khmer Intellectual Academy
+   ===================================================== */
+
+/* --- Tokens --- */
+:root {
+    --royal:      #2B3A8F;
+    --navy:       #161E54;
+    --royal-600:  #3A4AAE;
+    --gold:       #ECC531;
+    --gold-soft:  #F6E08A;
+
+    --ink:    #1b1f33;
+    --muted:  #5b6079;
+    --paper:  #F6F7FC;
+    --surface:#ffffff;
+    --line:   #E4E7F4;
+
+    --ok:   #1f9d6b;
+    --warn: #e0922f;
+    --bad:  #d8573f;
+
+    --radius-sm: 6px;
+    --radius:    10px;
+    --radius-lg: 16px;
+
+    --shadow-sm: 0 1px 3px rgba(27,31,51,.07), 0 1px 2px rgba(27,31,51,.05);
+    --shadow:    0 4px 12px rgba(27,31,51,.08), 0 2px 4px rgba(27,31,51,.05);
+    --shadow-lg: 0 8px 30px rgba(27,31,51,.12);
+
+    --sidebar-w:  240px;
+    --topbar-h:   60px;
+    --transition: 150ms ease;
+}
+
+/* --- Reset & Base --- */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { font-size: 16px; -webkit-text-size-adjust: 100%; }
+
+body {
+    margin: 0;
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    font-size: .9375rem;
+    line-height: 1.6;
+    color: var(--ink);
+    background: var(--paper);
+}
+
+a { color: var(--royal); text-decoration: none; }
+a:hover { text-decoration: underline; }
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+}
+
+code, .mono {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: .85em;
+    background: var(--line);
+    padding: 1px 5px;
+    border-radius: var(--radius-sm);
+}
+
+/* --- Layout shell --- */
+.kia-shell {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* --- Sidebar --- */
+.kia-sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: var(--sidebar-w);
+    background: linear-gradient(180deg, var(--navy) 0%, #1c2466 100%);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    z-index: 200;
+    transition: transform var(--transition);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,.15) transparent;
+}
+
+.kia-sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+.kia-sidebar-brand-logo {
+    width: 36px;
+    height: 36px;
+    background: var(--gold);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    color: var(--navy);
+    font-size: .85rem;
+    flex-shrink: 0;
+}
+
+.kia-sidebar-brand-name {
+    font-weight: 700;
+    font-size: .9rem;
+    line-height: 1.2;
+    color: #fff;
+}
+
+.kia-sidebar-brand-name span {
+    display: block;
+    font-weight: 400;
+    font-size: .72rem;
+    color: rgba(255,255,255,.6);
+}
+
+.kia-nav { padding: 12px 0; flex: 1; }
+
+.kia-nav-section {
+    padding: 16px 16px 4px;
+    font-size: .68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: rgba(255,255,255,.4);
+}
+
+.kia-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 20px;
+    color: rgba(255,255,255,.75);
+    font-size: .875rem;
+    font-weight: 500;
+    border-left: 3px solid transparent;
+    transition: all var(--transition);
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.kia-nav-item:hover {
+    background: rgba(255,255,255,.07);
+    color: #fff;
+    text-decoration: none;
+}
+
+.kia-nav-item.active {
+    background: rgba(236,197,49,.12);
+    border-left-color: var(--gold);
+    color: var(--gold);
+    font-weight: 600;
+}
+
+.kia-nav-item svg, .kia-nav-item .nav-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    opacity: .8;
+}
+
+.kia-nav-item.active svg, .kia-nav-item.active .nav-icon { opacity: 1; }
+
+.kia-sidebar-footer {
+    padding: 12px 16px;
+    border-top: 1px solid rgba(255,255,255,.08);
+}
+
+/* --- Top bar --- */
+.kia-topbar {
+    position: fixed;
+    top: 0;
+    left: var(--sidebar-w);
+    right: 0;
+    height: var(--topbar-h);
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 24px;
+    z-index: 100;
+    box-shadow: var(--shadow-sm);
+}
+
+.kia-topbar-search {
+    flex: 1;
+    max-width: 400px;
+    position: relative;
+}
+
+.kia-topbar-search input {
+    width: 100%;
+    padding: 7px 12px 7px 36px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--paper);
+    font-size: .875rem;
+    color: var(--ink);
+    transition: border-color var(--transition);
+}
+
+.kia-topbar-search input:focus {
+    outline: none;
+    border-color: var(--royal);
+    background: var(--surface);
+}
+
+.kia-topbar-search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    width: 16px;
+    height: 16px;
+}
+
+.kia-topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.kia-topbar-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: var(--paper);
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--muted);
+    position: relative;
+    transition: background var(--transition), color var(--transition);
+}
+
+.kia-topbar-btn:hover { background: var(--line); color: var(--ink); }
+
+.kia-badge {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 8px;
+    height: 8px;
+    background: var(--bad);
+    border-radius: 50%;
+    border: 2px solid var(--surface);
+}
+
+.kia-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--royal);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: .8rem;
+    cursor: pointer;
+    text-decoration: none;
+    flex-shrink: 0;
+}
+
+/* --- Main content --- */
+.kia-main {
+    margin-left: var(--sidebar-w);
+    padding-top: var(--topbar-h);
+    min-height: 100vh;
+    flex: 1;
+}
+
+.kia-page {
+    padding: 28px 28px;
+    max-width: 1400px;
+}
+
+.kia-page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.kia-page-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--navy);
+    margin: 0;
+}
+
+.kia-page-sub {
+    font-size: .85rem;
+    color: var(--muted);
+    margin: 2px 0 0;
+}
+
+/* --- Cards --- */
+.kia-card {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--line);
+    overflow: hidden;
+}
+
+.kia-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--line);
+}
+
+.kia-card-title {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--navy);
+    margin: 0;
+}
+
+.kia-card-body { padding: 20px; }
+
+/* --- KPI stat cards --- */
+.kia-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+}
+
+.kia-stat {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--line);
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.kia-stat-label {
+    font-size: .78rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+}
+
+.kia-stat-value {
+    font-size: 1.9rem;
+    font-weight: 800;
+    color: var(--navy);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.kia-stat-change {
+    font-size: .8rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.kia-stat-change.up { color: var(--ok); }
+.kia-stat-change.down { color: var(--bad); }
+
+.kia-stat-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 4px;
+}
+
+.kia-stat-icon.royal { background: rgba(43,58,143,.1); color: var(--royal); }
+.kia-stat-icon.gold  { background: rgba(236,197,49,.15); color: #b8961a; }
+.kia-stat-icon.ok    { background: rgba(31,157,107,.1); color: var(--ok); }
+.kia-stat-icon.warn  { background: rgba(224,146,47,.1); color: var(--warn); }
+.kia-stat-icon.bad   { background: rgba(216,87,63,.1); color: var(--bad); }
+
+/* --- Buttons --- */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 18px;
+    border-radius: var(--radius);
+    font-size: .875rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all var(--transition);
+    white-space: nowrap;
+}
+
+.btn-primary { background: var(--royal); color: #fff; }
+.btn-primary:hover { background: var(--royal-600); color: #fff; text-decoration: none; }
+
+.btn-gold { background: var(--gold); color: var(--navy); }
+.btn-gold:hover { background: #d4af20; text-decoration: none; }
+
+.btn-outline {
+    background: transparent;
+    color: var(--royal);
+    border: 1.5px solid var(--royal);
+}
+.btn-outline:hover { background: var(--royal); color: #fff; text-decoration: none; }
+
+.btn-danger { background: var(--bad); color: #fff; }
+.btn-danger:hover { background: #be4030; text-decoration: none; }
+
+.btn-ghost { background: var(--paper); color: var(--ink); }
+.btn-ghost:hover { background: var(--line); text-decoration: none; }
+
+.btn-sm { padding: 5px 12px; font-size: .8rem; }
+.btn-lg { padding: 12px 24px; font-size: 1rem; }
+
+.btn svg { width: 16px; height: 16px; }
+
+/* --- Forms --- */
+.form-group { margin-bottom: 18px; }
+
+.form-label {
+    display: block;
+    font-size: .85rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 6px;
+}
+
+.form-label .req { color: var(--bad); margin-left: 2px; }
+
+.form-control {
+    width: 100%;
+    padding: 9px 13px;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    font-size: .9rem;
+    font-family: inherit;
+    color: var(--ink);
+    background: var(--surface);
+    transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--royal);
+    box-shadow: 0 0 0 3px rgba(43,58,143,.12);
+}
+
+.form-control.is-invalid { border-color: var(--bad); }
+.form-control.is-invalid:focus { box-shadow: 0 0 0 3px rgba(216,87,63,.12); }
+
+.invalid-feedback {
+    font-size: .8rem;
+    color: var(--bad);
+    margin-top: 4px;
+    display: block;
+}
+
+.form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0 20px; }
+
+select.form-control { cursor: pointer; }
+
+textarea.form-control { resize: vertical; min-height: 90px; }
+
+/* --- Tables --- */
+.kia-table-wrap { overflow-x: auto; }
+
+.kia-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .875rem;
+}
+
+.kia-table th {
+    padding: 11px 16px;
+    text-align: left;
+    font-size: .75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--muted);
+    background: var(--paper);
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+}
+
+.kia-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink);
+    vertical-align: middle;
+}
+
+.kia-table tr:last-child td { border-bottom: none; }
+.kia-table tbody tr:hover { background: var(--paper); }
+
+/* --- Badges / pills --- */
+.pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: .73rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+.pill-ok     { background: rgba(31,157,107,.12); color: var(--ok); }
+.pill-warn   { background: rgba(224,146,47,.12);  color: var(--warn); }
+.pill-bad    { background: rgba(216,87,63,.12);   color: var(--bad); }
+.pill-royal  { background: rgba(43,58,143,.1);    color: var(--royal); }
+.pill-muted  { background: var(--line);            color: var(--muted); }
+.pill-gold   { background: rgba(236,197,49,.2);   color: #8a6f00; }
+
+/* --- Alerts --- */
+.alert {
+    padding: 13px 16px;
+    border-radius: var(--radius);
+    font-size: .875rem;
+    border-left: 4px solid;
+    margin-bottom: 16px;
+}
+.alert-success { background: rgba(31,157,107,.08); border-color: var(--ok); color: #155c40; }
+.alert-warning { background: rgba(224,146,47,.08); border-color: var(--warn); color: #7a4f00; }
+.alert-danger  { background: rgba(216,87,63,.08);  border-color: var(--bad); color: #7d2015; }
+.alert-info    { background: rgba(43,58,143,.07);  border-color: var(--royal); color: var(--royal); }
+
+/* --- Pagination --- */
+.kia-pagination {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 16px 20px;
+    border-top: 1px solid var(--line);
+}
+
+.kia-pagination a,
+.kia-pagination span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 6px;
+    border-radius: var(--radius-sm);
+    font-size: .8rem;
+    font-weight: 500;
+    color: var(--muted);
+    border: 1px solid var(--line);
+    background: var(--surface);
+    text-decoration: none;
+    transition: all var(--transition);
+}
+
+.kia-pagination a:hover { border-color: var(--royal); color: var(--royal); text-decoration: none; }
+.kia-pagination span[aria-current] { background: var(--royal); color: #fff; border-color: var(--royal); }
+
+/* --- Photo preview --- */
+.photo-preview {
+    width: 80px;
+    height: 80px;
+    border-radius: var(--radius);
+    object-fit: cover;
+    border: 2px solid var(--line);
+}
+
+.photo-placeholder {
+    width: 80px;
+    height: 80px;
+    border-radius: var(--radius);
+    background: var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    font-size: 1.5rem;
+    border: 2px dashed var(--line);
+}
+
+/* --- Dropdown --- */
+.kia-dropdown { position: relative; display: inline-block; }
+
+.kia-dropdown-menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 6px);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    min-width: 180px;
+    z-index: 500;
+    padding: 4px 0;
+    display: none;
+}
+
+.kia-dropdown.open .kia-dropdown-menu { display: block; }
+
+.kia-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 16px;
+    font-size: .875rem;
+    color: var(--ink);
+    cursor: pointer;
+    transition: background var(--transition);
+    text-decoration: none;
+}
+
+.kia-dropdown-item:hover { background: var(--paper); text-decoration: none; }
+.kia-dropdown-item.danger { color: var(--bad); }
+
+.kia-dropdown-divider { height: 1px; background: var(--line); margin: 4px 0; }
+
+/* --- Modal --- */
+.kia-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(22,30,84,.5);
+    z-index: 900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.kia-modal {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    width: 100%;
+    max-width: 580px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.kia-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--line);
+}
+
+.kia-modal-title { font-size: 1.1rem; font-weight: 700; color: var(--navy); margin: 0; }
+.kia-modal-body  { padding: 24px; }
+.kia-modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* --- Empty state --- */
+.kia-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+}
+
+.kia-empty svg { width: 48px; height: 48px; margin-bottom: 12px; opacity: .4; }
+.kia-empty h3 { font-size: 1rem; color: var(--ink); margin: 0 0 6px; }
+.kia-empty p  { font-size: .875rem; margin: 0 0 16px; }
+
+/* --- Role tag colors --- */
+.role-admin        { background: rgba(43,58,143,.1); color: var(--royal); }
+.role-principal    { background: rgba(236,197,49,.15); color: #7a5c00; }
+.role-teacher      { background: rgba(31,157,107,.1); color: var(--ok); }
+.role-accountant   { background: rgba(224,146,47,.1); color: var(--warn); }
+.role-librarian    { background: rgba(106,70,193,.1); color: #6a46c1; }
+.role-receptionist { background: rgba(20,162,192,.1); color: #0d8fac; }
+.role-student      { background: rgba(216,87,63,.08); color: var(--bad); }
+.role-parent       { background: rgba(27,31,51,.06); color: var(--muted); }
+
+/* --- Responsive --- */
+.kia-mobile-toggle {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    color: var(--ink);
+}
+
+@media (max-width: 768px) {
+    .kia-sidebar {
+        transform: translateX(-100%);
+    }
+
+    .kia-sidebar.open {
+        transform: translateX(0);
+    }
+
+    .kia-main {
+        margin-left: 0;
+    }
+
+    .kia-topbar {
+        left: 0;
+    }
+
+    .kia-mobile-toggle { display: flex; }
+
+    .kia-page { padding: 16px; }
+
+    .kia-stats { grid-template-columns: repeat(2, 1fr); }
+
+    .kia-page-header { flex-direction: column; align-items: flex-start; }
+
+    .form-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+    .kia-stats { grid-template-columns: 1fr; }
+}
+
+/* --- Sidebar overlay on mobile --- */
+.kia-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(22,30,84,.4);
+    z-index: 190;
+}
+
+.kia-sidebar.open ~ .kia-overlay { display: block; }
+
+/* --- Breadcrumb --- */
+.kia-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: .8rem;
+    color: var(--muted);
+    margin-bottom: 8px;
+}
+
+.kia-breadcrumb a { color: var(--muted); }
+.kia-breadcrumb a:hover { color: var(--royal); }
+.kia-breadcrumb .sep { opacity: .4; }
+
+/* --- Filter bar --- */
+.kia-filter-bar {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+}
+
+.kia-filter-bar .form-control {
+    width: auto;
+    min-width: 160px;
+}
+
+/* --- Auth pages --- */
+.kia-auth-wrap {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--navy) 0%, var(--royal) 100%);
+    padding: 20px;
+}
+
+.kia-auth-card {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 40px;
+    width: 100%;
+    max-width: 420px;
+}
+
+.kia-auth-logo {
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+.kia-auth-logo-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    background: var(--gold);
+    border-radius: 14px;
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: var(--navy);
+    margin-bottom: 10px;
+}
+
+.kia-auth-logo h1 {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--navy);
+    margin: 0;
+}
+
+.kia-auth-logo p {
+    font-size: .8rem;
+    color: var(--muted);
+    margin: 2px 0 0;
+}
+
+/* --- Student photo in table --- */
+.student-photo-sm {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--line);
+    flex-shrink: 0;
+}
+
+.student-initials {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--royal);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .75rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.student-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* --- Utility --- */
+.text-muted  { color: var(--muted) !important; }
+.text-ok     { color: var(--ok) !important; }
+.text-warn   { color: var(--warn) !important; }
+.text-bad    { color: var(--bad) !important; }
+.text-royal  { color: var(--royal) !important; }
+.text-gold   { color: var(--gold) !important; }
+.text-right  { text-align: right; }
+.text-center { text-align: center; }
+.font-mono   { font-family: 'JetBrains Mono', monospace; }
+.d-flex      { display: flex; }
+.align-center{ align-items: center; }
+.gap-2       { gap: 8px; }
+.gap-3       { gap: 12px; }
+.mt-1 { margin-top: 4px; }
+.mt-2 { margin-top: 8px; }
+.mt-3 { margin-top: 12px; }
+.mt-4 { margin-top: 16px; }
+.mb-3 { margin-bottom: 12px; }
+.mb-4 { margin-bottom: 16px; }
+.mb-5 { margin-bottom: 20px; }
+.w-100 { width: 100%; }
+.hidden { display: none !important; }

@@ -1,0 +1,69 @@
+<x-app-layout>
+    <x-slot name="title">{{ __('Edit Staff') }}</x-slot>
+
+    <div class="kia-breadcrumb">
+        <a href="{{ route('staff.index') }}">{{ __('Staff') }}</a>
+        <span class="sep">/</span>
+        <a href="{{ route('staff.show', $staff) }}">{{ $staff->user->name }}</a>
+        <span class="sep">/</span>
+        <span>{{ __('Edit') }}</span>
+    </div>
+
+    <div class="kia-page-header">
+        <h1 class="kia-page-title">{{ __('Edit Staff Member') }}</h1>
+    </div>
+
+    <div class="kia-card" style="max-width:720px;">
+        <div class="kia-card-body">
+            <form method="POST" action="{{ route('staff.update', $staff) }}">
+                @csrf @method('PATCH')
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">{{ __('Full Name') }} <span class="req">*</span></label>
+                        <input type="text" name="name" class="form-control {{ $errors->has('name') ? 'is-invalid' : '' }}"
+                               value="{{ old('name', $staff->user->name) }}" required>
+                        @error('name')<span class="invalid-feedback">{{ $message }}</span>@enderror
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">{{ __('Email') }} <span class="req">*</span></label>
+                        <input type="email" name="email" class="form-control {{ $errors->has('email') ? 'is-invalid' : '' }}"
+                               value="{{ old('email', $staff->user->email) }}" required>
+                        @error('email')<span class="invalid-feedback">{{ $message }}</span>@enderror
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">{{ __('Phone') }}</label>
+                        <input type="text" name="phone" class="form-control" value="{{ old('phone', $staff->user->phone) }}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">{{ __('Role') }} <span class="req">*</span></label>
+                        <select name="role" class="form-control" required>
+                            @foreach($roles as $role)
+                            <option value="{{ $role }}" {{ old('role', $staff->user->getRoleNames()->first()) == $role ? 'selected' : '' }}>{{ ucfirst($role) }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">{{ __('Position') }}</label>
+                        <input type="text" name="position" class="form-control" value="{{ old('position', $staff->position) }}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">{{ __('Department') }}</label>
+                        <input type="text" name="department" class="form-control" value="{{ old('department', $staff->department) }}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">{{ __('Join Date') }}</label>
+                        <input type="date" name="joined_at" class="form-control" value="{{ old('joined_at', $staff->joined_at?->format('Y-m-d')) }}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">{{ __('Salary (USD)') }}</label>
+                        <input type="number" name="salary" class="form-control" step="0.01" min="0" value="{{ old('salary', $staff->salary) }}">
+                    </div>
+                </div>
+                <div style="display:flex;gap:12px;padding-top:8px;">
+                    <button type="submit" class="btn btn-primary">{{ __('Save Changes') }}</button>
+                    <a href="{{ route('staff.show', $staff) }}" class="btn btn-ghost">{{ __('Cancel') }}</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</x-app-layout>
