@@ -1,11 +1,21 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\AnnouncementController;
+use App\Http\Controllers\BookController;
+use App\Http\Controllers\ConversationController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\StudentController;
-use App\Http\Controllers\StaffController;
-use App\Http\Controllers\SettingController;
+use App\Http\Controllers\FeeStructureController;
+use App\Http\Controllers\FinanceReportController;
+use App\Http\Controllers\HomeworkController;
+use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\LocaleController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReportCardController;
+use App\Http\Controllers\ScholarshipController;
+use App\Http\Controllers\StaffController;
+use App\Http\Controllers\StudentController;
+use App\Http\Controllers\TransportController;
 use App\Http\Controllers\AcademicYearController;
 use App\Http\Controllers\SchoolClassController;
 use App\Http\Controllers\SectionController;
@@ -15,12 +25,7 @@ use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\GradeScaleController;
 use App\Http\Controllers\ExamController;
 use App\Http\Controllers\ExamMarkController;
-use App\Http\Controllers\ReportCardController;
-use App\Http\Controllers\FeeStructureController;
-use App\Http\Controllers\ScholarshipController;
-use App\Http\Controllers\InvoiceController;
-use App\Http\Controllers\PaymentController;
-use App\Http\Controllers\FinanceReportController;
+use App\Http\Controllers\SettingController;
 use Illuminate\Support\Facades\Route;
 
 // Home → redirect to login or dashboard
@@ -120,9 +125,55 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/finance/export/excel', [FinanceReportController::class, 'exportExcel'])->name('finance.export-excel');
     Route::get('/finance/export/pdf', [FinanceReportController::class, 'exportPdf'])->name('finance.export-pdf');
 
-    // Remaining placeholders
-    Route::get('/books',          fn() => view('placeholder', ['title' => 'Library']))->name('books.index');
-    Route::get('/users',          fn() => view('placeholder', ['title' => 'Users']))->name('users.index');
+    // ── Phase 5: Engagement ────────────────────────────────────────────────────
+
+    // Announcements
+    Route::resource('announcements', AnnouncementController::class);
+    Route::post('/announcements/{announcement}/publish', [AnnouncementController::class, 'publish'])
+        ->name('announcements.publish');
+
+    // Messaging
+    Route::get('/conversations', [ConversationController::class, 'index'])->name('conversations.index');
+    Route::get('/conversations/new', [ConversationController::class, 'create'])->name('conversations.create');
+    Route::post('/conversations', [ConversationController::class, 'store'])->name('conversations.store');
+    Route::get('/conversations/{conversation}', [ConversationController::class, 'show'])->name('conversations.show');
+    Route::post('/conversations/{conversation}/reply', [ConversationController::class, 'reply'])->name('conversations.reply');
+
+    // Homework
+    Route::get('/homework', [HomeworkController::class, 'index'])->name('homework.index');
+    Route::get('/homework/new', [HomeworkController::class, 'create'])->name('homework.create');
+    Route::post('/homework', [HomeworkController::class, 'store'])->name('homework.store');
+    Route::get('/homework/{homework}', [HomeworkController::class, 'show'])->name('homework.show');
+    Route::post('/homework/{homework}/submit', [HomeworkController::class, 'submit'])->name('homework.submit');
+    Route::get('/homework/{homework}/download', [HomeworkController::class, 'download'])->name('homework.download');
+    Route::post('/homework-submissions/{submission}/grade', [HomeworkController::class, 'grade'])->name('homework-submissions.grade');
+
+    // Library
+    Route::get('/books', [BookController::class, 'index'])->name('books.index');
+    Route::get('/books/new', [BookController::class, 'create'])->name('books.create');
+    Route::post('/books', [BookController::class, 'store'])->name('books.store');
+    Route::get('/books/{book}', [BookController::class, 'show'])->name('books.show');
+    Route::get('/books/{book}/edit', [BookController::class, 'edit'])->name('books.edit');
+    Route::patch('/books/{book}', [BookController::class, 'update'])->name('books.update');
+    Route::delete('/books/{book}', [BookController::class, 'destroy'])->name('books.destroy');
+    Route::get('/books/{book}/issue', [BookController::class, 'issueForm'])->name('books.issue');
+    Route::post('/books/{book}/issue', [BookController::class, 'issue'])->name('books.issue.store');
+    Route::post('/book-issues/{issue}/return', [BookController::class, 'returnBook'])->name('book-issues.return');
+
+    // Transport
+    Route::get('/transport/routes', [TransportController::class, 'routesIndex'])->name('transport.routes.index');
+    Route::get('/transport/routes/new', [TransportController::class, 'routesCreate'])->name('transport.routes.create');
+    Route::post('/transport/routes', [TransportController::class, 'routesStore'])->name('transport.routes.store');
+    Route::get('/transport/routes/{route}/edit', [TransportController::class, 'routesEdit'])->name('transport.routes.edit');
+    Route::patch('/transport/routes/{route}', [TransportController::class, 'routesUpdate'])->name('transport.routes.update');
+    Route::get('/transport/routes/{route}/vehicles/new', [TransportController::class, 'vehiclesCreate'])->name('transport.vehicles.create');
+    Route::post('/transport/routes/{route}/vehicles', [TransportController::class, 'vehiclesStore'])->name('transport.vehicles.store');
+    Route::get('/transport/students', [TransportController::class, 'studentsIndex'])->name('transport.students');
+    Route::post('/transport/students', [TransportController::class, 'studentsAssign'])->name('transport.students.assign');
+    Route::delete('/transport/students/{student}', [TransportController::class, 'studentsRemove'])->name('transport.students.remove');
+
+    // Users management placeholder
+    Route::get('/users', fn() => view('placeholder', ['title' => 'Users']))->name('users.index');
 
     // Parent & student portal placeholders
     Route::get('/parent/children',    fn() => view('placeholder', ['title' => 'My Children']))->name('parent.children');

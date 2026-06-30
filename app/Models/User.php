@@ -45,6 +45,13 @@ class User extends Authenticatable
         return $this->hasOne(Staff::class);
     }
 
+    public function conversations(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Conversation::class, 'conversation_participants')
+                    ->withPivot('last_read_at')
+                    ->withTimestamps();
+    }
+
     public function wards(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Student::class, 'student_guardian', 'guardian_id', 'student_id')

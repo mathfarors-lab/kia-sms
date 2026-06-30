@@ -2,6 +2,18 @@
 
 namespace App\Providers;
 
+use App\Models\Announcement;
+use App\Models\Book;
+use App\Models\Conversation;
+use App\Models\Homework;
+use App\Models\HomeworkSubmission;
+use App\Models\TransportRoute;
+use App\Policies\AnnouncementPolicy;
+use App\Policies\BookPolicy;
+use App\Policies\ConversationPolicy;
+use App\Policies\HomeworkPolicy;
+use App\Policies\TransportPolicy;
+use App\Support\Permissions;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Pagination\Paginator;
@@ -15,24 +27,30 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Explicit policy registrations (for models whose name doesn't match Policy class name)
+        Gate::policy(Announcement::class,      AnnouncementPolicy::class);
+        Gate::policy(Conversation::class,      ConversationPolicy::class);
+        Gate::policy(Homework::class,          HomeworkPolicy::class);
+        Gate::policy(HomeworkSubmission::class, HomeworkPolicy::class);
+        Gate::policy(Book::class,              BookPolicy::class);
+        Gate::policy(TransportRoute::class,    TransportPolicy::class);
+
         // Use our custom KIA pagination view
         Paginator::defaultView('vendor.pagination.kia');
 
-        // Super-admin bypasses all permission gates
+        // Super-admin bypasses all permission gates.
+        // For known permission strings: check Spatie and return true/false (fail closed).
+        // For unknown abilities (e.g. policy method names like 'view', 'update'): return
+        // null so Laravel falls through to the registered Policy for that model.
         Gate::before(function (\App\Models\User $user, string $ability) {
             if ($user->hasRole('admin')) {
                 return true;
             }
-            // Check spatie permission directly so authorize() works for permission strings.
-            // Guard with try/catch: Spatie throws PermissionDoesNotExist when the ability
-            // string (e.g. a route-generated ability) isn't a registered permission.
-            try {
-                if ($user->hasPermissionTo($ability)) {
-                    return true;
-                }
-            } catch (\Spatie\Permission\Exceptions\PermissionDoesNotExist $e) {
-                // Not a named permission — fall through to normal Gate policy resolution.
+            if (in_array($ability, Permissions::all(), true)) {
+                return $user->hasPermissionTo($ability) ? true : false;
             }
+            // Not a registered permission string — let a Policy handle it.
+            return null;
         });
     }
 }

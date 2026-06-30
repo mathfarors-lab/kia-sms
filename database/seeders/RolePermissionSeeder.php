@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Support\Permissions as P;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
@@ -12,79 +13,77 @@ class RolePermissionSeeder extends Seeder
     {
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
-        $permissions = [
-            // Student permissions
-            'students.view', 'students.create', 'students.edit', 'students.delete',
-            // Staff permissions
-            'staff.view', 'staff.create', 'staff.edit', 'staff.delete',
-            // Academic
-            'academic-years.manage', 'classes.manage', 'sections.manage',
-            'subjects.manage', 'timetables.manage',
-            // Attendance
-            'attendance.view', 'attendance.mark',
-            // Exams
-            'exams.view', 'exams.manage', 'exams.publish',
-            'marks.entry', 'marks.view',
-            // Finance
-            'invoices.view', 'invoices.create', 'invoices.manage',
-            'payments.record', 'fees.manage',
-            // Library
-            'books.manage', 'book-issues.manage',
-            // Settings
-            'settings.manage', 'users.manage',
-            // Admissions
-            'admissions.view', 'admissions.manage',
-        ];
-
-        foreach ($permissions as $perm) {
+        // Create every permission from the single source of truth
+        foreach (P::all() as $perm) {
             Permission::firstOrCreate(['name' => $perm]);
         }
 
         $roles = [
-            'admin' => $permissions, // all permissions
+            'admin' => P::all(),
 
             'principal' => [
-                'students.view', 'students.edit',
-                'staff.view',
-                'academic-years.manage', 'classes.manage', 'sections.manage', 'subjects.manage',
-                'attendance.view', 'attendance.mark',
-                'exams.view', 'exams.manage', 'exams.publish', 'marks.view',
-                'invoices.view', 'fees.manage',
-                'admissions.view', 'admissions.manage',
-                'settings.manage',
+                P::STUDENTS_VIEW, P::STUDENTS_EDIT,
+                P::STAFF_VIEW,
+                P::ACADEMIC_YEARS_MANAGE, P::CLASSES_MANAGE, P::SECTIONS_MANAGE, P::SUBJECTS_MANAGE,
+                P::ATTENDANCE_VIEW, P::ATTENDANCE_MARK,
+                P::EXAMS_VIEW, P::EXAMS_MANAGE, P::EXAMS_PUBLISH, P::MARKS_VIEW,
+                P::INVOICES_VIEW, P::FEES_MANAGE,
+                P::ADMISSIONS_VIEW, P::ADMISSIONS_MANAGE,
+                P::SETTINGS_MANAGE,
+                P::ANNOUNCEMENTS_VIEW, P::ANNOUNCEMENTS_CREATE, P::ANNOUNCEMENTS_MANAGE,
+                P::MESSAGES_SEND, P::MESSAGES_VIEW,
+                P::BOOKS_VIEW, P::TRANSPORT_VIEW,
             ],
 
             'teacher' => [
-                'students.view',
-                'attendance.view', 'attendance.mark',
-                'exams.view', 'marks.entry', 'marks.view',
+                P::STUDENTS_VIEW,
+                P::ATTENDANCE_VIEW, P::ATTENDANCE_MARK,
+                P::EXAMS_VIEW, P::MARKS_ENTRY, P::MARKS_VIEW,
+                P::ANNOUNCEMENTS_VIEW, P::ANNOUNCEMENTS_CREATE,
+                P::MESSAGES_SEND, P::MESSAGES_VIEW,
+                P::HOMEWORK_MANAGE, P::HOMEWORK_GRADE,
+                P::BOOKS_VIEW,
             ],
 
             'accountant' => [
-                'students.view',
-                'invoices.view', 'invoices.create', 'invoices.manage',
-                'payments.record', 'fees.manage',
+                P::STUDENTS_VIEW,
+                P::INVOICES_VIEW, P::INVOICES_CREATE, P::INVOICES_MANAGE,
+                P::PAYMENTS_RECORD, P::FEES_MANAGE,
+                P::MESSAGES_SEND, P::MESSAGES_VIEW,
             ],
 
             'librarian' => [
-                'students.view',
-                'books.manage', 'book-issues.manage',
+                P::STUDENTS_VIEW,
+                P::BOOKS_MANAGE, P::BOOKS_VIEW,
+                P::BOOK_ISSUES_MANAGE, P::BOOK_ISSUES_VIEW,
             ],
 
             'receptionist' => [
-                'students.view', 'students.create', 'students.edit',
-                'admissions.view', 'admissions.manage',
+                P::STUDENTS_VIEW, P::STUDENTS_CREATE, P::STUDENTS_EDIT,
+                P::ADMISSIONS_VIEW, P::ADMISSIONS_MANAGE,
+                P::TRANSPORT_MANAGE, P::TRANSPORT_VIEW,
+                P::MESSAGES_SEND, P::MESSAGES_VIEW,
             ],
 
             'student' => [
-                'attendance.view',
-                'exams.view', 'marks.view',
+                P::ATTENDANCE_VIEW,
+                P::EXAMS_VIEW, P::MARKS_VIEW,
+                P::INVOICES_VIEW,
+                P::ANNOUNCEMENTS_VIEW,
+                P::MESSAGES_SEND, P::MESSAGES_VIEW,
+                P::HOMEWORK_SUBMIT,
+                P::BOOKS_VIEW, P::BOOK_ISSUES_VIEW,
+                P::TRANSPORT_VIEW,
             ],
 
             'parent' => [
-                'attendance.view',
-                'exams.view', 'marks.view',
-                'invoices.view',
+                P::ATTENDANCE_VIEW,
+                P::EXAMS_VIEW, P::MARKS_VIEW,
+                P::INVOICES_VIEW,
+                P::ANNOUNCEMENTS_VIEW,
+                P::MESSAGES_SEND, P::MESSAGES_VIEW,
+                P::BOOKS_VIEW,
+                P::TRANSPORT_VIEW,
             ],
         ];
 
