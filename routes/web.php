@@ -6,6 +6,16 @@ use App\Http\Controllers\StudentController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\LocaleController;
+use App\Http\Controllers\AcademicYearController;
+use App\Http\Controllers\SchoolClassController;
+use App\Http\Controllers\SectionController;
+use App\Http\Controllers\SubjectController;
+use App\Http\Controllers\TimetableController;
+use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\GradeScaleController;
+use App\Http\Controllers\ExamController;
+use App\Http\Controllers\ExamMarkController;
+use App\Http\Controllers\ReportCardController;
 use Illuminate\Support\Facades\Route;
 
 // Home → redirect to login or dashboard
@@ -47,10 +57,43 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/settings',   [SettingController::class, 'index'])->name('settings.index');
     Route::post('/settings',  [SettingController::class, 'update'])->name('settings.update');
 
-    // Placeholder routes for sidebar links (Phase 2+)
-    Route::get('/academic-years', fn() => view('placeholder', ['title' => 'Academic Years']))->name('academic-years.index');
-    Route::get('/classes',        fn() => view('placeholder', ['title' => 'Classes']))->name('classes.index');
-    Route::get('/attendance',     fn() => view('placeholder', ['title' => 'Attendance']))->name('attendance.index');
+    // Academic Years
+    Route::resource('academic-years', AcademicYearController::class);
+
+    // Classes & Sections
+    Route::resource('classes', SchoolClassController::class);
+    Route::resource('classes.sections', SectionController::class)->shallow();
+
+    // Subjects
+    Route::resource('subjects', SubjectController::class);
+
+    // Timetable
+    Route::get('/sections/{section}/timetable', [TimetableController::class, 'index'])->name('timetable.show');
+    Route::post('/sections/{section}/timetable', [TimetableController::class, 'store'])->name('timetable.store');
+    Route::delete('/timetable/{timetable}', [TimetableController::class, 'destroy'])->name('timetable.destroy');
+
+    // Attendance
+    Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance.index');
+    Route::get('/sections/{section}/attendance', [AttendanceController::class, 'markForm'])->name('attendance.mark');
+    Route::post('/sections/{section}/attendance', [AttendanceController::class, 'mark'])->name('attendance.store');
+
+    // Grade Scales
+    Route::resource('grade-scales', GradeScaleController::class)->except(['show']);
+
+    // Exams
+    Route::resource('exams', ExamController::class)->except(['show']);
+    Route::post('/exams/{exam}/publish', [ExamController::class, 'publish'])->name('exams.publish');
+
+    // Exam Marks
+    Route::get('/exam-marks', [ExamMarkController::class, 'index'])->name('exam-marks.index');
+    Route::get('/exams/{exam}/sections/{section}/marks', [ExamMarkController::class, 'grid'])->name('exam-marks.grid');
+    Route::post('/exams/{exam}/sections/{section}/marks', [ExamMarkController::class, 'save'])->name('exam-marks.save');
+
+    // Report Cards
+    Route::get('/exams/{exam}/students/{student}/report-card', [ReportCardController::class, 'show'])->name('report-card.show');
+    Route::get('/exams/{exam}/students/{student}/report-card/pdf', [ReportCardController::class, 'pdf'])->name('report-card.pdf');
+
+    // Remaining placeholders
     Route::get('/invoices',       fn() => view('placeholder', ['title' => 'Invoices']))->name('invoices.index');
     Route::get('/fee-structures', fn() => view('placeholder', ['title' => 'Fee Structures']))->name('fee-structures.index');
     Route::get('/books',          fn() => view('placeholder', ['title' => 'Library']))->name('books.index');

@@ -53,6 +53,23 @@ class Student extends Model
         return $this->guardians()->wherePivot('is_primary', true);
     }
 
+    public function sections(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Section::class, 'student_section')
+                    ->withPivot('academic_year_id')
+                    ->withTimestamps();
+    }
+
+    public function examMarks(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(ExamMark::class);
+    }
+
+    public function examResults(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(ExamResult::class);
+    }
+
     public function getDisplayNameAttribute(): string
     {
         return $this->name_km ?: $this->name_en;

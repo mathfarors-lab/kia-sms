@@ -23,7 +23,8 @@ class RolePermissionSeeder extends Seeder
             // Attendance
             'attendance.view', 'attendance.mark',
             // Exams
-            'exams.manage', 'marks.enter', 'marks.view', 'results.publish',
+            'exams.view', 'exams.manage', 'exams.publish',
+            'marks.entry', 'marks.view',
             // Finance
             'invoices.view', 'invoices.create', 'invoices.manage',
             'payments.record', 'fee-structures.manage',
@@ -47,15 +48,16 @@ class RolePermissionSeeder extends Seeder
                 'staff.view',
                 'academic-years.manage', 'classes.manage', 'sections.manage', 'subjects.manage',
                 'attendance.view', 'attendance.mark',
-                'exams.manage', 'marks.view', 'results.publish',
+                'exams.view', 'exams.manage', 'exams.publish', 'marks.view',
                 'invoices.view', 'fee-structures.manage',
                 'admissions.view', 'admissions.manage',
+                'settings.manage',
             ],
 
             'teacher' => [
                 'students.view',
                 'attendance.view', 'attendance.mark',
-                'marks.enter', 'marks.view',
+                'exams.view', 'marks.entry', 'marks.view',
             ],
 
             'accountant' => [
@@ -76,12 +78,12 @@ class RolePermissionSeeder extends Seeder
 
             'student' => [
                 'attendance.view',
-                'marks.view',
+                'exams.view', 'marks.view',
             ],
 
             'parent' => [
                 'attendance.view',
-                'marks.view',
+                'exams.view', 'marks.view',
                 'invoices.view',
             ],
         ];
