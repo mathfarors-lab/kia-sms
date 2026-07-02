@@ -22,6 +22,15 @@
                 <label class="form-label">Capacity</label>
                 <input type="number" name="capacity" class="form-control" value="{{ old('capacity', 30) }}" min="1">
             </div>
+            <div class="form-group">
+                <label class="form-label">{{ __('promotion.next_class') }}</label>
+                <select name="next_class_id" class="form-control">
+                    <option value="">{{ __('promotion.next_class_none') }}</option>
+                    @foreach($classes as $c)
+                        <option value="{{ $c->id }}" @selected(old('next_class_id') == $c->id)>{{ $c->name }}</option>
+                    @endforeach
+                </select>
+            </div>
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary">Create</button>
                 <a href="{{ route('classes.index') }}" class="btn btn-ghost">Cancel</a>

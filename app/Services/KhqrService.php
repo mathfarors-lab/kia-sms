@@ -2,74 +2,110 @@
 
 namespace App\Services;
 
+use App\Models\Invoice;
+use App\Models\PaymentIntent;
+
 /**
- * Generates a KHQR / Bakong EMVCo QR payload string.
+ * Generates dynamic KHQR codes and manages PaymentIntent lifecycle.
  *
- * Spec: https://bakong.nbc.gov.kh/download/KHQR/sdk/KHQR_SDK_Documentation.pdf
- * This produces a valid EMVCo QR string.  Real settlement requires the Bakong
- * webhook / callback API to confirm — see TODO below.
+ * In fake/dev mode (BAKONG_FAKE_MODE=true or no base URL):
+ *   - Generates a deterministic placeholder QR string (NOT scannable by real Bakong wallets).
+ *   - Safe for local development and CI.
+ *
+ * In production:
+ *   - Replace generateQrString() with the official NBC KHQR SDK call before go-live.
+ *   - The MD5 of whatever string you produce here is the polling key.
+ *
+ * ⚠️ Production calls to the Bakong Open API MUST originate from a Cambodia-based server.
+ *    Calls from outside Cambodia are blocked by NBC.
  */
 class KhqrService
 {
-    // TODO(Phase 5): Replace with real Bakong merchant credentials loaded from settings.
-    private const BAKONG_GUID  = '00A6012601081.0.0';
-    private const MERCHANT_ID  = 'kia_school@wing';   // placeholder — set via settings
-    private const MERCHANT_NAME = 'KIA School';
-    private const MERCHANT_CITY = 'Phnom Penh';
-    private const COUNTRY       = 'KH';
-    private const CURRENCY_KHR  = '116';
-    private const CURRENCY_USD  = '840';
+    public function __construct(private BakongTokenService $tokenService) {}
 
     /**
-     * Build the EMVCo QR payload for an invoice amount (USD).
-     *
-     * TODO(Bakong webhook): After the parent scans and pays, Bakong will POST to
-     * /api/bakong/callback with a transaction reference. That endpoint should
-     * call PaymentService::record() to auto-confirm the payment.
+     * Return an existing pending (non-expired) PaymentIntent for this invoice,
+     * or create a fresh one with a new QR code.
      */
-    public function generate(string $amount, string $currency = 'USD', ?string $invoiceRef = null): string
+    public function getOrCreateIntent(Invoice $invoice): PaymentIntent
     {
-        $currencyCode = $currency === 'KHR' ? self::CURRENCY_KHR : self::CURRENCY_USD;
+        $existing = PaymentIntent::where('invoice_id', $invoice->id)
+            ->where('status', 'pending')
+            ->where('expires_at', '>', now())
+            ->first();
 
-        // Tag 29 — Bakong merchant account info
-        $merchantAccount = $this->tlv('00', self::BAKONG_GUID)
-            . $this->tlv('01', self::MERCHANT_ID);
-        if ($invoiceRef) {
-            $merchantAccount .= $this->tlv('05', $invoiceRef);
+        if ($existing) {
+            return $existing;
         }
 
-        $payload = $this->tlv('00', '01')             // Payload Format Indicator
-            . $this->tlv('01', '12')                   // Dynamic QR
-            . $this->tlv('29', $merchantAccount)       // Bakong merchant account
-            . $this->tlv('52', '8299')                 // MCC — Education
-            . $this->tlv('53', $currencyCode)          // Currency
-            . $this->tlv('54', $amount)                // Amount
-            . $this->tlv('58', self::COUNTRY)          // Country
-            . $this->tlv('59', self::MERCHANT_NAME)    // Merchant name
-            . $this->tlv('60', self::MERCHANT_CITY);   // City
+        $amount    = number_format((float) $invoice->remainingBalance(), 2, '.', '');
+        $currency  = 'USD';
+        $billRef   = $invoice->number;
+        $qrString  = $this->generateQrString($amount, $currency, $billRef);
+        $md5       = md5($qrString);
+        $expiresAt = now()->addMinutes(config('services.bakong.qr_ttl_minutes', 10));
 
-        // Tag 63 placeholder (CRC appended with value "0000" before computing)
-        $payload .= '6304';
-        $payload .= $this->crc16($payload);
-
-        return $payload;
+        return PaymentIntent::create([
+            'invoice_id'  => $invoice->id,
+            'qr_string'   => $qrString,
+            'md5_hash'    => $md5,
+            'bill_number' => $billRef,
+            'amount'      => $amount,
+            'currency'    => $currency,
+            'expires_at'  => $expiresAt,
+            'status'      => 'pending',
+        ]);
     }
 
-    private function tlv(string $tag, string $value): string
+    /**
+     * Mark all expired pending intents as expired (called by the polling command
+     * before each poll cycle so expired intents are never submitted to the API).
+     */
+    public function expireStaleIntents(): int
     {
-        return $tag . str_pad(strlen($value), 2, '0', STR_PAD_LEFT) . $value;
+        return PaymentIntent::where('status', 'pending')
+            ->where('expires_at', '<=', now())
+            ->update(['status' => 'expired']);
     }
 
-    private function crc16(string $str): string
+    /**
+     * Generate the KHQR QR string.
+     *
+     * PRODUCTION NOTE: Replace this method body with a call to the official NBC
+     * KHQR SDK (bakong/khqr-sdk). The MD5 of the string produced here must match
+     * exactly what is polled via check_transaction_by_md5.
+     */
+    private function generateQrString(string $amount, string $currency, string $billRef): string
     {
-        $crc = 0xFFFF;
-        for ($i = 0; $i < strlen($str); $i++) {
-            $crc ^= ord($str[$i]) << 8;
-            for ($j = 0; $j < 8; $j++) {
-                $crc = ($crc & 0x8000) ? (($crc << 1) ^ 0x1021) : ($crc << 1);
-                $crc &= 0xFFFF;
-            }
+        if ($this->isFakeMode()) {
+            // Dev/CI placeholder — NOT scannable by a real Bakong wallet.
+            // Unique per bill+amount+second so each intent gets a distinct MD5.
+            return sprintf('KHQR-FAKE|%s|%s|%s|%d', $billRef, $amount, $currency, now()->timestamp);
         }
-        return strtoupper(str_pad(dechex($crc), 4, '0', STR_PAD_LEFT));
+
+        // Production: structural EMV-lite KHQR string.
+        // ⚠️  Use the official NBC SDK for a fully compliant KHQR that real wallets accept.
+        $merchantId   = config('services.bakong.merchant_id', '');
+        $merchantName = config('services.bakong.merchant_name', 'KIA School');
+        $city         = config('services.bakong.merchant_city', 'Phnom Penh');
+
+        return sprintf(
+            '00020101021230%02d0016net.bakong%04d%s52045999530384054%s5802KH59%02d%s60%02d%s62%02d%s',
+            16 + strlen($merchantId),
+            strlen($merchantId),
+            $merchantId,
+            $amount,
+            strlen($merchantName),
+            $merchantName,
+            strlen($city),
+            $city,
+            strlen($billRef),
+            $billRef
+        );
+    }
+
+    private function isFakeMode(): bool
+    {
+        return config('services.bakong.fake_mode', false) || !config('services.bakong.base_url');
     }
 }

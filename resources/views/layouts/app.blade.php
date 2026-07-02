@@ -48,13 +48,47 @@
                     </button>
                 </form>
 
-                {{-- Notifications --}}
-                <button class="kia-topbar-btn" title="{{ __('Notifications') }}">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-                    </svg>
-                </button>
+                {{-- Notifications bell --}}
+                @php
+                    $notifUnreadCount = auth()->user()->unreadNotifications()->count();
+                    $notifRecent      = auth()->user()->notifications()->latest()->take(5)->get();
+                @endphp
+                <div class="kia-dropdown kia-notif-dropdown" id="notifDropdown">
+                    <button class="kia-topbar-btn kia-notif-trigger" onclick="toggleDropdown('notifDropdown')" title="{{ __('Notifications') }}">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                        </svg>
+                        @if($notifUnreadCount > 0)
+                        <span class="kia-notif-badge">{{ $notifUnreadCount > 99 ? '99+' : $notifUnreadCount }}</span>
+                        @endif
+                    </button>
+                    <div class="kia-dropdown-menu kia-notif-panel">
+                        {{-- Header --}}
+                        <div class="kia-notif-header">
+                            <span style="font-weight:600;font-size:.875rem;">{{ __('Notifications') }}</span>
+                            @if($notifUnreadCount > 0)
+                            <form method="POST" action="{{ route('notifications.read-all') }}" style="margin:0">
+                                @csrf
+                                <button type="submit" class="kia-notif-read-all">{{ __('Mark all read') }}</button>
+                            </form>
+                            @endif
+                        </div>
+                        {{-- Recent list --}}
+                        @forelse($notifRecent as $notif)
+                        <a href="{{ route('notifications.read-go', $notif->id) }}"
+                           class="kia-notif-item{{ $notif->read_at ? '' : ' unread' }}">
+                            <div class="kia-notif-title">{{ $notif->data['title'] ?? __('Notification') }}</div>
+                            <div class="kia-notif-body">{{ \Illuminate\Support\Str::limit($notif->data['body'] ?? $notif->data['message_en'] ?? '', 70) }}</div>
+                            <div class="kia-notif-time">{{ $notif->created_at->diffForHumans() }}</div>
+                        </a>
+                        @empty
+                        <div class="kia-notif-empty">{{ __('No notifications yet') }}</div>
+                        @endforelse
+                        {{-- Footer link --}}
+                        <a href="{{ route('notifications.index') }}" class="kia-notif-footer">{{ __('View all notifications') }}</a>
+                    </div>
+                </div>
 
                 {{-- User avatar + dropdown --}}
                 <div class="kia-dropdown" id="userDropdown">

@@ -86,6 +86,9 @@
             <a href="{{ route('settings.index') }}" class="btn btn-ghost">
                 {{ __('School Settings') }}
             </a>
+            <a href="{{ route('users.index') }}" class="btn btn-ghost">
+                {{ __('Manage Users') }}
+            </a>
         </div>
     </div>
 

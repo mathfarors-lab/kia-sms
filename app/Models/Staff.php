@@ -17,6 +17,7 @@ class Staff extends Model
         'staff_code',
         'position',
         'department',
+        'photo',
         'joined_at',
         'salary',
     ];
@@ -31,7 +32,10 @@ class Staff extends Model
 
     public function getActivitylogOptions(): LogOptions
     {
-        return LogOptions::defaults()->logFillable()->logOnlyDirty();
+        // salary excluded — sensitive compensation data must not appear in the audit log viewer
+        return LogOptions::defaults()
+            ->logOnly(['user_id', 'staff_code', 'position', 'department', 'photo', 'joined_at'])
+            ->logOnlyDirty();
     }
 
     public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo

@@ -7,7 +7,7 @@
         <div class="kia-card-body">
             <div class="kia-empty">
                 <h3>{{ __('My Timetable') }}</h3>
-                <p>{{ __('Timetable and attendance marking coming in Phase 2.') }}</p>
+                <p>{{ __('Mark attendance for your assigned sections.') }}</p>
                 <a href="{{ route('attendance.index') }}" class="btn btn-primary">{{ __('Mark Attendance') }}</a>
             </div>
         </div>

@@ -1,22 +1,35 @@
-@extends('layouts.app')
-@section('title', 'Edit Route')
-@section('content')
-<div class="page-header"><h1>Edit Route</h1></div>
-<form method="POST" action="{{ route('transport.routes.update', $route) }}" class="card form-card">
-    @csrf @method('PATCH')
-    <div class="form-group">
-        <label>Route Name *</label>
-        <input type="text" name="name" value="{{ old('name', $route->name) }}" class="form-input" required>
+<x-app-layout>
+    <x-slot name="title">Edit Route</x-slot>
+
+    <div class="kia-page-header">
+        <h1 class="kia-page-title">Edit Route: {{ $route->name }}</h1>
     </div>
-    <div class="form-group">
-        <label>Description</label>
-        <textarea name="description" rows="3" class="form-input">{{ old('description', $route->description) }}</textarea>
+
+    <div class="kia-card" style="max-width:560px">
+        <div class="kia-card-body">
+            <form method="POST" action="{{ route('transport.routes.update', $route) }}">
+                @csrf @method('PATCH')
+                <div class="form-group">
+                    <label class="form-label">Route Name *</label>
+                    <input type="text" name="name" value="{{ old('name', $route->name) }}"
+                           class="form-control @error('name') is-invalid @enderror" required>
+                    @error('name')<span class="invalid-feedback">{{ $message }}</span>@enderror
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea name="description" rows="3" class="form-control">{{ old('description', $route->description) }}</textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Monthly Fare (USD)</label>
+                    <input type="number" name="fare" value="{{ old('fare', $route->fare) }}"
+                           class="form-control @error('fare') is-invalid @enderror" step="0.01" min="0">
+                    @error('fare')<span class="invalid-feedback">{{ $message }}</span>@enderror
+                </div>
+                <div style="display:flex;gap:.75rem;margin-top:1rem">
+                    <button class="btn btn-primary" type="submit">Update</button>
+                    <a href="{{ route('transport.routes.index') }}" class="btn btn-ghost">Cancel</a>
+                </div>
+            </form>
+        </div>
     </div>
-    <div class="form-group">
-        <label>Monthly Fare (USD)</label>
-        <input type="number" name="fare" class="form-input" step="0.01" min="0" value="{{ old('fare', $route->fare) }}">
-    </div>
-    <button class="btn btn-primary" type="submit">Update</button>
-    <a href="{{ route('transport.routes.index') }}" class="btn btn-secondary">Cancel</a>
-</form>
-@endsection
+</x-app-layout>

@@ -39,7 +39,16 @@ class FeeDueReminder extends Notification implements ShouldQueue
 
     public function toArray(object $notifiable): array
     {
+        $isOverdue = $this->invoice->status === 'overdue';
         return [
+            'title'          => $isOverdue
+                ? "Overdue Invoice: {$this->invoice->number}"
+                : "Fee Due: {$this->invoice->number}",
+            'body'           => $isOverdue
+                ? "Invoice {$this->invoice->number} has an overdue balance."
+                : "Invoice {$this->invoice->number} is due soon.",
+            'url'            => route('invoices.show', $this->invoice),
+            'icon'           => 'invoice',
             'invoice_id'     => $this->invoice->id,
             'invoice_number' => $this->invoice->number,
             'amount'         => $this->invoice->total,

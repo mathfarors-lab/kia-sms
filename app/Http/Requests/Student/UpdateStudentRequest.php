@@ -20,7 +20,7 @@ class UpdateStudentRequest extends FormRequest
             'date_of_birth' => ['nullable', 'date', 'before:today'],
             'address'       => ['nullable', 'string', 'max:500'],
             'status'        => ['required', 'in:enrolled,transferred,graduated,dropped'],
-            'photo'         => ['nullable', 'image', 'max:2048'],
+            'photo'         => ['nullable', 'image', 'mimes:jpg,jpeg,png,gif,webp', 'max:2048'],
         ];
     }
 }

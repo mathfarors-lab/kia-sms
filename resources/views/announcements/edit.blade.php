@@ -1,31 +1,39 @@
-@extends('layouts.app')
-@section('title', 'Edit Announcement')
-@section('content')
-<div class="page-header"><h1>Edit Announcement</h1></div>
+<x-app-layout>
+    <x-slot name="title">Edit Announcement</x-slot>
 
-<form method="POST" action="{{ route('announcements.update', $announcement) }}" class="card form-card">
-    @csrf @method('PUT')
-    <div class="form-group">
-        <label>Title</label>
-        <input type="text" name="title" value="{{ old('title', $announcement->title) }}" class="form-input" required>
+    <div class="kia-page-header">
+        <h1 class="kia-page-title">Edit Announcement</h1>
     </div>
-    <div class="form-group">
-        <label>Body (English)</label>
-        <textarea name="body_en" rows="5" class="form-input">{{ old('body_en', $announcement->body_en) }}</textarea>
+
+    <div class="kia-card" style="max-width:760px">
+        <div class="kia-card-body">
+            <form method="POST" action="{{ route('announcements.update', $announcement) }}">
+                @csrf @method('PUT')
+                <div class="form-group">
+                    <label class="form-label">Title *</label>
+                    <input type="text" name="title" value="{{ old('title', $announcement->title) }}" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Body (English)</label>
+                    <textarea name="body_en" rows="5" class="form-control">{{ old('body_en', $announcement->body_en) }}</textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Body (Khmer)</label>
+                    <textarea name="body_km" rows="5" class="form-control">{{ old('body_km', $announcement->body_km) }}</textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Audience</label>
+                    <select name="audience" class="form-control">
+                        @foreach(['all','class','grade'] as $opt)
+                            <option value="{{ $opt }}" @selected(old('audience', $announcement->audience) === $opt)>{{ ucfirst($opt) }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div style="display:flex;gap:.75rem">
+                    <button class="btn btn-primary" type="submit">Update</button>
+                    <a href="{{ route('announcements.show', $announcement) }}" class="btn btn-ghost">Cancel</a>
+                </div>
+            </form>
+        </div>
     </div>
-    <div class="form-group">
-        <label>Body (Khmer)</label>
-        <textarea name="body_km" rows="5" class="form-input">{{ old('body_km', $announcement->body_km) }}</textarea>
-    </div>
-    <div class="form-group">
-        <label>Audience</label>
-        <select name="audience" class="form-input">
-            @foreach(['all','class','grade'] as $opt)
-                <option value="{{ $opt }}" @selected(old('audience', $announcement->audience) === $opt)>{{ ucfirst($opt) }}</option>
-            @endforeach
-        </select>
-    </div>
-    <button class="btn btn-primary" type="submit">Update</button>
-    <a href="{{ route('announcements.show', $announcement) }}" class="btn btn-secondary">Cancel</a>
-</form>
-@endsection
+</x-app-layout>

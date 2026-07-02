@@ -17,7 +17,8 @@ class SchoolClassController extends Controller
     public function create()
     {
         $this->authorize('classes.manage');
-        return view('classes.create');
+        $classes = SchoolClass::orderBy('name')->get();
+        return view('classes.create', compact('classes'));
     }
 
     public function store(StoreSchoolClassRequest $request)
@@ -37,7 +38,8 @@ class SchoolClassController extends Controller
     public function edit(SchoolClass $class)
     {
         $this->authorize('classes.manage');
-        return view('classes.edit', compact('class'));
+        $classes = SchoolClass::where('id', '!=', $class->id)->orderBy('name')->get();
+        return view('classes.edit', compact('class', 'classes'));
     }
 
     public function update(StoreSchoolClassRequest $request, SchoolClass $class)

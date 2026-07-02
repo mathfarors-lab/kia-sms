@@ -15,4 +15,11 @@ return [
     'fee_overdue_subject'         => 'Overdue Invoice: :number',
     'fee_overdue_body'            => 'Invoice :number has an overdue balance of $:amount. Please pay immediately.',
     'view_invoice'                => 'View Invoice',
+
+    // Notification centre UI
+    'center_title'                => 'Notifications',
+    'mark_all_read'               => 'Mark all read',
+    'no_notifications'            => 'No notifications yet',
+    'view_all'                    => 'View all notifications',
+    'all_marked_read'             => 'All notifications marked as read.',
 ];

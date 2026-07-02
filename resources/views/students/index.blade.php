@@ -53,7 +53,7 @@
                         <td>
                             <div class="student-cell">
                                 @if($student->photo)
-                                    <img src="{{ Storage::url($student->photo) }}" class="student-photo-sm" alt="">
+                                    <img src="{{ route('students.photo', $student) }}" class="student-photo-sm" alt="">
                                 @else
                                     <div class="student-initials">{{ strtoupper(substr($student->name_en, 0, 2)) }}</div>
                                 @endif

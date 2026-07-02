@@ -6,7 +6,7 @@
     <div class="kia-card">
         <div class="kia-card-body">
             <div class="kia-empty">
-                <h3>{{ __('Library module coming in Phase 5') }}</h3>
+                <h3>{{ __('Catalogue, issues, and returns') }}</h3>
                 <a href="{{ route('books.index') }}" class="btn btn-primary mt-3">{{ __('Manage Books') }}</a>
             </div>
         </div>

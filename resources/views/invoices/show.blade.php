@@ -85,28 +85,62 @@
         </div>
 
         {{-- KHQR Panel --}}
-        @if($qrPayload && !$invoice->isPaid())
+        @if($paymentIntent && !$invoice->isPaid())
         <div class="kia-card" style="text-align:center">
-            <h3 style="margin-bottom:.5rem;font-size:1rem">Scan to Pay (KHQR)</h3>
-            <p style="font-size:.8rem;color:var(--muted);margin-bottom:1rem">Scan with any Bakong-compatible wallet</p>
-            <div id="khqr-canvas" style="margin:0 auto;width:200px;height:200px"></div>
-            <p style="font-size:.7rem;color:var(--muted);margin-top:.75rem">
-                Payment confirmation requires manual verification by the accountant.<br>
-                <em>Bakong webhook integration: TODO</em>
-            </p>
+
+            @if($paymentIntent->status === 'pending' && !$paymentIntent->isExpired())
+                <h3 style="margin-bottom:.25rem;font-size:1rem">Scan to Pay (KHQR)</h3>
+                <p style="font-size:.8rem;color:var(--muted);margin-bottom:.75rem">
+                    Scan with any Bakong-compatible wallet.<br>
+                    QR expires {{ $paymentIntent->expires_at->diffForHumans() }}.
+                </p>
+                <div id="khqr-canvas" style="margin:0 auto;width:200px;height:200px"></div>
+                <p style="font-size:.7rem;color:var(--muted);margin-top:.75rem">
+                    Payment is confirmed automatically within ~1 minute of scan.
+                    This page auto-refreshes every 30 s.
+                </p>
+                {{-- Auto-refresh while pending — checks if payment landed --}}
+                <meta http-equiv="refresh" content="30">
+
+            @elseif($paymentIntent->isExpired() || $paymentIntent->status === 'expired')
+                <div style="padding:1.5rem">
+                    <div style="font-size:2rem;margin-bottom:.5rem">⏱</div>
+                    <div style="font-weight:600;margin-bottom:.5rem">QR Code Expired</div>
+                    <p style="font-size:.85rem;color:var(--muted);margin-bottom:1rem">
+                        The 10-minute KHQR window has closed. Generate a new code to pay.
+                    </p>
+                    <form method="POST" action="{{ route('invoices.khqr.regenerate', $invoice) }}">
+                        @csrf
+                        <button type="submit" class="btn btn-primary">Generate New QR</button>
+                    </form>
+                </div>
+
+            @elseif($paymentIntent->status === 'flagged')
+                <div style="padding:1.5rem;color:var(--warning,#d97706)">
+                    <div style="font-size:2rem;margin-bottom:.5rem">⚠</div>
+                    <div style="font-weight:600;margin-bottom:.5rem">Payment Requires Review</div>
+                    <p style="font-size:.85rem;color:var(--muted)">
+                        A payment was received but flagged ({{ $paymentIntent->error_reason }}).
+                        Please contact the accountant.
+                    </p>
+                </div>
+            @endif
+
         </div>
 
+        @if($paymentIntent->status === 'pending' && !$paymentIntent->isExpired())
         <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
         <script>
         document.addEventListener('DOMContentLoaded', function () {
             new QRCode(document.getElementById('khqr-canvas'), {
-                text: {{ Js::from($qrPayload) }},
+                text: {{ Js::from($paymentIntent->qr_string) }},
                 width: 200, height: 200,
                 colorDark: '#2B3A8F', colorLight: '#ffffff',
                 correctLevel: QRCode.CorrectLevel.M
             });
         });
         </script>
+        @endif
         @endif
     </div>
 </x-app-layout>

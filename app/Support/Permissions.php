@@ -78,6 +78,30 @@ final class Permissions
     const TRANSPORT_MANAGE = 'transport.manage';
     const TRANSPORT_VIEW   = 'transport.view';
 
+    // Leave
+    const LEAVES_VIEW   = 'leaves.view';
+    const LEAVES_SUBMIT = 'leaves.submit';
+    const LEAVES_MANAGE = 'leaves.manage';
+
+    // Analytics & Reports
+    const ANALYTICS_VIEW = 'analytics.view';
+    const REPORTS_VIEW   = 'reports.view';
+
+    // Term / Annual Consolidated Results
+    const TERM_RESULTS_MANAGE  = 'term-results.manage';
+    const TERM_RESULTS_PUBLISH = 'term-results.publish';
+
+    // Documents: ID cards, transcripts, certificates
+    const ID_CARDS_GENERATE  = 'id-cards.generate';
+    const TRANSCRIPTS_VIEW   = 'transcripts.view';
+    const CERTIFICATES_ISSUE = 'certificates.issue';
+
+    // Year-end promotion & rollover (irreversible bulk operation — admin/principal only)
+    const PROMOTION_MANAGE = 'promotion.manage';
+
+    // Audit-log viewer — admin/principal only; never expose to lower roles
+    const AUDIT_VIEW = 'audit.view';
+
     /** Returns every permission string — used by the seeder and Gate::before. */
     public static function all(): array
     {
@@ -98,6 +122,12 @@ final class Permissions
             self::MESSAGES_SEND, self::MESSAGES_VIEW,
             self::HOMEWORK_MANAGE, self::HOMEWORK_SUBMIT, self::HOMEWORK_GRADE,
             self::TRANSPORT_MANAGE, self::TRANSPORT_VIEW,
+            self::LEAVES_VIEW, self::LEAVES_SUBMIT, self::LEAVES_MANAGE,
+            self::TERM_RESULTS_MANAGE, self::TERM_RESULTS_PUBLISH,
+            self::ID_CARDS_GENERATE, self::TRANSCRIPTS_VIEW, self::CERTIFICATES_ISSUE,
+            self::PROMOTION_MANAGE,
+            self::AUDIT_VIEW,
+            self::ANALYTICS_VIEW, self::REPORTS_VIEW,
         ];
     }
 }

@@ -31,7 +31,7 @@ class StudentService
         $data['student_code'] = $this->generateCode();
 
         if ($photo) {
-            $data['photo'] = $photo->store('students/photos', 'public');
+            $data['photo'] = $photo->store('students/photos', 'local');
         }
 
         return Student::create($data);
@@ -41,9 +41,9 @@ class StudentService
     {
         if ($photo) {
             if ($student->photo) {
-                Storage::disk('public')->delete($student->photo);
+                Storage::disk('local')->delete($student->photo);
             }
-            $data['photo'] = $photo->store('students/photos', 'public');
+            $data['photo'] = $photo->store('students/photos', 'local');
         }
 
         $student->update($data);
@@ -53,7 +53,7 @@ class StudentService
     public function destroy(Student $student): void
     {
         if ($student->photo) {
-            Storage::disk('public')->delete($student->photo);
+            Storage::disk('local')->delete($student->photo);
         }
         $student->delete();
     }

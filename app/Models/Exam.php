@@ -10,11 +10,14 @@ class Exam extends Model
 {
     use LogsActivity;
 
-    protected $fillable = ['academic_year_id', 'name', 'type', 'is_published'];
+    protected $fillable = ['academic_year_id', 'name', 'type', 'semester', 'weight', 'is_published'];
 
     protected function casts(): array
     {
-        return ['is_published' => 'boolean'];
+        return [
+            'is_published' => 'boolean',
+            'weight'       => 'decimal:2',
+        ];
     }
 
     public function getActivitylogOptions(): LogOptions

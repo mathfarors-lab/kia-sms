@@ -10,7 +10,7 @@
     <div class="kia-page-header">
         <div class="d-flex align-center gap-3">
             @if($student->photo)
-                <img src="{{ Storage::url($student->photo) }}" class="photo-preview" style="width:64px;height:64px;border-radius:50%;" alt="">
+                <img src="{{ route('students.photo', $student) }}" class="photo-preview" style="width:64px;height:64px;border-radius:50%;" alt="">
             @else
                 <div class="student-initials" style="width:64px;height:64px;font-size:1.3rem;">{{ strtoupper(substr($student->name_en, 0, 2)) }}</div>
             @endif

@@ -51,16 +51,12 @@ class InvoiceController extends Controller
         $this->authorizeInvoiceAccess($invoice);
         $invoice->load(['student', 'academicYear', 'items', 'payments.receivedBy']);
 
-        $qrPayload = null;
+        $paymentIntent = null;
         if (!$invoice->isPaid()) {
-            $qrPayload = $this->khqr->generate(
-                number_format((float) $invoice->remainingBalance(), 2, '.', ''),
-                'USD',
-                $invoice->number
-            );
+            $paymentIntent = $this->khqr->getOrCreateIntent($invoice);
         }
 
-        return view('invoices.show', compact('invoice', 'qrPayload'));
+        return view('invoices.show', compact('invoice', 'paymentIntent'));
     }
 
     public function create()
@@ -94,6 +90,26 @@ class InvoiceController extends Controller
                 'created' => $result['created'],
                 'skipped' => $result['skipped'],
             ]));
+    }
+
+    public function regenerateKhqr(Invoice $invoice)
+    {
+        $this->authorizeInvoiceAccess($invoice);
+
+        if ($invoice->isPaid()) {
+            return redirect()->route('invoices.show', $invoice)
+                ->with('info', 'Invoice is already paid.');
+        }
+
+        // Expire the current pending intent so getOrCreateIntent() creates a fresh one.
+        \App\Models\PaymentIntent::where('invoice_id', $invoice->id)
+            ->where('status', 'pending')
+            ->update(['status' => 'expired']);
+
+        // Create a new intent (new QR, new MD5, new expiry window).
+        $this->khqr->getOrCreateIntent($invoice);
+
+        return redirect()->route('invoices.show', $invoice);
     }
 
     private function authorizeInvoiceAccess(Invoice $invoice): void

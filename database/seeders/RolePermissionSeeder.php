@@ -33,6 +33,12 @@ class RolePermissionSeeder extends Seeder
                 P::ANNOUNCEMENTS_VIEW, P::ANNOUNCEMENTS_CREATE, P::ANNOUNCEMENTS_MANAGE,
                 P::MESSAGES_SEND, P::MESSAGES_VIEW,
                 P::BOOKS_VIEW, P::TRANSPORT_VIEW,
+                P::LEAVES_MANAGE, P::LEAVES_VIEW,
+                P::ANALYTICS_VIEW, P::REPORTS_VIEW,
+                P::TERM_RESULTS_MANAGE, P::TERM_RESULTS_PUBLISH,
+                P::ID_CARDS_GENERATE, P::TRANSCRIPTS_VIEW, P::CERTIFICATES_ISSUE,
+                P::PROMOTION_MANAGE,
+                P::AUDIT_VIEW,
             ],
 
             'teacher' => [
@@ -43,6 +49,8 @@ class RolePermissionSeeder extends Seeder
                 P::MESSAGES_SEND, P::MESSAGES_VIEW,
                 P::HOMEWORK_MANAGE, P::HOMEWORK_GRADE,
                 P::BOOKS_VIEW,
+                P::LEAVES_SUBMIT, P::LEAVES_VIEW,
+                P::ID_CARDS_GENERATE, P::TRANSCRIPTS_VIEW,
             ],
 
             'accountant' => [
@@ -50,12 +58,15 @@ class RolePermissionSeeder extends Seeder
                 P::INVOICES_VIEW, P::INVOICES_CREATE, P::INVOICES_MANAGE,
                 P::PAYMENTS_RECORD, P::FEES_MANAGE,
                 P::MESSAGES_SEND, P::MESSAGES_VIEW,
+                P::REPORTS_VIEW,
+                P::LEAVES_SUBMIT, P::LEAVES_VIEW,
             ],
 
             'librarian' => [
                 P::STUDENTS_VIEW,
                 P::BOOKS_MANAGE, P::BOOKS_VIEW,
                 P::BOOK_ISSUES_MANAGE, P::BOOK_ISSUES_VIEW,
+                P::LEAVES_SUBMIT, P::LEAVES_VIEW,
             ],
 
             'receptionist' => [
@@ -63,6 +74,7 @@ class RolePermissionSeeder extends Seeder
                 P::ADMISSIONS_VIEW, P::ADMISSIONS_MANAGE,
                 P::TRANSPORT_MANAGE, P::TRANSPORT_VIEW,
                 P::MESSAGES_SEND, P::MESSAGES_VIEW,
+                P::LEAVES_SUBMIT, P::LEAVES_VIEW,
             ],
 
             'student' => [
@@ -74,6 +86,8 @@ class RolePermissionSeeder extends Seeder
                 P::HOMEWORK_SUBMIT,
                 P::BOOKS_VIEW, P::BOOK_ISSUES_VIEW,
                 P::TRANSPORT_VIEW,
+                P::ID_CARDS_GENERATE,
+                P::TRANSCRIPTS_VIEW,
             ],
 
             'parent' => [
@@ -84,6 +98,8 @@ class RolePermissionSeeder extends Seeder
                 P::MESSAGES_SEND, P::MESSAGES_VIEW,
                 P::BOOKS_VIEW,
                 P::TRANSPORT_VIEW,
+                P::ID_CARDS_GENERATE,
+                P::TRANSCRIPTS_VIEW,
             ],
         ];
 

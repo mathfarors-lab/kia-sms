@@ -63,7 +63,7 @@
                         <label class="form-label" for="photo">{{ __('Photo') }}</label>
                         @if($student->photo)
                         <div style="margin-bottom:8px;">
-                            <img src="{{ Storage::url($student->photo) }}" class="photo-preview" alt="Current photo">
+                            <img src="{{ route('students.photo', $student) }}" class="photo-preview" alt="Current photo">
                             <div style="font-size:.75rem;color:var(--muted);margin-top:4px;">{{ __('Current photo') }}</div>
                         </div>
                         @endif

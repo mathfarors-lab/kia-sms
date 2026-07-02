@@ -882,3 +882,105 @@ textarea.form-control { resize: vertical; min-height: 90px; }
 .mb-5 { margin-bottom: 20px; }
 .w-100 { width: 100%; }
 .hidden { display: none !important; }
+
+/* --- Notification bell + dropdown --- */
+.kia-notif-trigger {
+    position: relative;
+}
+.kia-notif-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 8px;
+    background: #ef4444;
+    color: #fff;
+    font-size: .625rem;
+    font-weight: 700;
+    line-height: 16px;
+    text-align: center;
+    pointer-events: none;
+}
+.kia-notif-dropdown .kia-dropdown-menu {
+    right: 0;
+    left: auto;
+    width: 340px;
+    padding: 0;
+}
+.kia-notif-panel {
+    max-height: 480px;
+    overflow-y: auto;
+}
+.kia-notif-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px 10px;
+    border-bottom: 1px solid var(--line);
+    position: sticky;
+    top: 0;
+    background: var(--surface);
+    z-index: 1;
+}
+.kia-notif-read-all {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: .75rem;
+    color: var(--royal);
+    padding: 0;
+}
+.kia-notif-read-all:hover { text-decoration: underline; }
+.kia-notif-item {
+    display: block;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--line);
+    text-decoration: none;
+    color: var(--text);
+    transition: background .15s;
+}
+.kia-notif-item:hover { background: var(--hover); }
+.kia-notif-item.unread { background: color-mix(in srgb, var(--royal) 6%, transparent); }
+.kia-notif-title {
+    font-size: .8125rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.kia-notif-item:not(.unread) .kia-notif-title { font-weight: 400; }
+.kia-notif-body {
+    font-size: .75rem;
+    color: var(--muted);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.kia-notif-time {
+    font-size: .6875rem;
+    color: var(--muted);
+    margin-top: 3px;
+}
+.kia-notif-empty {
+    padding: 28px 16px;
+    text-align: center;
+    font-size: .8125rem;
+    color: var(--muted);
+}
+.kia-notif-footer {
+    display: block;
+    padding: 10px 16px;
+    text-align: center;
+    font-size: .8125rem;
+    color: var(--royal);
+    border-top: 1px solid var(--line);
+    text-decoration: none;
+    font-weight: 500;
+    position: sticky;
+    bottom: 0;
+    background: var(--surface);
+}
+.kia-notif-footer:hover { text-decoration: underline; }
