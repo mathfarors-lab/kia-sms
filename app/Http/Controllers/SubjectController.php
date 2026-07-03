@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Subject\StoreSubjectRequest;
+use App\Http\Requests\Subject\UpdateSubjectRequest;
 use App\Models\Subject;
 
 class SubjectController extends Controller
@@ -33,17 +34,10 @@ class SubjectController extends Controller
         return view('subjects.edit', compact('subject'));
     }
 
-    public function update(StoreSubjectRequest $request, Subject $subject)
+    public function update(UpdateSubjectRequest $request, Subject $subject)
     {
         $this->authorize('subjects.manage');
-
-        // Allow same code on update
-        $rules = $request->rules();
-        $rules['code'] = ['required', 'string', 'max:50', 'unique:subjects,code,' . $subject->id];
-
-        $data = $request->validate($rules);
-        $subject->update($data);
-
+        $subject->update($request->validated());
         return redirect()->route('subjects.index')->with('success', 'Subject updated.');
     }
 

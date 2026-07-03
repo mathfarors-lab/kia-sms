@@ -126,6 +126,31 @@ class EngagementTest extends TestCase
         $this->assertNotContains($ann->id, $visible);
     }
 
+    // Regression test — the edit form didn't submit `target_id` at all, and since
+    // it's a `nullable` validation rule, FormRequest::validated() still included
+    // it as null. Every edit silently wiped target_id, so a class/grade-scoped
+    // announcement lost its audience the moment anyone touched the edit form.
+
+    public function test_editing_a_class_announcement_preserves_its_target(): void
+    {
+        $ann = \App\Models\Announcement::create([
+            'title' => 'Field Trip', 'body_en' => 'Bring shoes',
+            'audience' => 'class', 'target_id' => $this->section->id,
+            'posted_by' => $this->admin->id,
+        ]);
+
+        $this->actingAs($this->admin)
+            ->put(route('announcements.update', $ann), [
+                'title'     => 'Field Trip (updated)',
+                'body_en'   => 'Bring shoes and a hat',
+                'audience'  => 'class',
+                'target_id' => $this->section->id,
+            ])
+            ->assertRedirect(route('announcements.show', $ann));
+
+        $this->assertEquals($this->section->id, $ann->fresh()->target_id);
+    }
+
     // ── 2. Messaging: IDOR + scope ──────────────────────────────────────────
 
     public function test_non_participant_cannot_view_conversation(): void

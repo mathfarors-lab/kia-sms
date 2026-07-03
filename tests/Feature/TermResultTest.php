@@ -408,4 +408,66 @@ class TermResultTest extends TestCase
         // S1 avg=80, S2 avg=60 → annual avg = (80+60)/2 = 70
         $this->assertEquals(70.00, $annual->average);
     }
+
+    // ── Test: exam created through the real HTTP form feeds term computation ─────
+    // Regression test — every other exam in this file is built with makeExam(),
+    // which sets `semester` directly on the model and never touches the controller
+    // or its validation. That let the create/edit forms ship without a `semester`
+    // field: exams made through the UI got semester=null and were silently
+    // excluded here. This test goes through the actual store route instead.
+
+    public function test_exam_created_via_http_form_is_included_in_term_computation(): void
+    {
+        $year        = $this->makeYear();
+        [, $section] = $this->makeSection($year);
+        $student     = $this->makeStudent($section, $year);
+        $subject     = $this->makeSubject(1.0);
+
+        $admin = User::factory()->create(['status' => 'active']);
+        $admin->assignRole('admin');
+
+        $this->actingAs($admin)
+            ->post(route('exams.store'), [
+                'academic_year_id' => $year->id,
+                'name'             => 'HTTP Midterm',
+                'type'             => 'midterm',
+                'semester'         => 1,
+                'weight'           => 1,
+            ])
+            ->assertRedirect(route('exams.index'));
+
+        $exam = Exam::where('name', 'HTTP Midterm')->firstOrFail();
+        $this->assertEquals(1, $exam->semester);
+        $this->assertEquals(1.00, $exam->weight);
+
+        $this->mark($exam, $student, $subject, 80);
+
+        $this->actingAs($admin)->post(route('exams.publish', $exam));
+
+        $this->service()->compute($year, 1);
+
+        $tr = TermResult::where(['academic_year_id' => $year->id, 'semester' => 1, 'student_id' => $student->id])->first();
+        $this->assertNotNull($tr, 'Exam created via the HTTP form was not picked up by term computation.');
+        $this->assertEquals(80.00, $tr->average);
+    }
+
+    // ── Test: exam store rejects a missing semester ──────────────────────────────
+
+    public function test_exam_store_requires_semester(): void
+    {
+        $year  = $this->makeYear();
+        $admin = User::factory()->create(['status' => 'active']);
+        $admin->assignRole('admin');
+
+        $this->actingAs($admin)
+            ->post(route('exams.store'), [
+                'academic_year_id' => $year->id,
+                'name'             => 'No Semester Exam',
+                'type'             => 'midterm',
+                'weight'           => 1,
+            ])
+            ->assertSessionHasErrors('semester');
+
+        $this->assertDatabaseMissing('exams', ['name' => 'No Semester Exam']);
+    }
 }

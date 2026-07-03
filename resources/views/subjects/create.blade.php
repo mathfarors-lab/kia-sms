@@ -27,6 +27,12 @@
                 <label class="form-label">Full Mark</label>
                 <input type="number" name="full_mark" class="form-control" value="{{ old('full_mark', 100) }}" min="1">
             </div>
+            <div class="form-group">
+                <label class="form-label">Coefficient</label>
+                <input type="number" name="coefficient" step="0.01" min="0.01" max="99.99" class="form-control @error('coefficient') is-invalid @enderror" value="{{ old('coefficient', 1.00) }}">
+                <div style="font-size:.75rem;color:var(--muted);margin-top:4px;">Relative weight of this subject when averaging grades. Leave at 1.00 for equal weight.</div>
+                @error('coefficient')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            </div>
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary">Create</button>
                 <a href="{{ route('subjects.index') }}" class="btn btn-ghost">Cancel</a>

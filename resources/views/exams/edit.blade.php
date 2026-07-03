@@ -34,6 +34,24 @@
                     @error('academic_year_id')<span class="kia-field-error">{{ $message }}</span>@enderror
                 </div>
             </div>
+            <div class="kia-form-row kia-form-row--2">
+                <div class="kia-form-group">
+                    <label class="kia-label">Semester *</label>
+                    <select name="semester" class="kia-select @error('semester') is-invalid @enderror">
+                        <option value="">Select semester</option>
+                        <option value="1" @selected(old('semester', (string) $exam->semester) === '1')>Semester 1</option>
+                        <option value="2" @selected(old('semester', (string) $exam->semester) === '2')>Semester 2</option>
+                    </select>
+                    <div style="font-size:.75rem;color:var(--muted);margin-top:4px;">Which term this exam's marks feed into.</div>
+                    @error('semester')<span class="kia-field-error">{{ $message }}</span>@enderror
+                </div>
+                <div class="kia-form-group">
+                    <label class="kia-label">Weight *</label>
+                    <input type="number" name="weight" step="0.01" min="0" value="{{ old('weight', $exam->weight) }}" class="kia-input @error('weight') is-invalid @enderror">
+                    <div style="font-size:.75rem;color:var(--muted);margin-top:4px;">Relative weight vs other exams in the same semester.</div>
+                    @error('weight')<span class="kia-field-error">{{ $message }}</span>@enderror
+                </div>
+            </div>
             <div class="kia-form-actions">
                 <button type="submit" class="btn btn-primary">Update Exam</button>
                 <a href="{{ route('exams.index') }}" class="btn btn-ghost">Cancel</a>

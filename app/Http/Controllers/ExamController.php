@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Exam\StoreExamRequest;
+use App\Http\Requests\Exam\UpdateExamRequest;
 use App\Models\AcademicYear;
 use App\Models\Exam;
 use App\Models\Student;
 use App\Notifications\ResultPublished;
 use App\Services\GradingService;
-use Illuminate\Http\Request;
 
 class ExamController extends Controller
 {
@@ -27,16 +28,9 @@ class ExamController extends Controller
         return view('exams.create', compact('academicYears'));
     }
 
-    public function store(Request $request)
+    public function store(StoreExamRequest $request)
     {
-        $this->authorize('exams.manage');
-        $data = $request->validate([
-            'academic_year_id' => 'required|exists:academic_years,id',
-            'name'             => 'required|string|max:200',
-            'type'             => 'required|in:monthly,midterm,final',
-        ]);
-
-        Exam::create($data + ['is_published' => false]);
+        Exam::create($request->validated() + ['is_published' => false]);
         return redirect()->route('exams.index')->with('success', __('messages.created'));
     }
 
@@ -47,21 +41,13 @@ class ExamController extends Controller
         return view('exams.edit', compact('exam', 'academicYears'));
     }
 
-    public function update(Request $request, Exam $exam)
+    public function update(UpdateExamRequest $request, Exam $exam)
     {
-        $this->authorize('exams.manage');
-
         if ($exam->is_published) {
             return back()->withErrors(['exam' => __('exam.locked_published')]);
         }
 
-        $data = $request->validate([
-            'academic_year_id' => 'required|exists:academic_years,id',
-            'name'             => 'required|string|max:200',
-            'type'             => 'required|in:monthly,midterm,final',
-        ]);
-
-        $exam->update($data);
+        $exam->update($request->validated());
         return redirect()->route('exams.index')->with('success', __('messages.updated'));
     }
 
