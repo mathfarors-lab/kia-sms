@@ -2,6 +2,9 @@
 
 namespace App\Support;
 
+use App\Models\User;
+use Spatie\Permission\Exceptions\PermissionDoesNotExist;
+
 /**
  * Single source of truth for every permission string in the system.
  * Reference this class from the seeder, policies, and middleware —
@@ -101,6 +104,25 @@ final class Permissions
 
     // Audit-log viewer — admin/principal only; never expose to lower roles
     const AUDIT_VIEW = 'audit.view';
+
+    /**
+     * Safe permission check for UI gating (nav links, quick-action buttons).
+     * Spatie's User::can() throws PermissionDoesNotExist — a hard 500 — when
+     * a permission row hasn't been provisioned yet (e.g. mid-deploy, before
+     * the seeder has (re)run). A missing nav link is a cosmetic downgrade;
+     * a 500 on every authenticated page is not. Treat "not provisioned" as
+     * "no" here. This must NEVER be used as the actual authorization check —
+     * controllers keep using $this->authorize()/Gate::authorize(), which
+     * should stay loud about misconfiguration.
+     */
+    public static function userCan(User $user, string $permission): bool
+    {
+        try {
+            return $user->can($permission);
+        } catch (PermissionDoesNotExist) {
+            return false;
+        }
+    }
 
     /** Returns every permission string — used by the seeder and Gate::before. */
     public static function all(): array
