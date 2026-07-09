@@ -8,12 +8,27 @@ use App\Models\Book;
 use App\Models\BookIssue;
 use App\Models\Student;
 use App\Services\LibraryService;
+use App\Support\Permissions;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 
 class BookController extends Controller
 {
     public function __construct(private LibraryService $library) {}
+
+    public function overdueIssues()
+    {
+        Gate::authorize(Permissions::BOOK_ISSUES_VIEW);
+
+        $issues = BookIssue::with(['book', 'student'])
+            ->whereNull('returned_at')
+            ->where('due_date', '<', now()->toDateString())
+            ->orderBy('due_date')
+            ->paginate(25);
+
+        return view('books.overdue', compact('issues'));
+    }
 
     public function index()
     {

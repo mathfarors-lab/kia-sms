@@ -21,8 +21,8 @@ class FinanceReportController extends Controller
         $this->authorize('invoices.view');
 
         $collectedMonth = $this->analytics->revenueThisMonth();
-        $outstanding    = Invoice::whereIn('status', ['unpaid', 'partial', 'overdue'])->sum(DB::raw('total - paid'));
-        $overdueCount   = Invoice::where('status', 'overdue')->count();
+        $outstanding    = $this->analytics->outstandingTotal();
+        $overdueCount   = $this->analytics->overdueInvoiceCount();
 
         // Last 7 months trend
         $trend = collect(range(6, 0))->map(function ($months) {

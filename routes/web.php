@@ -214,6 +214,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/books/{book}/issue', [BookController::class, 'issueForm'])->name('books.issue');
     Route::post('/books/{book}/issue', [BookController::class, 'issue'])->name('books.issue.store');
     Route::post('/book-issues/{issue}/return', [BookController::class, 'returnBook'])->name('book-issues.return');
+    Route::get('/book-issues/overdue', [BookController::class, 'overdueIssues'])->name('book-issues.overdue');
 
     // Transport
     Route::get('/transport/routes', [TransportController::class, 'routesIndex'])->name('transport.routes.index');

@@ -49,10 +49,7 @@ class AnalyticsService
 
             $pendingLeaves = DB::table('leaves')->where('status', 'pending')->count();
 
-            $overdueBooks = DB::table('book_issues')
-                ->whereNull('returned_at')
-                ->where('due_date', '<', now()->toDateString())
-                ->count();
+            $overdueBooks = $this->overdueBooksCount();
 
             return compact(
                 'enrolledCount',
@@ -82,6 +79,47 @@ class AnalyticsService
                 ->where('paid_at', '>=', now()->startOfMonth())
                 ->sum('amount') ?? 0);
         });
+    }
+
+    /** Same figure the finance dashboard shows: sum of (total - paid) across not-yet-fully-paid invoices. */
+    public function outstandingTotal(int $ttl = 180): float
+    {
+        return Cache::remember('analytics:outstanding-total', $ttl, function () {
+            return (float) (DB::table('invoices')
+                ->whereIn('status', ['unpaid', 'partial', 'overdue'])
+                ->sum(DB::raw('total - paid')) ?? 0);
+        });
+    }
+
+    /** Invoices explicitly flagged overdue (status = 'overdue') — same figure the finance dashboard shows. */
+    public function overdueInvoiceCount(int $ttl = 180): int
+    {
+        return Cache::remember('analytics:overdue-invoice-count', $ttl, function () {
+            return DB::table('invoices')->where('status', 'overdue')->count();
+        });
+    }
+
+    /** Book issues past due date and not yet returned. */
+    public function overdueBooksCount(int $ttl = 180): int
+    {
+        return Cache::remember('analytics:overdue-books-count', $ttl, function () {
+            return DB::table('book_issues')
+                ->whereNull('returned_at')
+                ->where('due_date', '<', now()->toDateString())
+                ->count();
+        });
+    }
+
+    public function totalBooksCount(int $ttl = 180): int
+    {
+        return Cache::remember('analytics:total-books-count', $ttl, fn () => DB::table('books')->count());
+    }
+
+    public function booksCurrentlyIssuedCount(int $ttl = 180): int
+    {
+        return Cache::remember('analytics:books-currently-issued', $ttl, fn () =>
+            DB::table('book_issues')->whereNull('returned_at')->count()
+        );
     }
 
     /** Today's present-rate across all sections for the given year. Null when no attendance taken yet today. */

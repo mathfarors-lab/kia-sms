@@ -42,4 +42,10 @@ class Staff extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    /** Sections where this staff member is the homeroom (class) teacher. */
+    public function homeroomSections(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Section::class, 'class_teacher_id');
+    }
 }
