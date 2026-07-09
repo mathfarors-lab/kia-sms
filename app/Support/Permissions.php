@@ -30,6 +30,7 @@ final class Permissions
     const SECTIONS_MANAGE       = 'sections.manage';
     const SUBJECTS_MANAGE       = 'subjects.manage';
     const TIMETABLES_MANAGE     = 'timetables.manage';
+    const TIMETABLES_VIEW       = 'timetables.view';
 
     // Attendance
     const ATTENDANCE_VIEW = 'attendance.view';
@@ -131,7 +132,7 @@ final class Permissions
             self::STUDENTS_VIEW, self::STUDENTS_CREATE, self::STUDENTS_EDIT, self::STUDENTS_DELETE,
             self::STAFF_VIEW, self::STAFF_CREATE, self::STAFF_EDIT, self::STAFF_DELETE,
             self::ACADEMIC_YEARS_MANAGE, self::CLASSES_MANAGE, self::SECTIONS_MANAGE,
-            self::SUBJECTS_MANAGE, self::TIMETABLES_MANAGE,
+            self::SUBJECTS_MANAGE, self::TIMETABLES_MANAGE, self::TIMETABLES_VIEW,
             self::ATTENDANCE_VIEW, self::ATTENDANCE_MARK,
             self::EXAMS_VIEW, self::EXAMS_MANAGE, self::EXAMS_PUBLISH,
             self::MARKS_ENTRY, self::MARKS_VIEW,

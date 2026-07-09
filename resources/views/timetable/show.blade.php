@@ -4,7 +4,7 @@
     <div class="kia-page-header">
         <div>
             <h1 class="kia-page-title">Timetable — {{ $section->schoolClass->name }} {{ $section->name }}</h1>
-            <p class="kia-page-sub">Click a cell to add or remove a slot</p>
+            <p class="kia-page-sub">{{ $canManage ? 'Click a cell to add or remove a slot' : 'Read-only view' }}</p>
         </div>
         <a href="{{ route('classes.sections.index', $section->schoolClass) }}" class="btn btn-ghost">Back</a>
     </div>
@@ -29,16 +29,18 @@
                     @php $slot = $timetables->get($day . '_' . $period)?->first(); @endphp
                     <td style="padding:.25rem">
                         @if($slot)
-                        <div class="kia-slot-filled" data-id="{{ $slot->id }}" style="background:var(--kia-accent-soft,#eef2ff);border-radius:.5rem;padding:.4rem .6rem;font-size:.8rem;cursor:pointer" onclick="removeSlot({{ $slot->id }}, this)">
+                        <div class="kia-slot-filled" data-id="{{ $slot->id }}" style="background:var(--kia-accent-soft,#eef2ff);border-radius:.5rem;padding:.4rem .6rem;font-size:.8rem;{{ $canManage ? 'cursor:pointer' : '' }}" @if($canManage) onclick="removeSlot({{ $slot->id }}, this)" @endif>
                             <strong>{{ $slot->subject->name_en }}</strong><br>
                             <small>{{ $slot->teacher?->user?->name ?? 'No teacher' }}</small>
                             @if($slot->room)<br><small>{{ $slot->room }}</small>@endif
                         </div>
-                        @else
+                        @elseif($canManage)
                         <div class="kia-slot-empty" style="min-height:56px;border:1.5px dashed var(--kia-border,#e2e8f0);border-radius:.5rem;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--kia-text-muted,#94a3b8);font-size:.75rem"
                              onclick="openModal('{{ $day }}', {{ $period }}, this)">
                             +
                         </div>
+                        @else
+                        <div style="min-height:56px;border:1.5px dashed var(--kia-border,#e2e8f0);border-radius:.5rem"></div>
                         @endif
                     </td>
                     @endforeach
@@ -49,6 +51,7 @@
     </div>
 
     {{-- Add Slot Modal --}}
+    @if($canManage)
     <div id="slot-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.4);align-items:center;justify-content:center">
         <div class="kia-card" style="width:440px;max-width:95vw;padding:1.5rem">
             <h3 style="margin:0 0 1rem">Add Timetable Slot</h3>
@@ -162,4 +165,5 @@
         if (e.target === modal) closeModal();
     });
     </script>
+    @endif
 </x-app-layout>

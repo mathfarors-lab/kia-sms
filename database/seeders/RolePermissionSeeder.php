@@ -44,6 +44,7 @@ class RolePermissionSeeder extends Seeder
             'teacher' => [
                 P::STUDENTS_VIEW,
                 P::ATTENDANCE_VIEW, P::ATTENDANCE_MARK,
+                P::TIMETABLES_VIEW,
                 P::EXAMS_VIEW, P::MARKS_ENTRY, P::MARKS_VIEW,
                 P::ANNOUNCEMENTS_VIEW, P::ANNOUNCEMENTS_CREATE,
                 P::MESSAGES_SEND, P::MESSAGES_VIEW,

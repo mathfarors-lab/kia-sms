@@ -43,5 +43,6 @@ return [
     'users'             => 'Users',
     'settings'          => 'Settings',
     'my_attendance'     => 'My Attendance',
+    'my_timetable'      => 'My Timetable',
     'children'          => 'Children',
 ];

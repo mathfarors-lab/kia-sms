@@ -15,7 +15,14 @@ class TimetableController extends Controller
 
     public function index(Section $section)
     {
-        $this->authorize('timetables.manage');
+        $user      = auth()->user();
+        $canManage = $user->can('timetables.manage');
+        $isOwnSection = $user->staff && $section->class_teacher_id === $user->staff->id;
+
+        if (!$canManage && !($user->can('timetables.view') && $isOwnSection)) {
+            abort(403);
+        }
+
         $section->load('schoolClass');
 
         $timetables = $section->timetables()
@@ -26,7 +33,7 @@ class TimetableController extends Controller
         $subjects = Subject::all();
         $staff    = Staff::with('user')->get();
 
-        return view('timetable.show', compact('section', 'timetables', 'subjects', 'staff'));
+        return view('timetable.show', compact('section', 'timetables', 'subjects', 'staff', 'canManage'));
     }
 
     public function store(Section $section, Request $request)

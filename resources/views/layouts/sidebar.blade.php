@@ -18,9 +18,19 @@
     $u = auth()->user();
     $can = fn (string $perm) => \App\Support\Permissions::userCan($u, $perm);
 
+    // Teacher's own homeroom section, if any — resolved once here so the
+    // "My Timetable" link can point straight at it instead of a picker page.
+    // timetables.view only ever grants read-only access to THIS section
+    // (enforced again in TimetableController); timetables.manage (admin/
+    // principal) already reaches any section via the Classes drill-down.
+    $myTimetableSection = ($can(P::TIMETABLES_VIEW) && $u->staff)
+        ? \App\Models\Section::where('class_teacher_id', $u->staff->id)->first()
+        : null;
+
     $navAcademic = $can(P::ACADEMIC_YEARS_MANAGE) || $can(P::CLASSES_MANAGE)
                 || $can(P::SUBJECTS_MANAGE)        || $can(P::SETTINGS_MANAGE);
-    $navStudents = $can(P::STUDENTS_VIEW) || $can(P::ATTENDANCE_MARK) || $can(P::PROMOTION_MANAGE);
+    $navStudents = $can(P::STUDENTS_VIEW) || $can(P::ATTENDANCE_MARK) || $can(P::PROMOTION_MANAGE)
+                || $myTimetableSection !== null;
     $navExams    = $can(P::EXAMS_MANAGE)  || $can(P::MARKS_ENTRY)     || $can(P::TERM_RESULTS_MANAGE);
     $navFinance  = $can(P::INVOICES_VIEW) || $can(P::FEES_MANAGE)     || $can(P::REPORTS_VIEW);
     $navEngage   = $can(P::ANNOUNCEMENTS_VIEW) || $can(P::MESSAGES_VIEW)
@@ -126,6 +136,16 @@
                 <polyline points="17,11 12,6 7,11"/><polyline points="17,18 12,13 7,18"/>
             </svg>
             {{ __('nav.promotion') }}
+        </a>
+        @endif
+
+        @if($myTimetableSection)
+        <a href="{{ route('timetable.show', $myTimetableSection) }}" class="kia-nav-item {{ request()->routeIs('timetable.*') ? 'active' : '' }}">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/>
+            </svg>
+            {{ __('nav.my_timetable') }}
         </a>
         @endif
         @endif
