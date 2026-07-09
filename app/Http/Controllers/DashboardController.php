@@ -2,13 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AcademicYear;
 use App\Models\Student;
 use App\Models\Staff;
 use App\Models\Setting;
+use App\Services\AnalyticsService;
 use Illuminate\Http\Request;
+use Spatie\Activitylog\Models\Activity;
 
 class DashboardController extends Controller
 {
+    public function __construct(private AnalyticsService $analytics) {}
+
     public function redirect(Request $request)
     {
         return redirect()->route($request->user()->dashboardRoute());
@@ -16,12 +21,20 @@ class DashboardController extends Controller
 
     public function admin()
     {
+        $year = AcademicYear::where('is_active', true)->first();
+
         $stats = [
-            'total_students' => Student::count(),
-            'total_staff'    => Staff::count(),
-            'enrolled'       => Student::where('status', 'enrolled')->count(),
+            'total_students'   => Student::count(),
+            'total_staff'      => Staff::count(),
+            'enrolled'         => Student::where('status', 'enrolled')->count(),
+            'revenue_month'    => $this->analytics->revenueThisMonth(),
+            'attendance_today' => $year ? $this->analytics->attendanceRateToday($year) : null,
         ];
-        return view('dashboard.admin', compact('stats'));
+
+        // Not cached — an activity feed that's minutes stale defeats its own purpose.
+        $recentActivity = Activity::with('causer')->latest()->limit(8)->get();
+
+        return view('dashboard.admin', compact('stats', 'recentActivity'));
     }
 
     public function principal()

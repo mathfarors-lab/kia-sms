@@ -6,6 +6,7 @@ use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\SchoolClass;
 use App\Exports\FinanceReportExport;
+use App\Services\AnalyticsService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -13,13 +14,13 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class FinanceReportController extends Controller
 {
+    public function __construct(private AnalyticsService $analytics) {}
+
     public function dashboard()
     {
         $this->authorize('invoices.view');
 
-        $thisMonth = now()->startOfMonth();
-
-        $collectedMonth = Payment::where('paid_at', '>=', $thisMonth)->sum('amount');
+        $collectedMonth = $this->analytics->revenueThisMonth();
         $outstanding    = Invoice::whereIn('status', ['unpaid', 'partial', 'overdue'])->sum(DB::raw('total - paid'));
         $overdueCount   = Invoice::where('status', 'overdue')->count();
 

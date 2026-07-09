@@ -72,6 +72,41 @@ class AnalyticsService
         return array_merge($cached, compact('failedBakong24h', 'failedBakong7d', 'flaggedCallbacks'));
     }
 
+    /** Calendar-month revenue (not academic-year scoped) — same figure the finance dashboard shows. */
+    public function revenueThisMonth(int $ttl = 180): float
+    {
+        $key = 'analytics:revenue-this-month:' . now()->format('Y-m');
+
+        return Cache::remember($key, $ttl, function () {
+            return (float) (DB::table('payments')
+                ->where('paid_at', '>=', now()->startOfMonth())
+                ->sum('amount') ?? 0);
+        });
+    }
+
+    /** Today's present-rate across all sections for the given year. Null when no attendance taken yet today. */
+    public function attendanceRateToday(AcademicYear $year, int $ttl = 180): ?float
+    {
+        $key = "analytics:attendance-today:{$year->id}:" . now()->toDateString();
+
+        return Cache::remember($key, $ttl, function () use ($year) {
+            $summary = DB::table('attendances')
+                ->join('student_section', function ($j) {
+                    $j->on('student_section.student_id', '=', 'attendances.student_id')
+                      ->on('student_section.section_id', '=', 'attendances.section_id');
+                })
+                ->where('student_section.academic_year_id', $year->id)
+                ->whereDate('attendances.date', today())
+                ->selectRaw("
+                    COUNT(*) as total,
+                    SUM(CASE WHEN attendances.status = 'present' THEN 1 ELSE 0 END) as present
+                ")
+                ->first();
+
+            return $summary->total > 0 ? round($summary->present / $summary->total * 100, 1) : null;
+        });
+    }
+
     public function attendanceByMonth(AcademicYear $year): array
     {
         $key = "analytics:attendance-by-month:{$year->id}";

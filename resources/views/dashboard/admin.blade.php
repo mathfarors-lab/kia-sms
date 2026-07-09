@@ -49,8 +49,8 @@
                 </svg>
             </div>
             <div class="kia-stat-label">{{ __('Revenue (Month)') }}</div>
-            <div class="kia-stat-value">$0</div>
-            <span class="pill pill-warn">{{ __('Phase 4') }}</span>
+            <div class="kia-stat-value">${{ number_format($stats['revenue_month'], 2) }}</div>
+            <span class="pill pill-ok">{{ __('admin_dashboard.this_month') }}</span>
         </div>
 
         <div class="kia-stat">
@@ -61,8 +61,10 @@
                 </svg>
             </div>
             <div class="kia-stat-label">{{ __('Attendance Today') }}</div>
-            <div class="kia-stat-value">—</div>
-            <span class="pill pill-muted">{{ __('Phase 2') }}</span>
+            <div class="kia-stat-value">{{ $stats['attendance_today'] !== null ? $stats['attendance_today'] . '%' : '—' }}</div>
+            <span class="pill {{ $stats['attendance_today'] !== null ? 'pill-ok' : 'pill-muted' }}">
+                {{ $stats['attendance_today'] !== null ? __('admin_dashboard.today') : __('admin_dashboard.no_attendance_yet') }}
+            </span>
         </div>
     </div>
 
@@ -92,19 +94,44 @@
         </div>
     </div>
 
-    {{-- Recent activity placeholder --}}
+    {{-- Recent activity — same sensitive-field stripping as /audit --}}
     <div class="kia-card">
         <div class="kia-card-header">
             <h2 class="kia-card-title">{{ __('Recent Activity') }}</h2>
         </div>
         <div class="kia-card-body">
-            <div class="kia-empty">
-                <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                </svg>
-                <h3>{{ __('No recent activity') }}</h3>
-                <p>{{ __('Activity will appear here as you use the system.') }}</p>
+            @forelse($recentActivity as $log)
+                @php
+                    $attrs = $log->properties['attributes'] ?? [];
+                    $safe  = array_diff_key($attrs, array_flip(['password', 'remember_token', 'api_token', 'token', 'secret']));
+                    $changedFields = array_keys($safe);
+                @endphp
+                <a href="{{ route('audit.index', $log->causer_id ? ['causer_id' => $log->causer_id] : []) }}"
+                   style="display:flex;justify-content:space-between;gap:1rem;padding:.6rem 0;border-bottom:1px solid var(--border);text-decoration:none;color:inherit;">
+                    <div>
+                        <span class="pill pill-royal" style="font-size:.7rem;">{{ $log->log_name }}</span>
+                        {{ class_basename($log->subject_type ?? '') }} {{ $log->description }}
+                        @if(count($changedFields))
+                        <span style="color:var(--muted);">({{ implode(', ', array_slice($changedFields, 0, 3)) }}{{ count($changedFields) > 3 ? '…' : '' }})</span>
+                        @endif
+                        <div style="color:var(--muted);font-size:.8rem;">{{ $log->causer?->name ?? __('admin_dashboard.system') }}</div>
+                    </div>
+                    <div style="white-space:nowrap;color:var(--muted);font-size:.8rem;">{{ $log->created_at->diffForHumans() }}</div>
+                </a>
+            @empty
+                <div class="kia-empty">
+                    <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                    </svg>
+                    <h3>{{ __('No recent activity') }}</h3>
+                    <p>{{ __('Activity will appear here as you use the system.') }}</p>
+                </div>
+            @endforelse
+            @if($recentActivity->isNotEmpty())
+            <div style="margin-top:.75rem;text-align:right;">
+                <a href="{{ route('audit.index') }}" class="btn btn-ghost btn-sm">{{ __('admin_dashboard.view_full_audit_log') }} →</a>
             </div>
+            @endif
         </div>
     </div>
 </x-app-layout>
