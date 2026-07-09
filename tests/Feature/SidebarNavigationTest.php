@@ -167,4 +167,33 @@ class SidebarNavigationTest extends TestCase
             $this->assertStringNotContainsString(route($routeName), $html, "parent should NOT see {$routeName}");
         }
     }
+
+    // ── Structural: a section header must never render with nothing under it ────
+    // Regression guard for the old sidebar's empty "People" header — every group's
+    // @if() must match the union of its links' own gates, for every role, always.
+
+    public function test_no_role_ever_renders_an_empty_sidebar_section_header(): void
+    {
+        foreach (['admin', 'principal', 'teacher', 'accountant', 'librarian', 'receptionist', 'student', 'parent'] as $role) {
+            $html = $this->dashboardHtml($role);
+
+            preg_match_all('/class="kia-nav-section"/', $html, $sections, PREG_OFFSET_CAPTURE);
+            preg_match_all('/class="kia-nav-item/', $html, $items, PREG_OFFSET_CAPTURE);
+
+            $sectionPositions = array_column($sections[0], 1);
+            $itemPositions    = array_column($items[0], 1);
+
+            foreach ($sectionPositions as $i => $sectionPos) {
+                $nextSectionPos = $sectionPositions[$i + 1] ?? PHP_INT_MAX;
+                $hasLinkInside  = collect($itemPositions)->contains(
+                    fn ($itemPos) => $itemPos > $sectionPos && $itemPos < $nextSectionPos
+                );
+
+                $this->assertTrue(
+                    $hasLinkInside,
+                    "Role '{$role}' has an empty sidebar section header (section index {$i}) with no link before the next section or end of nav."
+                );
+            }
+        }
+    }
 }

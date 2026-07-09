@@ -11,6 +11,7 @@
             <div class="kia-stat-icon royal"></div>
             <div class="kia-stat-label">{{ __('Total Students') }}</div>
             <div class="kia-stat-value">{{ $stats['total_students'] }}</div>
+            <span class="pill pill-ok">{{ $stats['enrolled'] }} {{ __('enrolled') }}</span>
         </div>
         <div class="kia-stat">
             <div class="kia-stat-label">{{ __('Staff') }}</div>
@@ -22,7 +23,7 @@
         <div class="kia-card-body">
             <div class="kia-empty">
                 <h3>{{ __('No pending admissions') }}</h3>
-                <p>{{ __('Admissions module coming in Phase 2.') }}</p>
+                <p>{{ __('principal_dashboard.admissions_not_available') }}</p>
             </div>
         </div>
     </div>

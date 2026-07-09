@@ -15,7 +15,16 @@
                 <div style="flex:1;">
                     <div style="font-weight:600;">{{ $child->name_km ?: $child->name_en }}</div>
                     <span class="mono" style="font-size:.78rem;color:var(--muted);">{{ $child->student_code }}</span>
-                    <span class="pill pill-ok" style="margin-left:8px;">{{ $child->status }}</span>
+                    @php
+                        $statusPillClass = match($child->status) {
+                            'enrolled'    => 'pill-ok',
+                            'transferred' => 'pill-royal',
+                            'graduated'   => 'pill-gold',
+                            'dropped'     => 'pill-muted',
+                            default       => 'pill-muted',
+                        };
+                    @endphp
+                    <span class="pill {{ $statusPillClass }}" style="margin-left:8px;">{{ $child->status }}</span>
                 </div>
                 <a href="{{ route('parent.child.show', $child) }}" class="btn btn-xs btn-ghost">{{ __('Details') }}</a>
             </div>
