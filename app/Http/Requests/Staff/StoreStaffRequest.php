@@ -24,6 +24,7 @@ class StoreStaffRequest extends FormRequest
             'department' => ['nullable', 'string', 'max:100'],
             'joined_at'  => ['nullable', 'date'],
             'salary'     => ['nullable', 'numeric', 'min:0'],
+            'photo'      => ['nullable', 'image', 'mimes:jpg,jpeg,png,gif,webp', 'max:2048'],
         ];
     }
 }

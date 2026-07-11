@@ -15,7 +15,7 @@
 
     <div class="kia-card" style="max-width:720px;">
         <div class="kia-card-body">
-            <form method="POST" action="{{ route('staff.update', $staff) }}">
+            <form method="POST" action="{{ route('staff.update', $staff) }}" enctype="multipart/form-data">
                 @csrf @method('PATCH')
                 <div class="form-grid">
                     <div class="form-group">
@@ -58,6 +58,22 @@
                         <label class="form-label">{{ __('Salary (USD)') }}</label>
                         <input type="number" name="salary" class="form-control" step="0.01" min="0" value="{{ old('salary', $staff->salary) }}">
                     </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="photo">{{ __('Photo') }}</label>
+                        @if($staff->photo)
+                        <div style="margin-bottom:8px;">
+                            <img src="{{ route('staff.photo', $staff) }}" class="photo-preview" alt="Current photo">
+                            <div style="font-size:.75rem;color:var(--muted);margin-top:4px;">{{ __('Current photo') }}</div>
+                        </div>
+                        @endif
+                        <input type="file" id="photo" name="photo" class="form-control {{ $errors->has('photo') ? 'is-invalid' : '' }}"
+                               accept="image/*" onchange="previewPhoto(this)">
+                        @error('photo')<span class="invalid-feedback">{{ $message }}</span>@enderror
+                        <div id="photoPreviewWrap" style="margin-top:10px;display:none;">
+                            <img id="photoPreview" class="photo-preview" src="" alt="New photo">
+                        </div>
+                    </div>
                 </div>
                 <div style="display:flex;gap:12px;padding-top:8px;">
                     <button type="submit" class="btn btn-primary">{{ __('Save Changes') }}</button>
@@ -67,3 +83,18 @@
         </div>
     </div>
 </x-app-layout>
+
+@push('scripts')
+<script>
+function previewPhoto(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            document.getElementById('photoPreview').src = e.target.result;
+            document.getElementById('photoPreviewWrap').style.display = 'block';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>
+@endpush

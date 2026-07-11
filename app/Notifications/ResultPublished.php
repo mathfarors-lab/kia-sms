@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\Exam;
+use App\Notifications\Channels\SmsChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -16,7 +17,12 @@ class ResultPublished extends Notification implements ShouldQueue
 
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return ['mail', 'database', SmsChannel::class];
+    }
+
+    public function toSms(object $notifiable): string
+    {
+        return __('sms.result_published', ['exam' => $this->exam->name]);
     }
 
     public function toMail(object $notifiable): MailMessage

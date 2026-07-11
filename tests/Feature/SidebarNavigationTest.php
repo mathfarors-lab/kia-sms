@@ -72,12 +72,12 @@ class SidebarNavigationTest extends TestCase
             'invoices.index', 'finance.dashboard',
             'announcements.index', 'conversations.index', 'leaves.index',
             'analytics.index', 'reports.index', 'audit.index', 'settings.index',
+            'homework.index', // view-only oversight via HOMEWORK_VIEW (Phase 1.5b decision)
         ] as $routeName) {
             $this->assertStringContainsString(route($routeName), $html, "principal should see {$routeName}");
         }
 
         $this->assertStringNotContainsString(route('users.index'), $html);
-        $this->assertStringNotContainsString(route('homework.index'), $html);
     }
 
     public function test_teacher_sees_teaching_modules_but_not_finance_or_system(): void

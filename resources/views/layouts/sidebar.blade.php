@@ -34,7 +34,8 @@
     $navExams    = $can(P::EXAMS_MANAGE)  || $can(P::MARKS_ENTRY)     || $can(P::TERM_RESULTS_MANAGE);
     $navFinance  = $can(P::INVOICES_VIEW) || $can(P::FEES_MANAGE)     || $can(P::REPORTS_VIEW);
     $navEngage   = $can(P::ANNOUNCEMENTS_VIEW) || $can(P::MESSAGES_VIEW)
-                || $can(P::HOMEWORK_MANAGE)     || $can(P::HOMEWORK_GRADE) || $can(P::HOMEWORK_SUBMIT);
+                || $can(P::HOMEWORK_MANAGE)     || $can(P::HOMEWORK_GRADE)
+                || $can(P::HOMEWORK_SUBMIT)     || $can(P::HOMEWORK_VIEW);
     $navOps      = $can(P::BOOKS_VIEW) || $u->can('viewAny', TransportRoute::class)
                 || $can(P::LEAVES_VIEW) || $can(P::STAFF_VIEW);
     $navSystem   = $can(P::ANALYTICS_VIEW) || $can(P::REPORTS_VIEW) || $can(P::AUDIT_VIEW)
@@ -253,7 +254,7 @@
         </a>
         @endif
 
-        @if($can(P::HOMEWORK_MANAGE) || $can(P::HOMEWORK_GRADE) || $can(P::HOMEWORK_SUBMIT))
+        @if($can(P::HOMEWORK_MANAGE) || $can(P::HOMEWORK_GRADE) || $can(P::HOMEWORK_SUBMIT) || $can(P::HOMEWORK_VIEW))
         <a href="{{ route('homework.index') }}" class="kia-nav-item {{ request()->routeIs('homework.*') || request()->routeIs('homework-submissions.*') ? 'active' : '' }}">
             <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>

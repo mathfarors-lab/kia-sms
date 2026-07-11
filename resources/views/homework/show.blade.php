@@ -79,6 +79,7 @@
                             <td>{{ $sub->grade ?? '—' }}</td>
                             <td>{{ $sub->feedback ?? '—' }}</td>
                             <td>
+                                @can('grade', $sub)
                                 <form method="POST" action="{{ route('homework-submissions.grade', $sub) }}"
                                       style="display:flex;gap:.4rem;align-items:center">
                                     @csrf
@@ -88,6 +89,7 @@
                                            class="form-control" style="width:180px" placeholder="Feedback">
                                     <button class="btn btn-primary" style="font-size:.75rem;padding:.3rem .6rem" type="submit">Save</button>
                                 </form>
+                                @endcan
                             </td>
                         </tr>
                     @endforeach

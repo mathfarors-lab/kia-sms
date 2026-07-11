@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\Invoice;
+use App\Notifications\Channels\SmsChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -16,7 +17,15 @@ class FeeDueReminder extends Notification implements ShouldQueue
 
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return ['mail', 'database', SmsChannel::class];
+    }
+
+    public function toSms(object $notifiable): string
+    {
+        return __('sms.fee_due', [
+            'number' => $this->invoice->number,
+            'amount' => number_format((float) $this->invoice->remainingBalance(), 2),
+        ]);
     }
 
     public function toMail(object $notifiable): MailMessage

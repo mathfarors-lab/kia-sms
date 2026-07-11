@@ -9,14 +9,16 @@ use Illuminate\Support\Facades\DB;
 
 class HomeworkPolicy
 {
+    // Principal is deliberately view-only (HOMEWORK_VIEW): sees all homework and
+    // submissions school-wide, but cannot create, update, or grade.
     public function create(User $user): bool
     {
-        return $user->hasAnyRole(['admin', 'principal', 'teacher']);
+        return $user->hasAnyRole(['admin', 'teacher']);
     }
 
     public function update(User $user, Homework $hw): bool
     {
-        if ($user->hasAnyRole(['admin', 'principal'])) return true;
+        if ($user->hasRole('admin')) return true;
         return $user->hasRole('teacher') && $user->staff && $hw->teacher_id === $user->staff->id;
     }
 
@@ -35,7 +37,7 @@ class HomeworkPolicy
     /** Can the teacher grade this submission? */
     public function grade(User $user, HomeworkSubmission $submission): bool
     {
-        if ($user->hasAnyRole(['admin', 'principal'])) return true;
+        if ($user->hasRole('admin')) return true;
         // Teacher must own the homework
         return $user->hasRole('teacher')
             && $user->staff

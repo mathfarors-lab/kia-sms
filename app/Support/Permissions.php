@@ -77,6 +77,7 @@ final class Permissions
     const HOMEWORK_MANAGE = 'homework.manage';
     const HOMEWORK_SUBMIT = 'homework.submit';
     const HOMEWORK_GRADE  = 'homework.grade';
+    const HOMEWORK_VIEW   = 'homework.view'; // read-only oversight (principal)
 
     // Transport
     const TRANSPORT_MANAGE = 'transport.manage';
@@ -143,7 +144,7 @@ final class Permissions
             self::ADMISSIONS_VIEW, self::ADMISSIONS_MANAGE,
             self::ANNOUNCEMENTS_VIEW, self::ANNOUNCEMENTS_CREATE, self::ANNOUNCEMENTS_MANAGE,
             self::MESSAGES_SEND, self::MESSAGES_VIEW,
-            self::HOMEWORK_MANAGE, self::HOMEWORK_SUBMIT, self::HOMEWORK_GRADE,
+            self::HOMEWORK_MANAGE, self::HOMEWORK_SUBMIT, self::HOMEWORK_GRADE, self::HOMEWORK_VIEW,
             self::TRANSPORT_MANAGE, self::TRANSPORT_VIEW,
             self::LEAVES_VIEW, self::LEAVES_SUBMIT, self::LEAVES_MANAGE,
             self::TERM_RESULTS_MANAGE, self::TERM_RESULTS_PUBLISH,

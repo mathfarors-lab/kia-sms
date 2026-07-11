@@ -9,9 +9,14 @@
 
     <div class="kia-page-header">
         <div class="d-flex align-center gap-3">
+            @if($staff->photo)
+            <img src="{{ route('staff.photo', $staff) }}" alt="{{ $staff->user->name }}"
+                 style="width:56px;height:56px;border-radius:50%;object-fit:cover;">
+            @else
             <div class="kia-avatar" style="width:56px;height:56px;font-size:1.1rem;border-radius:50%;">
                 {{ strtoupper(substr($staff->user->name, 0, 2)) }}
             </div>
+            @endif
             <div>
                 <h1 class="kia-page-title" style="margin-bottom:2px;">{{ $staff->user->name }}</h1>
                 <div style="color:var(--muted);font-size:.875rem;">{{ $staff->user->email }}</div>

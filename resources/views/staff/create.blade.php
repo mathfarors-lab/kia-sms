@@ -13,7 +13,7 @@
 
     <div class="kia-card" style="max-width:720px;">
         <div class="kia-card-body">
-            <form method="POST" action="{{ route('staff.store') }}">
+            <form method="POST" action="{{ route('staff.store') }}" enctype="multipart/form-data">
                 @csrf
                 <div class="form-grid">
                     <div class="form-group">
@@ -71,6 +71,16 @@
                         <label class="form-label" for="salary">{{ __('Salary (USD)') }}</label>
                         <input type="number" id="salary" name="salary" class="form-control" step="0.01" min="0" value="{{ old('salary') }}">
                     </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="photo">{{ __('Photo') }}</label>
+                        <input type="file" id="photo" name="photo" class="form-control {{ $errors->has('photo') ? 'is-invalid' : '' }}"
+                               accept="image/*" onchange="previewPhoto(this)">
+                        @error('photo')<span class="invalid-feedback">{{ $message }}</span>@enderror
+                        <div id="photoPreviewWrap" style="margin-top:10px;display:none;">
+                            <img id="photoPreview" class="photo-preview" src="" alt="New photo">
+                        </div>
+                    </div>
                 </div>
 
                 <div style="display:flex;gap:12px;padding-top:8px;">
@@ -81,3 +91,18 @@
         </div>
     </div>
 </x-app-layout>
+
+@push('scripts')
+<script>
+function previewPhoto(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            document.getElementById('photoPreview').src = e.target.result;
+            document.getElementById('photoPreviewWrap').style.display = 'block';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>
+@endpush

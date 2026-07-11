@@ -4,7 +4,9 @@ namespace App\Services;
 
 use App\Models\Staff;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class StaffService
 {
@@ -15,7 +17,7 @@ class StaffService
         return 'STF-' . str_pad($next, 4, '0', STR_PAD_LEFT);
     }
 
-    public function store(array $data): Staff
+    public function store(array $data, ?UploadedFile $photo = null): Staff
     {
         $user = User::create([
             'name'     => $data['name'],
@@ -36,10 +38,11 @@ class StaffService
             'department' => $data['department'] ?? null,
             'joined_at'  => $data['joined_at'] ?? now(),
             'salary'     => $data['salary'] ?? null,
+            'photo'      => $photo?->store('staff/photos', 'local'),
         ]);
     }
 
-    public function update(Staff $staff, array $data): Staff
+    public function update(Staff $staff, array $data, ?UploadedFile $photo = null): Staff
     {
         $staff->user->update([
             'name'  => $data['name'],
@@ -51,12 +54,21 @@ class StaffService
             $staff->user->syncRoles([$data['role']]);
         }
 
-        $staff->update([
+        $attrs = [
             'position'   => $data['position'] ?? null,
             'department' => $data['department'] ?? null,
             'joined_at'  => $data['joined_at'] ?? null,
             'salary'     => $data['salary'] ?? null,
-        ]);
+        ];
+
+        if ($photo) {
+            if ($staff->photo) {
+                Storage::disk('local')->delete($staff->photo);
+            }
+            $attrs['photo'] = $photo->store('staff/photos', 'local');
+        }
+
+        $staff->update($attrs);
 
         return $staff;
     }

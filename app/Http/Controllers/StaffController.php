@@ -46,7 +46,10 @@ class StaffController extends Controller
 
     public function store(StoreStaffRequest $request)
     {
-        $staff = $this->service->store($request->validated());
+        $staff = $this->service->store(
+            $request->safe()->except('photo'),
+            $request->file('photo')
+        );
         return redirect()->route('staff.show', $staff)
                          ->with('success', __('Staff member created successfully.'));
     }
@@ -67,7 +70,11 @@ class StaffController extends Controller
 
     public function update(UpdateStaffRequest $request, Staff $staff)
     {
-        $this->service->update($staff, $request->validated());
+        $this->service->update(
+            $staff,
+            $request->safe()->except('photo'),
+            $request->file('photo')
+        );
         return redirect()->route('staff.show', $staff)
                          ->with('success', __('Staff updated successfully.'));
     }

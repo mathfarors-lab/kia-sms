@@ -32,6 +32,7 @@ class RolePermissionSeeder extends Seeder
                 P::SETTINGS_MANAGE,
                 P::ANNOUNCEMENTS_VIEW, P::ANNOUNCEMENTS_CREATE, P::ANNOUNCEMENTS_MANAGE,
                 P::MESSAGES_SEND, P::MESSAGES_VIEW,
+                P::HOMEWORK_VIEW,
                 P::BOOKS_VIEW, P::TRANSPORT_VIEW,
                 P::LEAVES_MANAGE, P::LEAVES_VIEW,
                 P::ANALYTICS_VIEW, P::REPORTS_VIEW,
@@ -86,7 +87,8 @@ class RolePermissionSeeder extends Seeder
                 P::MESSAGES_SEND, P::MESSAGES_VIEW,
                 P::HOMEWORK_SUBMIT,
                 P::BOOKS_VIEW, P::BOOK_ISSUES_VIEW,
-                P::TRANSPORT_VIEW,
+                // TRANSPORT_VIEW intentionally NOT granted: the transport pages
+                // (routes, vehicles, all students' assignments) are staff consoles.
                 P::ID_CARDS_GENERATE,
                 P::TRANSCRIPTS_VIEW,
             ],
@@ -98,7 +100,7 @@ class RolePermissionSeeder extends Seeder
                 P::ANNOUNCEMENTS_VIEW,
                 P::MESSAGES_SEND, P::MESSAGES_VIEW,
                 P::BOOKS_VIEW,
-                P::TRANSPORT_VIEW,
+                // TRANSPORT_VIEW intentionally NOT granted — see note on the student role.
                 P::ID_CARDS_GENERATE,
                 P::TRANSCRIPTS_VIEW,
             ],
