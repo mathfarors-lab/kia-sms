@@ -9,8 +9,10 @@ return [
     'Switch language'    => 'ប្ដូរភាសា',
     'Notifications'      => 'ការជូនដំណឹង',
     'Search...'          => 'ស្វែងរក...',
-    'Students'           => 'និស្សិត',
+    'Go Back'            => 'ត្រឡប់ក្រោយ',
+    'Coming Soon'        => 'នឹងមកដល់ឆាប់ៗ',
+    'Students'           => 'សិស្ស',
     'Staff'              => 'បុគ្គលិក',
-    'Add Student'        => 'បន្ថែមនិស្សិត',
+    'Add Student'        => 'បន្ថែមសិស្ស',
     'Settings'           => 'ការកំណត់',
 ];
