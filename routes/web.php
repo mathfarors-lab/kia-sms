@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdmissionController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\BakongAdminController;
@@ -243,6 +244,19 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/leaves', [LeaveController::class, 'store'])->name('leaves.store');
     Route::post('/leaves/{leave}/approve', [LeaveController::class, 'approve'])->name('leaves.approve');
     Route::post('/leaves/{leave}/reject', [LeaveController::class, 'reject'])->name('leaves.reject');
+
+    // Admissions pipeline (receptionist/principal/admin)
+    Route::prefix('admissions')->name('admissions.')->group(function () {
+        Route::get('/',            [AdmissionController::class, 'index'])->name('index');
+        Route::get('/new',         [AdmissionController::class, 'create'])->name('create');
+        Route::post('/',           [AdmissionController::class, 'store'])->name('store');
+        Route::get('/{admission}', [AdmissionController::class, 'show'])->name('show');
+        Route::get('/{admission}/edit',     [AdmissionController::class, 'edit'])->name('edit');
+        Route::patch('/{admission}',        [AdmissionController::class, 'update'])->name('update');
+        Route::post('/{admission}/status',  [AdmissionController::class, 'updateStatus'])->name('status');
+        Route::post('/{admission}/convert', [AdmissionController::class, 'convert'])->name('convert');
+        Route::get('/{admission}/document', [AdmissionController::class, 'document'])->name('document');
+    });
 
     // Year-end promotion & rollover (admin/principal only)
     Route::prefix('promotion')->name('promotion.')->group(function () {

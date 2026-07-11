@@ -30,7 +30,7 @@
     $navAcademic = $can(P::ACADEMIC_YEARS_MANAGE) || $can(P::CLASSES_MANAGE)
                 || $can(P::SUBJECTS_MANAGE)        || $can(P::SETTINGS_MANAGE);
     $navStudents = $can(P::STUDENTS_VIEW) || $can(P::ATTENDANCE_MARK) || $can(P::PROMOTION_MANAGE)
-                || $myTimetableSection !== null;
+                || $can(P::ADMISSIONS_VIEW) || $myTimetableSection !== null;
     $navExams    = $can(P::EXAMS_MANAGE)  || $can(P::MARKS_ENTRY)     || $can(P::TERM_RESULTS_MANAGE);
     $navFinance  = $can(P::INVOICES_VIEW) || $can(P::FEES_MANAGE)     || $can(P::REPORTS_VIEW);
     $navEngage   = $can(P::ANNOUNCEMENTS_VIEW) || $can(P::MESSAGES_VIEW)
@@ -118,6 +118,16 @@
                 <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
             </svg>
             {{ __('nav.students') }}
+        </a>
+        @endif
+
+        @if($can(P::ADMISSIONS_VIEW))
+        <a href="{{ route('admissions.index') }}" class="kia-nav-item {{ request()->routeIs('admissions.*') ? 'active' : '' }}">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/>
+                <line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/>
+            </svg>
+            {{ __('nav.admissions') }}
         </a>
         @endif
 

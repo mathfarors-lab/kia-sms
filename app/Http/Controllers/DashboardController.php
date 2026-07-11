@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AcademicYear;
+use App\Models\AdmissionApplication;
 use App\Models\Attendance;
 use App\Models\HomeworkSubmission;
 use App\Models\Section;
@@ -49,7 +50,14 @@ class DashboardController extends Controller
             'enrolled'       => Student::where('status', 'enrolled')->count(),
             'total_staff'    => Staff::count(),
         ];
-        return view('dashboard.principal', compact('stats'));
+
+        $pendingAdmissions = AdmissionApplication::whereIn('status', ['enquiry', 'applied', 'under_review'])
+            ->latest()
+            ->limit(5)
+            ->get();
+        $pendingAdmissionsCount = AdmissionApplication::whereIn('status', ['enquiry', 'applied', 'under_review'])->count();
+
+        return view('dashboard.principal', compact('stats', 'pendingAdmissions', 'pendingAdmissionsCount'));
     }
 
     public function teacher()

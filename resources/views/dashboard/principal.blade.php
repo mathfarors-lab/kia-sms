@@ -19,12 +19,29 @@
         </div>
     </div>
     <div class="kia-card">
-        <div class="kia-card-header"><h2 class="kia-card-title">{{ __('Pending Admissions') }}</h2></div>
+        <div class="kia-card-header" style="display:flex;align-items:center;justify-content:space-between;">
+            <h2 class="kia-card-title">
+                {{ __('admissions.pending_admissions') }}
+                @if($pendingAdmissionsCount > 0)
+                <span class="pill pill-warn" style="margin-left:8px;">{{ $pendingAdmissionsCount }}</span>
+                @endif
+            </h2>
+            <a href="{{ route('admissions.index') }}" class="btn btn-sm btn-outline">{{ __('admissions.view_all') }}</a>
+        </div>
         <div class="kia-card-body">
+            @forelse($pendingAdmissions as $app)
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:.55rem 0;border-bottom:1px solid var(--line);">
+                <div>
+                    <a href="{{ route('admissions.show', $app) }}" style="font-weight:600;">{{ $app->name_km ?: $app->name_en }}</a>
+                    <span class="mono" style="font-size:.75rem;color:var(--muted);margin-left:6px;">{{ $app->application_no }}</span>
+                </div>
+                <x-admission-status-pill :status="$app->status" />
+            </div>
+            @empty
             <div class="kia-empty">
                 <h3>{{ __('No pending admissions') }}</h3>
-                <p>{{ __('principal_dashboard.admissions_not_available') }}</p>
             </div>
+            @endforelse
         </div>
     </div>
 </x-app-layout>

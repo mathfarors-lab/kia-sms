@@ -147,13 +147,17 @@ class TeacherDashboardTest extends TestCase
 
     public function test_dashboard_shows_todays_timetable_slot_for_teacher(): void
     {
+        // Freeze to a Monday: the timetable `day` enum only holds weekdays, so
+        // "today" must be one — otherwise this test explodes on weekends.
+        \Illuminate\Support\Carbon::setTestNow('2026-07-13 08:00:00'); // Monday
+
         [$user, $staff] = $this->makeTeacher();
         $section = $this->makeSection($staff);
         $subject = Subject::create(['name_en' => 'Science', 'name_km' => 'S', 'code' => 'SCI-' . uniqid(), 'full_mark' => 100]);
 
         Timetable::create([
             'section_id' => $section->id, 'subject_id' => $subject->id, 'teacher_id' => $staff->id,
-            'day' => strtolower(now()->format('l')), 'period' => 1,
+            'day' => 'monday', 'period' => 1,
             'start_time' => '07:00', 'end_time' => '08:00',
         ]);
 
@@ -161,24 +165,29 @@ class TeacherDashboardTest extends TestCase
             ->get(route('dashboard.teacher'))
             ->assertOk()
             ->assertSee('Science');
+
+        \Illuminate\Support\Carbon::setTestNow();
     }
 
     public function test_dashboard_does_not_show_tomorrows_timetable_slot(): void
     {
+        \Illuminate\Support\Carbon::setTestNow('2026-07-13 08:00:00'); // Monday
+
         [$user, $staff] = $this->makeTeacher();
         $section = $this->makeSection($staff);
         $subject = Subject::create(['name_en' => 'Geography', 'name_km' => 'G', 'code' => 'GEO-' . uniqid(), 'full_mark' => 100]);
 
-        $tomorrow = strtolower(now()->addDay()->format('l'));
         Timetable::create([
             'section_id' => $section->id, 'subject_id' => $subject->id, 'teacher_id' => $staff->id,
-            'day' => $tomorrow, 'period' => 1, 'start_time' => '07:00', 'end_time' => '08:00',
+            'day' => 'tuesday', 'period' => 1, 'start_time' => '07:00', 'end_time' => '08:00',
         ]);
 
         $this->actingAs($user)
             ->get(route('dashboard.teacher'))
             ->assertOk()
             ->assertDontSee('Geography');
+
+        \Illuminate\Support\Carbon::setTestNow();
     }
 
     // ── Pending homework to grade ───────────────────────────────────────

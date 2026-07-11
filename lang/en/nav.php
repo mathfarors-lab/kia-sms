@@ -44,5 +44,6 @@ return [
     'settings'          => 'Settings',
     'my_attendance'     => 'My Attendance',
     'my_timetable'      => 'My Timetable',
+    'admissions'        => 'Admissions',
     'children'          => 'Children',
 ];

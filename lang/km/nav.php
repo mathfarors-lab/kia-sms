@@ -44,5 +44,6 @@ return [
     'settings'          => 'ការកំណត់',
     'my_attendance'     => 'វត្តមានរបស់ខ្ញុំ',
     'my_timetable'      => 'កាលវិភាគរបស់ខ្ញុំ',
+    'admissions'        => 'ការចុះឈ្មោះចូលរៀន',
     'children'          => 'កូនៗ',
 ];

@@ -66,18 +66,30 @@ class PrincipalDashboardTest extends TestCase
         $this->assertMatchesRegularExpression('/pill pill-ok"[^>]*>\s*0\s*enrolled/s', $html);
     }
 
-    // ── Admissions placeholder is honest, not a dead link or silent gap ──────────
+    // ── Admissions panel is live (Phase 1.1 of the completion roadmap) ───────────
 
-    public function test_admissions_panel_reads_as_not_yet_available_not_a_stale_phase_reference(): void
+    public function test_admissions_panel_shows_live_pending_applications(): void
     {
         $principal = $this->makePrincipal();
+
+        $pending = \App\Models\AdmissionApplication::create([
+            'application_no' => 'ADM-26-0001', 'name_en' => 'Pending Applicant',
+            'gender' => 'female', 'status' => 'applied',
+        ]);
+        // Terminal states must NOT appear in the pending panel.
+        \App\Models\AdmissionApplication::create([
+            'application_no' => 'ADM-26-0002', 'name_en' => 'Rejected Applicant',
+            'gender' => 'male', 'status' => 'rejected',
+        ]);
 
         $html = $this->actingAs($principal)
             ->get(route('dashboard.principal'))
             ->assertOk()
             ->getContent();
 
-        $this->assertStringContainsString(__('principal_dashboard.admissions_not_available'), $html);
+        $this->assertStringContainsString('Pending Applicant', $html);
+        $this->assertStringContainsString(route('admissions.show', $pending), $html);
+        $this->assertStringNotContainsString('Rejected Applicant', $html);
         $this->assertStringNotContainsString('Phase 2', $html);
     }
 }
