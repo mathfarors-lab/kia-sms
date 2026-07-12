@@ -18,3 +18,12 @@ Schedule::command('bakong:check-transactions')
     ->everyMinute()
     ->withoutOverlapping()
     ->runInBackground();
+
+/**
+ * Nightly backups (spatie/laravel-backup) — clean old archives first, then
+ * take the new backup (DB + private storage → the "backups" disk).
+ * Retention policy lives in config/backup.php. Restore procedure: see
+ * BACKUP_RESTORE.md at the project root.
+ */
+Schedule::command('backup:clean')->dailyAt('01:30');
+Schedule::command('backup:run')->dailyAt('02:00');

@@ -38,6 +38,19 @@ return [
             'report' => false,
         ],
 
+        /*
+         * Destination for spatie/laravel-backup archives. Points OFF the drive
+         * the app lives on (local stopgap — on this machine C: and D: share one
+         * physical disk, so this survives partition corruption/mistakes but NOT
+         * disk failure). Production must use real off-server storage instead
+         * (S3, Backblaze B2, or similar) by swapping this driver.
+         */
+        'backups' => [
+            'driver' => 'local',
+            'root'   => env('BACKUP_DISK_ROOT', 'C:/Backups/kia-sms'),
+            'throw'  => true,
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
