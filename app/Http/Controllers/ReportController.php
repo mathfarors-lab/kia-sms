@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AcademicYear;
 use App\Models\Section;
+use App\Support\BranchContext;
 use App\Support\Permissions;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -25,17 +26,20 @@ class ReportController extends Controller
         $request->validate(['year_id' => 'required|exists:academic_years,id']);
         $year = AcademicYear::findOrFail($request->year_id);
 
-        $students = DB::table('student_section')
-            ->join('students', 'students.id', '=', 'student_section.student_id')
-            ->join('sections', 'sections.id', '=', 'student_section.section_id')
-            ->join('school_classes', 'school_classes.id', '=', 'sections.school_class_id')
-            ->where('student_section.academic_year_id', $year->id)
+        $students = BranchContext::apply(
+                DB::table('student_section')
+                    ->join('students', 'students.id', '=', 'student_section.student_id')
+                    ->join('sections', 'sections.id', '=', 'student_section.section_id')
+                    ->join('school_classes', 'school_classes.id', '=', 'sections.school_class_id')
+                    ->where('student_section.academic_year_id', $year->id),
+                'students.branch_id'
+            )
             ->select(
                 'students.student_code',
                 'students.name_en',
                 'students.name_km',
                 'students.gender',
-                'students.dob',
+                'students.date_of_birth as dob',
                 'school_classes.name as class_name',
                 'sections.name as section_name',
                 'student_section.roll_no'
@@ -71,15 +75,18 @@ class ReportController extends Controller
 
         $year = AcademicYear::findOrFail($request->year_id);
 
-        $query = DB::table('student_section')
-            ->join('students', 'students.id', '=', 'student_section.student_id')
-            ->join('sections', 'sections.id', '=', 'student_section.section_id')
-            ->join('school_classes', 'school_classes.id', '=', 'sections.school_class_id')
-            ->join('attendances', function ($j) {
-                $j->on('attendances.student_id', '=', 'student_section.student_id')
-                  ->on('attendances.section_id', '=', 'student_section.section_id');
-            })
-            ->where('student_section.academic_year_id', $year->id)
+        $query = BranchContext::apply(
+                DB::table('student_section')
+                    ->join('students', 'students.id', '=', 'student_section.student_id')
+                    ->join('sections', 'sections.id', '=', 'student_section.section_id')
+                    ->join('school_classes', 'school_classes.id', '=', 'sections.school_class_id')
+                    ->join('attendances', function ($j) {
+                        $j->on('attendances.student_id', '=', 'student_section.student_id')
+                          ->on('attendances.section_id', '=', 'student_section.section_id');
+                    })
+                    ->where('student_section.academic_year_id', $year->id),
+                'attendances.branch_id'
+            )
             ->when($request->section_id, fn($q) => $q->where('sections.id', $request->section_id))
             ->when($request->from, fn($q) => $q->where('attendances.date', '>=', $request->from))
             ->when($request->to, fn($q) => $q->where('attendances.date', '<=', $request->to))
@@ -126,10 +133,13 @@ class ReportController extends Controller
 
         $year = AcademicYear::findOrFail($request->year_id);
 
-        $rows = DB::table('payments')
-            ->join('invoices', 'invoices.id', '=', 'payments.invoice_id')
-            ->join('students', 'students.id', '=', 'invoices.student_id')
-            ->where('invoices.academic_year_id', $year->id)
+        $rows = BranchContext::apply(
+                DB::table('payments')
+                    ->join('invoices', 'invoices.id', '=', 'payments.invoice_id')
+                    ->join('students', 'students.id', '=', 'invoices.student_id')
+                    ->where('invoices.academic_year_id', $year->id),
+                'payments.branch_id'
+            )
             ->when($request->from, fn($q) => $q->where('payments.created_at', '>=', $request->from))
             ->when($request->to, fn($q) => $q->where('payments.created_at', '<=', $request->to . ' 23:59:59'))
             ->select(

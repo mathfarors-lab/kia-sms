@@ -10,11 +10,23 @@ use Illuminate\Support\Facades\Storage;
 
 class StaffService
 {
+    /**
+     * See StudentService::generateCode() for why the branch code gets
+     * embedded once a branch context is active: staff_code is globally
+     * unique but this lookup is branch-scoped, so two branches would
+     * otherwise compute the same "next" number independently.
+     */
     public function generateCode(): string
     {
+        $branchId = \App\Support\BranchContext::current();
+
         $last = Staff::withTrashed()->orderByDesc('id')->value('staff_code');
         $next = $last ? (int) substr($last, strrpos($last, '-') + 1) + 1 : 1;
-        return 'STF-' . str_pad($next, 4, '0', STR_PAD_LEFT);
+
+        $branchCode = $branchId ? \App\Models\Branch::find($branchId)?->code : null;
+        $prefix     = $branchCode ? "STF-{$branchCode}" : 'STF';
+
+        return "{$prefix}-" . str_pad($next, 4, '0', STR_PAD_LEFT);
     }
 
     public function store(array $data, ?UploadedFile $photo = null): Staff

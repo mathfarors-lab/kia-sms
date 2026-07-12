@@ -11,16 +11,25 @@ class AdmissionService
 {
     public function __construct(private StudentService $students) {}
 
+    /**
+     * See StudentService::generateCode() for why the branch code gets
+     * embedded once a branch context is active.
+     */
     public function generateNumber(): string
     {
-        $year = now()->format('y');
-        $last = AdmissionApplication::where('application_no', 'like', "ADM-{$year}-%")
+        $year     = now()->format('y');
+        $branchId = \App\Support\BranchContext::current();
+
+        $last = AdmissionApplication::where('application_no', 'like', "ADM-%{$year}-%")
             ->orderByDesc('id')
             ->value('application_no');
 
         $next = $last ? (int) substr($last, strrpos($last, '-') + 1) + 1 : 1;
 
-        return "ADM-{$year}-" . str_pad($next, 4, '0', STR_PAD_LEFT);
+        $branchCode = $branchId ? \App\Models\Branch::find($branchId)?->code : null;
+        $middle     = $branchCode ? "{$branchCode}-{$year}" : $year;
+
+        return "ADM-{$middle}-" . str_pad($next, 4, '0', STR_PAD_LEFT);
     }
 
     /**

@@ -44,4 +44,26 @@ final class BranchContext
             self::$branchId = $previous;
         }
     }
+
+    /**
+     * Apply the active branch filter to a raw query/Eloquent builder.
+     * Analytics and report code runs DB::table() queries that the Eloquent
+     * BranchScope cannot reach — every such query must filter through this
+     * (or an equivalent explicit ->where(branch_id)) or it silently leaks
+     * every branch's data to a branch-scoped user.
+     *
+     * @template TQuery
+     * @param TQuery $query
+     * @return TQuery
+     */
+    public static function apply($query, string $column = 'branch_id')
+    {
+        return self::$branchId !== null ? $query->where($column, self::$branchId) : $query;
+    }
+
+    /** Cache-key suffix so branch-scoped and global results never share a cache slot. */
+    public static function cacheKeySuffix(): string
+    {
+        return self::$branchId !== null ? (string) self::$branchId : 'global';
+    }
 }

@@ -174,6 +174,92 @@ class BranchIsolationTest extends TestCase
         $this->assertEquals('KIA Global', BranchContext::within($this->branchA->id, fn () => \App\Models\Setting::get('school_name')));
     }
 
+    // ── Analytics/report isolation (raw DB::table() queries bypass the ───────
+    // ── Eloquent BranchScope entirely — this is where a real leak was found) ─
+
+    public function test_analytics_overview_counts_only_own_branch_students(): void
+    {
+        $year = \App\Models\AcademicYear::create([
+            'name' => 'Y-' . uniqid(), 'start_date' => '2026-01-01', 'end_date' => '2026-12-31', 'is_active' => true,
+        ]);
+
+        BranchContext::within($this->branchA->id, function () use ($year) {
+            $class   = \App\Models\SchoolClass::create(['name' => 'A-Class']);
+            $section = \App\Models\Section::create(['school_class_id' => $class->id, 'name' => 'A']);
+            $student = Student::create(['student_code' => 'S-' . uniqid(), 'name_en' => 'A1', 'gender' => 'male', 'status' => 'enrolled']);
+            $student->sections()->attach($section->id, ['academic_year_id' => $year->id]);
+        });
+
+        BranchContext::within($this->branchB->id, function () use ($year) {
+            $class   = \App\Models\SchoolClass::create(['name' => 'B-Class']);
+            $section = \App\Models\Section::create(['school_class_id' => $class->id, 'name' => 'B']);
+            foreach (['B1', 'B2', 'B3'] as $name) {
+                $student = Student::create(['student_code' => 'S-' . uniqid(), 'name_en' => $name, 'gender' => 'male', 'status' => 'enrolled']);
+                $student->sections()->attach($section->id, ['academic_year_id' => $year->id]);
+            }
+        });
+
+        $service = app(\App\Services\AnalyticsService::class);
+
+        $countA = BranchContext::within($this->branchA->id, fn () => $service->overview($year)['enrolledCount']);
+        $countB = BranchContext::within($this->branchB->id, fn () => $service->overview($year)['enrolledCount']);
+
+        $this->assertEquals(1, $countA);
+        $this->assertEquals(3, $countB);
+    }
+
+    public function test_analytics_cache_does_not_leak_between_branches(): void
+    {
+        // Same cache TTL window, different branches: without a branch-suffixed
+        // cache key, branch B's call would be served branch A's cached count.
+        Invoice::query(); // ensure autoload before closures
+        $year = \App\Models\AcademicYear::create([
+            'name' => 'Y-' . uniqid(), 'start_date' => '2026-01-01', 'end_date' => '2026-12-31', 'is_active' => true,
+        ]);
+        $service = app(\App\Services\AnalyticsService::class);
+
+        BranchContext::within($this->branchA->id, fn () => \App\Models\Invoice::create([
+            'number' => 'INV-A-1', 'student_id' => $this->makeStudentIn($this->branchA, 'Payer A')->id,
+            'academic_year_id' => $year->id, 'term' => 'term_1',
+            'subtotal' => 100, 'discount' => 0, 'total' => 100, 'paid' => 0, 'status' => 'overdue',
+        ]));
+
+        $overdueA = BranchContext::within($this->branchA->id, fn () => $service->overdueInvoiceCount());
+        $overdueB = BranchContext::within($this->branchB->id, fn () => $service->overdueInvoiceCount());
+
+        $this->assertEquals(1, $overdueA);
+        $this->assertEquals(0, $overdueB);
+    }
+
+    public function test_enrollment_report_excludes_other_branch_students(): void
+    {
+        $year = \App\Models\AcademicYear::create([
+            'name' => 'Y-' . uniqid(), 'start_date' => '2026-01-01', 'end_date' => '2026-12-31', 'is_active' => true,
+        ]);
+
+        BranchContext::within($this->branchA->id, function () use ($year) {
+            $class   = \App\Models\SchoolClass::create(['name' => 'A-Class']);
+            $section = \App\Models\Section::create(['school_class_id' => $class->id, 'name' => 'A']);
+            $student = Student::create(['student_code' => 'S-' . uniqid(), 'name_en' => 'Visible In Report', 'gender' => 'male', 'status' => 'enrolled']);
+            $student->sections()->attach($section->id, ['academic_year_id' => $year->id]);
+        });
+
+        BranchContext::within($this->branchB->id, function () use ($year) {
+            $class   = \App\Models\SchoolClass::create(['name' => 'B-Class']);
+            $section = \App\Models\Section::create(['school_class_id' => $class->id, 'name' => 'B']);
+            $student = Student::create(['student_code' => 'S-' . uniqid(), 'name_en' => 'Hidden From Report', 'gender' => 'male', 'status' => 'enrolled']);
+            $student->sections()->attach($section->id, ['academic_year_id' => $year->id]);
+        });
+
+        $html = $this->actingAs($this->makeAdminOf($this->branchA))
+            ->get(route('reports.enrollment', ['year_id' => $year->id]))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('Visible In Report', $html);
+        $this->assertStringNotContainsString('Hidden From Report', $html);
+    }
+
     // ── Legacy/unscoped behavior preserved ───────────────────────────────────
 
     public function test_user_without_branch_remains_unscoped_pre_m1_behavior(): void

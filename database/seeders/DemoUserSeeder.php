@@ -171,5 +171,29 @@ class DemoUserSeeder extends Seeder
         );
         $owner->forceFill(['branch_id' => null])->save();
         $owner->syncRoles(['owner']);
+
+        // Second demo branch — empty on purpose (no fake roster): its whole
+        // point is to give the owner switcher and a branch admin something
+        // real to demonstrate branch isolation against, without inventing
+        // data for a campus that doesn't exist yet in KIA's actual plans.
+        $riverside = \App\Models\Branch::firstOrCreate(
+            ['code' => 'RC'],
+            ['name_en' => 'Riverside Campus', 'name_km' => 'សាខាមាត់ទន្លេ', 'is_active' => true]
+        );
+
+        \App\Support\BranchContext::within($riverside->id, function () {
+            $admin = User::updateOrCreate(
+                ['email' => 'admin.riverside@kia.edu.kh'],
+                [
+                    'name'              => 'Riverside Admin',
+                    'password'          => Hash::make('password'),
+                    'phone'             => '012000099',
+                    'locale'            => 'en',
+                    'status'            => 'active',
+                    'email_verified_at' => now(),
+                ]
+            );
+            $admin->syncRoles(['admin']);
+        });
     }
 }

@@ -5,28 +5,39 @@ namespace App\Services;
 use App\Models\AcademicYear;
 use App\Models\BakongCallback;
 use App\Models\BakongFailedVerification;
+use App\Support\BranchContext;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Every query here uses DB::table() for performance, which the Eloquent
+ * BranchScope cannot reach — every method filters explicitly via
+ * BranchContext::apply() and every cache key includes the branch suffix.
+ * A branch-scoped user must only ever see their own branch's figures.
+ */
 class AnalyticsService
 {
     public function overview(AcademicYear $year, int $ttl = 300): array
     {
-        $key = "analytics:overview:{$year->id}";
+        $key = "analytics:overview:{$year->id}:" . BranchContext::cacheKeySuffix();
 
         $cached = Cache::remember($key, $ttl, function () use ($year) {
-            $enrolledCount = DB::table('student_section')
-                ->where('academic_year_id', $year->id)
-                ->distinct('student_id')
-                ->count('student_id');
+            $enrolledCount = BranchContext::apply(
+                DB::table('student_section')
+                    ->join('students', 'students.id', '=', 'student_section.student_id')
+                    ->where('student_section.academic_year_id', $year->id),
+                'students.branch_id'
+            )->distinct('student_section.student_id')->count('student_section.student_id');
 
-            $attendanceSummary = DB::table('attendances')
-                ->join('student_section', function ($j) {
-                    $j->on('student_section.student_id', '=', 'attendances.student_id')
-                      ->on('student_section.section_id', '=', 'attendances.section_id');
-                })
-                ->where('student_section.academic_year_id', $year->id)
-                ->selectRaw("
+            $attendanceSummary = BranchContext::apply(
+                DB::table('attendances')
+                    ->join('student_section', function ($j) {
+                        $j->on('student_section.student_id', '=', 'attendances.student_id')
+                          ->on('student_section.section_id', '=', 'attendances.section_id');
+                    })
+                    ->where('student_section.academic_year_id', $year->id),
+                'attendances.branch_id'
+            )->selectRaw("
                     COUNT(*) as total,
                     SUM(CASE WHEN attendances.status = 'present' THEN 1 ELSE 0 END) as present,
                     SUM(CASE WHEN attendances.status = 'absent' THEN 1 ELSE 0 END) as absent
@@ -37,17 +48,22 @@ class AnalyticsService
                 ? round(($attendanceSummary->present / $attendanceSummary->total) * 100, 1)
                 : null;
 
-            $feeCollection = DB::table('payments')
-                ->join('invoices', 'invoices.id', '=', 'payments.invoice_id')
-                ->where('invoices.academic_year_id', $year->id)
-                ->sum('payments.amount') ?? 0;
+            $feeCollection = BranchContext::apply(
+                DB::table('payments')
+                    ->join('invoices', 'invoices.id', '=', 'payments.invoice_id')
+                    ->where('invoices.academic_year_id', $year->id),
+                'payments.branch_id'
+            )->sum('payments.amount') ?? 0;
 
-            $feeOutstanding = DB::table('invoices')
-                ->where('academic_year_id', $year->id)
-                ->where('status', '!=', 'paid')
-                ->sum('total') ?? 0;
+            $feeOutstanding = BranchContext::apply(
+                DB::table('invoices')
+                    ->where('academic_year_id', $year->id)
+                    ->where('status', '!=', 'paid')
+            )->sum('total') ?? 0;
 
-            $pendingLeaves = DB::table('leaves')->where('status', 'pending')->count();
+            $pendingLeaves = BranchContext::apply(
+                DB::table('leaves')->where('status', 'pending')
+            )->count();
 
             $overdueBooks = $this->overdueBooksCount();
 
@@ -62,6 +78,7 @@ class AnalyticsService
         });
 
         // These counts are intentionally NOT cached — attacks/misconfig must surface immediately.
+        // Bakong verification failures are platform-level (not branch data), so they stay unscoped.
         $failedBakong24h   = BakongFailedVerification::where('created_at', '>=', now()->subDay())->count();
         $failedBakong7d    = BakongFailedVerification::where('created_at', '>=', now()->subWeek())->count();
         $flaggedCallbacks  = BakongCallback::whereNotNull('flag_reason')->count();
@@ -72,70 +89,83 @@ class AnalyticsService
     /** Calendar-month revenue (not academic-year scoped) — same figure the finance dashboard shows. */
     public function revenueThisMonth(int $ttl = 180): float
     {
-        $key = 'analytics:revenue-this-month:' . now()->format('Y-m');
+        $key = 'analytics:revenue-this-month:' . now()->format('Y-m') . ':' . BranchContext::cacheKeySuffix();
 
         return Cache::remember($key, $ttl, function () {
-            return (float) (DB::table('payments')
-                ->where('paid_at', '>=', now()->startOfMonth())
-                ->sum('amount') ?? 0);
+            return (float) (BranchContext::apply(
+                DB::table('payments')->where('paid_at', '>=', now()->startOfMonth())
+            )->sum('amount') ?? 0);
         });
     }
 
     /** Same figure the finance dashboard shows: sum of (total - paid) across not-yet-fully-paid invoices. */
     public function outstandingTotal(int $ttl = 180): float
     {
-        return Cache::remember('analytics:outstanding-total', $ttl, function () {
-            return (float) (DB::table('invoices')
-                ->whereIn('status', ['unpaid', 'partial', 'overdue'])
-                ->sum(DB::raw('total - paid')) ?? 0);
+        $key = 'analytics:outstanding-total:' . BranchContext::cacheKeySuffix();
+
+        return Cache::remember($key, $ttl, function () {
+            return (float) (BranchContext::apply(
+                DB::table('invoices')->whereIn('status', ['unpaid', 'partial', 'overdue'])
+            )->sum(DB::raw('total - paid')) ?? 0);
         });
     }
 
     /** Invoices explicitly flagged overdue (status = 'overdue') — same figure the finance dashboard shows. */
     public function overdueInvoiceCount(int $ttl = 180): int
     {
-        return Cache::remember('analytics:overdue-invoice-count', $ttl, function () {
-            return DB::table('invoices')->where('status', 'overdue')->count();
+        $key = 'analytics:overdue-invoice-count:' . BranchContext::cacheKeySuffix();
+
+        return Cache::remember($key, $ttl, function () {
+            return BranchContext::apply(DB::table('invoices')->where('status', 'overdue'))->count();
         });
     }
 
     /** Book issues past due date and not yet returned. */
     public function overdueBooksCount(int $ttl = 180): int
     {
-        return Cache::remember('analytics:overdue-books-count', $ttl, function () {
-            return DB::table('book_issues')
-                ->whereNull('returned_at')
-                ->where('due_date', '<', now()->toDateString())
-                ->count();
+        $key = 'analytics:overdue-books-count:' . BranchContext::cacheKeySuffix();
+
+        return Cache::remember($key, $ttl, function () {
+            return BranchContext::apply(
+                DB::table('book_issues')
+                    ->whereNull('returned_at')
+                    ->where('due_date', '<', now()->toDateString())
+            )->count();
         });
     }
 
     public function totalBooksCount(int $ttl = 180): int
     {
-        return Cache::remember('analytics:total-books-count', $ttl, fn () => DB::table('books')->count());
+        $key = 'analytics:total-books-count:' . BranchContext::cacheKeySuffix();
+
+        return Cache::remember($key, $ttl, fn () => BranchContext::apply(DB::table('books'))->count());
     }
 
     public function booksCurrentlyIssuedCount(int $ttl = 180): int
     {
-        return Cache::remember('analytics:books-currently-issued', $ttl, fn () =>
-            DB::table('book_issues')->whereNull('returned_at')->count()
+        $key = 'analytics:books-currently-issued:' . BranchContext::cacheKeySuffix();
+
+        return Cache::remember($key, $ttl, fn () =>
+            BranchContext::apply(DB::table('book_issues')->whereNull('returned_at'))->count()
         );
     }
 
     /** Today's present-rate across all sections for the given year. Null when no attendance taken yet today. */
     public function attendanceRateToday(AcademicYear $year, int $ttl = 180): ?float
     {
-        $key = "analytics:attendance-today:{$year->id}:" . now()->toDateString();
+        $key = "analytics:attendance-today:{$year->id}:" . now()->toDateString() . ':' . BranchContext::cacheKeySuffix();
 
         return Cache::remember($key, $ttl, function () use ($year) {
-            $summary = DB::table('attendances')
-                ->join('student_section', function ($j) {
-                    $j->on('student_section.student_id', '=', 'attendances.student_id')
-                      ->on('student_section.section_id', '=', 'attendances.section_id');
-                })
-                ->where('student_section.academic_year_id', $year->id)
-                ->whereDate('attendances.date', today())
-                ->selectRaw("
+            $summary = BranchContext::apply(
+                DB::table('attendances')
+                    ->join('student_section', function ($j) {
+                        $j->on('student_section.student_id', '=', 'attendances.student_id')
+                          ->on('student_section.section_id', '=', 'attendances.section_id');
+                    })
+                    ->where('student_section.academic_year_id', $year->id)
+                    ->whereDate('attendances.date', today()),
+                'attendances.branch_id'
+            )->selectRaw("
                     COUNT(*) as total,
                     SUM(CASE WHEN attendances.status = 'present' THEN 1 ELSE 0 END) as present
                 ")
@@ -147,18 +177,20 @@ class AnalyticsService
 
     public function attendanceByMonth(AcademicYear $year): array
     {
-        $key = "analytics:attendance-by-month:{$year->id}";
+        $key = "analytics:attendance-by-month:{$year->id}:" . BranchContext::cacheKeySuffix();
 
         return Cache::remember($key, 600, function () use ($year) {
             $monthExpr = $this->monthExpr('attendances.date');
 
-            return DB::table('attendances')
-                ->join('student_section', function ($j) {
-                    $j->on('student_section.student_id', '=', 'attendances.student_id')
-                      ->on('student_section.section_id', '=', 'attendances.section_id');
-                })
-                ->where('student_section.academic_year_id', $year->id)
-                ->selectRaw("
+            return BranchContext::apply(
+                DB::table('attendances')
+                    ->join('student_section', function ($j) {
+                        $j->on('student_section.student_id', '=', 'attendances.student_id')
+                          ->on('student_section.section_id', '=', 'attendances.section_id');
+                    })
+                    ->where('student_section.academic_year_id', $year->id),
+                'attendances.branch_id'
+            )->selectRaw("
                     {$monthExpr} as month,
                     COUNT(*) as total,
                     SUM(CASE WHEN attendances.status = 'present' THEN 1 ELSE 0 END) as present
@@ -178,15 +210,17 @@ class AnalyticsService
 
     public function feeByMonth(AcademicYear $year): array
     {
-        $key = "analytics:fee-by-month:{$year->id}";
+        $key = "analytics:fee-by-month:{$year->id}:" . BranchContext::cacheKeySuffix();
 
         return Cache::remember($key, 600, function () use ($year) {
             $monthExpr = $this->monthExpr('payments.created_at');
 
-            return DB::table('payments')
-                ->join('invoices', 'invoices.id', '=', 'payments.invoice_id')
-                ->where('invoices.academic_year_id', $year->id)
-                ->selectRaw("
+            return BranchContext::apply(
+                DB::table('payments')
+                    ->join('invoices', 'invoices.id', '=', 'payments.invoice_id')
+                    ->where('invoices.academic_year_id', $year->id),
+                'payments.branch_id'
+            )->selectRaw("
                     {$monthExpr} as month,
                     SUM(payments.amount) as collected
                 ")
