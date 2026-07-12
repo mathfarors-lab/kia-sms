@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\BelongsToBranch;
 
 class Scholarship extends Model
 {
+    use BelongsToBranch;
     protected $fillable = ['student_id', 'type', 'value', 'reason', 'is_active'];
 
     protected function casts(): array

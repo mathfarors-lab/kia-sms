@@ -39,6 +39,24 @@
             </div>
 
             <div class="kia-topbar-actions">
+                {{-- Owner branch switcher (M1 multi-branch) --}}
+                @role('owner')
+                @php
+                    $ownerBranches = \App\Models\Branch::where('is_active', true)->orderBy('id')->get(['id', 'name_en']);
+                    $currentBranchId = session('current_branch_id');
+                @endphp
+                <form method="POST" action="{{ route('branch.switch') }}" style="display:inline">
+                    @csrf
+                    <select name="branch_id" onchange="this.form.submit()" class="kia-topbar-btn"
+                            title="{{ __('Switch branch') }}"
+                            style="font-size:.78rem;font-weight:600;max-width:160px;">
+                        @foreach($ownerBranches as $b)
+                        <option value="{{ $b->id }}" @selected($currentBranchId == $b->id)>{{ $b->name_en }}</option>
+                        @endforeach
+                    </select>
+                </form>
+                @endrole
+
                 {{-- Locale switcher --}}
                 <form method="POST" action="{{ route('locale.switch') }}" style="display:inline">
                     @csrf

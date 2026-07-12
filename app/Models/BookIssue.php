@@ -4,9 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Concerns\BelongsToBranch;
 
 class BookIssue extends Model
 {
+    use BelongsToBranch;
     protected $fillable = [
         'book_id', 'student_id', 'issued_by',
         'issued_at', 'due_date', 'returned_at', 'fine_amount',

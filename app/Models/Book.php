@@ -5,9 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Concerns\BelongsToBranch;
 
 class Book extends Model
 {
+    use BelongsToBranch;
     use SoftDeletes;
 
     protected $fillable = [

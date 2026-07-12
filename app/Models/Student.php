@@ -7,9 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+use App\Models\Concerns\BelongsToBranch;
 
 class Student extends Model
 {
+    use BelongsToBranch;
     use HasFactory, SoftDeletes, LogsActivity;
 
     protected $fillable = [

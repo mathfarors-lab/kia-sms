@@ -6,5 +6,5 @@ use Illuminate\Database\Eloquent\Model;
 
 class InvoiceSequence extends Model
 {
-    protected $fillable = ['year', 'last_number'];
+    protected $fillable = ['year', 'last_number', 'branch_id'];
 }

@@ -20,7 +20,24 @@ class User extends Authenticatable
         'phone',
         'locale',
         'status',
+        'branch_id',
     ];
+
+    protected static function booted(): void
+    {
+        // Users are NOT branch-scoped for querying (logins are global), but a
+        // user created inside a branch context belongs to that branch.
+        static::creating(function (self $user) {
+            if ($user->branch_id === null) {
+                $user->branch_id = \App\Support\BranchContext::current();
+            }
+        });
+    }
+
+    public function branch(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Branch::class);
+    }
 
     protected $hidden = [
         'password',
@@ -67,6 +84,9 @@ class User extends Authenticatable
     public function dashboardRoute(): string
     {
         return match (true) {
+            // Owner lands on the admin dashboard of the selected branch until
+            // the dedicated owner console (M2) replaces this.
+            $this->hasRole('owner')        => 'dashboard.admin',
             $this->hasRole('admin')        => 'dashboard.admin',
             $this->hasRole('principal')    => 'dashboard.principal',
             $this->hasRole('teacher')      => 'dashboard.teacher',

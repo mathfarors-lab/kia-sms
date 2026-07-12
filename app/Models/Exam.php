@@ -5,9 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+use App\Models\Concerns\BelongsToBranch;
 
 class Exam extends Model
 {
+    use BelongsToBranch;
     use LogsActivity;
 
     protected $fillable = ['academic_year_id', 'name', 'type', 'semester', 'weight', 'is_published'];

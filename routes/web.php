@@ -245,6 +245,16 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/leaves/{leave}/approve', [LeaveController::class, 'approve'])->name('leaves.approve');
     Route::post('/leaves/{leave}/reject', [LeaveController::class, 'reject'])->name('leaves.reject');
 
+    // Owner-only: switch the branch the session operates in (M1 multi-branch)
+    Route::post('/branch/switch', function (\Illuminate\Http\Request $request) {
+        abort_unless($request->user()->hasRole('owner'), 403);
+
+        $data = $request->validate(['branch_id' => 'required|exists:branches,id']);
+        $request->session()->put('current_branch_id', (int) $data['branch_id']);
+
+        return back()->with('success', __('Branch switched.'));
+    })->name('branch.switch');
+
     // Admissions pipeline (receptionist/principal/admin)
     Route::prefix('admissions')->name('admissions.')->group(function () {
         Route::get('/',            [AdmissionController::class, 'index'])->name('index');

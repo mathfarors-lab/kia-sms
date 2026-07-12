@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\BelongsToBranch;
 
 class TermResult extends Model
 {
+    use BelongsToBranch;
     protected $fillable = [
         'academic_year_id', 'semester', 'student_id', 'section_id',
         'total', 'average', 'gpa', 'rank', 'result',

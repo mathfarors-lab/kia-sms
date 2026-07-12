@@ -118,21 +118,42 @@ class InvoiceService
     /**
      * Allocate a new sequential invoice number inside the caller's transaction.
      * Uses SELECT FOR UPDATE to be race-safe.
+     *
+     * Sequences are PER BRANCH; the branch code is embedded in the number
+     * (INV-MC-2026-00001) so numbers stay globally unique across branches.
+     * With no branch context (console, legacy single-branch) the pre-M1
+     * format INV-2026-00001 is kept.
      */
     public function nextNumber(): string
     {
-        $year = (int) now()->format('Y');
+        $year     = (int) now()->format('Y');
+        $branchId = \App\Support\BranchContext::current();
 
-        $seq = InvoiceSequence::lockForUpdate()->where('year', $year)->first();
+        // NB: SQL `branch_id = NULL` never matches — the no-context (legacy)
+        // sequence row needs whereNull explicitly.
+        $acquire = fn () => InvoiceSequence::lockForUpdate()
+            ->where('year', $year)
+            ->when(
+                $branchId === null,
+                fn ($q) => $q->whereNull('branch_id'),
+                fn ($q) => $q->where('branch_id', $branchId)
+            )
+            ->first();
+
+        $seq = $acquire();
+
         if (!$seq) {
-            $seq = InvoiceSequence::create(['year' => $year, 'last_number' => 0]);
+            InvoiceSequence::create(['year' => $year, 'branch_id' => $branchId, 'last_number' => 0]);
             // Re-acquire with lock in case of race
-            $seq = InvoiceSequence::lockForUpdate()->where('year', $year)->first();
+            $seq = $acquire();
         }
 
         $seq->increment('last_number');
         $seq->refresh();
 
-        return 'INV-' . $year . '-' . str_pad($seq->last_number, 5, '0', STR_PAD_LEFT);
+        $branchCode = $branchId ? \App\Models\Branch::find($branchId)?->code : null;
+        $middle     = $branchCode ? "{$branchCode}-{$year}" : (string) $year;
+
+        return 'INV-' . $middle . '-' . str_pad($seq->last_number, 5, '0', STR_PAD_LEFT);
     }
 }

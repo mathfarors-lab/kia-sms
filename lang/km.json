@@ -204,6 +204,8 @@
     "Student updated successfully.": "បានកែសម្រួលសិស្សដោយជោគជ័យ។",
     "Students": "សិស្ស",
     "Subject": "មុខវិជ្ជា",
+    "Switch branch": "ប្តូរសាខា",
+    "Branch switched.": "បានប្តូរសាខា។",
     "Switch language": "ប្តូរភាសា",
     "System": "ប្រព័ន្ធ",
     "System activity recorded by spatie/activitylog": "សកម្មភាពប្រព័ន្ធកត់ត្រាដោយ spatie/activitylog",

@@ -18,6 +18,8 @@ class AcademicSeeder extends Seeder
 {
     public function run(): void
     {
+        // Demo academic structure belongs to Main Campus (branch 1).
+        \App\Support\BranchContext::within(1, function () {
         // 1. Active academic year
         AcademicYear::query()->update(['is_active' => false]);
         AcademicYear::updateOrCreate(
@@ -132,5 +134,6 @@ class AcademicSeeder extends Seeder
                 }
             }
         }
+        }); // end BranchContext::within(1)
     }
 }

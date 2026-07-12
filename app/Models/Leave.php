@@ -4,9 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Concerns\BelongsToBranch;
 
 class Leave extends Model
 {
+    use BelongsToBranch;
     protected $fillable = [
         'user_id', 'type', 'start_date', 'end_date',
         'reason', 'status', 'reviewed_by', 'reviewer_note', 'reviewed_at',

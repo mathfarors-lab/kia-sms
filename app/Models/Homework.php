@@ -6,9 +6,11 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Concerns\BelongsToBranch;
 
 class Homework extends Model
 {
+    use BelongsToBranch;
     protected $fillable = [
         'section_id', 'subject_id', 'teacher_id',
         'title', 'description', 'attachment_path', 'attachment_original_name',

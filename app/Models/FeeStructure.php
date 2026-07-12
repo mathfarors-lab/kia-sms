@@ -5,9 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+use App\Models\Concerns\BelongsToBranch;
 
 class FeeStructure extends Model
 {
+    use BelongsToBranch;
     use LogsActivity;
 
     protected $fillable = ['name', 'school_class_id', 'amount', 'frequency', 'is_active'];

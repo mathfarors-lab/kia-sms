@@ -6,9 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+use App\Models\Concerns\BelongsToBranch;
 
 class Attendance extends Model
 {
+    use BelongsToBranch;
     use HasFactory, LogsActivity;
 
     protected $fillable = [

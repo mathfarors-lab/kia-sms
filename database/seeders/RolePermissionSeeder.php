@@ -19,6 +19,10 @@ class RolePermissionSeeder extends Seeder
         }
 
         $roles = [
+            // Owner (superadmin): all permissions everywhere; additionally
+            // bypasses branch locking via the owner branch switcher.
+            'owner' => P::all(),
+
             'admin' => P::all(),
 
             'principal' => [

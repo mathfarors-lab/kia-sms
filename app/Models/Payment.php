@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\BelongsToBranch;
 
 class Payment extends Model
 {
+    use BelongsToBranch;
     protected $fillable = ['invoice_id', 'amount', 'method', 'reference', 'received_by', 'paid_at'];
 
     protected function casts(): array

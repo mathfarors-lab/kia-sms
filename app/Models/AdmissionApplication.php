@@ -6,9 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\BelongsToBranch;
 
 class AdmissionApplication extends Model
 {
+    use BelongsToBranch;
     use LogsActivity;
 
     public const STATUSES = ['enquiry', 'applied', 'under_review', 'accepted', 'rejected', 'converted'];

@@ -12,6 +12,9 @@ class DemoUserSeeder extends Seeder
 {
     public function run(): void
     {
+        // All demo people belong to Main Campus (branch 1): the creating-hooks
+        // stamp branch_id on every user/staff/student made inside this block.
+        \App\Support\BranchContext::within(1, function () {
         $users = [
             [
                 'name'   => 'Admin User',
@@ -151,5 +154,22 @@ class DemoUserSeeder extends Seeder
                 ]
             );
         }
+        }); // end BranchContext::within(1)
+
+        // Owner (superadmin) — deliberately NO branch: reaches every branch
+        // through the topbar switcher instead of being locked to one.
+        $owner = User::updateOrCreate(
+            ['email' => 'owner@kia.edu.kh'],
+            [
+                'name'              => 'Owner Sovann',
+                'password'          => Hash::make('password'),
+                'phone'             => '012000000',
+                'locale'            => 'en',
+                'status'            => 'active',
+                'email_verified_at' => now(),
+            ]
+        );
+        $owner->forceFill(['branch_id' => null])->save();
+        $owner->syncRoles(['owner']);
     }
 }

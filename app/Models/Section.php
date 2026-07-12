@@ -4,9 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\BelongsToBranch;
 
 class Section extends Model
 {
+    use BelongsToBranch;
     use HasFactory;
 
     protected $fillable = ['school_class_id', 'name', 'class_teacher_id'];

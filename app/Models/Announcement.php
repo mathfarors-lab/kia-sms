@@ -4,9 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Concerns\BelongsToBranch;
 
 class Announcement extends Model
 {
+    use BelongsToBranch;
     protected $fillable = [
         'title', 'body_en', 'body_km', 'audience', 'target_id',
         'posted_by', 'published_at',

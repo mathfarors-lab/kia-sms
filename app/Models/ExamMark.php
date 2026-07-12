@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\BelongsToBranch;
 
 class ExamMark extends Model
 {
+    use BelongsToBranch;
     protected $fillable = ['exam_id', 'student_id', 'subject_id', 'score', 'grade'];
 
     public function exam(): \Illuminate\Database\Eloquent\Relations\BelongsTo
