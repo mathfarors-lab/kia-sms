@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\SetLocale::class,
             \App\Http\Middleware\SetBranchContext::class,
+            \App\Http\Middleware\EnsureBranchIsActive::class,
         ]);
 
         // SetBranchContext MUST run before route-model binding: bindings that
@@ -24,6 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Session\Middleware\StartSession::class,
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \App\Http\Middleware\SetBranchContext::class,
+            \App\Http\Middleware\EnsureBranchIsActive::class,
             \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ]);

@@ -15,6 +15,11 @@
                         <option value="{{ $y->id }}" @selected($y->is_active)>{{ $y->name }}</option>
                     @endforeach
                 </select>
+                @role('owner')
+                <label style="display:flex;align-items:center;gap:.4rem;font-size:.8rem;color:var(--muted);">
+                    <input type="checkbox" name="all_branches" value="1"> {{ __('All branches') }}
+                </label>
+                @endrole
                 <div style="display:flex;gap:.5rem">
                     <button name="format" value="pdf" class="btn btn-secondary" style="flex:1">PDF</button>
                     <button name="format" value="excel" class="btn btn-secondary" style="flex:1">CSV</button>
@@ -36,6 +41,11 @@
                     <input type="date" name="from" class="form-control" placeholder="From" style="flex:1">
                     <input type="date" name="to" class="form-control" placeholder="To" style="flex:1">
                 </div>
+                @role('owner')
+                <label style="display:flex;align-items:center;gap:.4rem;font-size:.8rem;color:var(--muted);">
+                    <input type="checkbox" name="all_branches" value="1"> {{ __('All branches') }}
+                </label>
+                @endrole
                 <div style="display:flex;gap:.5rem">
                     <button name="format" value="pdf" class="btn btn-secondary" style="flex:1">PDF</button>
                     <button class="btn btn-primary" style="flex:1">View</button>
@@ -56,6 +66,11 @@
                     <input type="date" name="from" class="form-control" placeholder="From" style="flex:1">
                     <input type="date" name="to" class="form-control" placeholder="To" style="flex:1">
                 </div>
+                @role('owner')
+                <label style="display:flex;align-items:center;gap:.4rem;font-size:.8rem;color:var(--muted);">
+                    <input type="checkbox" name="all_branches" value="1"> {{ __('All branches') }}
+                </label>
+                @endrole
                 <div style="display:flex;gap:.5rem">
                     <button name="format" value="pdf" class="btn btn-secondary" style="flex:1">PDF</button>
                     <button name="format" value="excel" class="btn btn-secondary" style="flex:1">CSV</button>

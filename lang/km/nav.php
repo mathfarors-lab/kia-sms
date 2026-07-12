@@ -46,4 +46,7 @@ return [
     'my_timetable'      => 'កាលវិភាគរបស់ខ្ញុំ',
     'admissions'        => 'ការចុះឈ្មោះចូលរៀន',
     'children'          => 'កូនៗ',
+    'owner_section'     => 'ម្ចាស់',
+    'owner_dashboard'   => 'ផ្ទាំងម្ចាស់',
+    'branches'          => 'សាខា',
 ];

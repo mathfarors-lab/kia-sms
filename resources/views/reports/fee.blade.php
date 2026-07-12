@@ -16,11 +16,16 @@
     <div class="kia-card">
         <div class="kia-table-wrap">
             <table class="kia-table">
-                <thead><tr><th>Student</th><th>Invoice</th><th>Invoice Total</th><th>Paid</th><th>Method</th><th>Date</th></tr></thead>
+                <thead><tr>
+                    <th>Student</th>
+                    @if($rows->first() && isset($rows->first()->branch_name))<th>Branch</th>@endif
+                    <th>Invoice</th><th>Invoice Total</th><th>Paid</th><th>Method</th><th>Date</th>
+                </tr></thead>
                 <tbody>
                 @forelse($rows as $row)
                     <tr>
                         <td>{{ $row->name_en }}</td>
+                        @if(isset($row->branch_name))<td>{{ $row->branch_name }}</td>@endif
                         <td>{{ $row->invoice_number }}</td>
                         <td>${{ number_format($row->total_amount, 2) }}</td>
                         <td>${{ number_format($row->payment_amount, 2) }}</td>
@@ -28,7 +33,7 @@
                         <td>{{ $row->paid_date }}</td>
                     </tr>
                 @empty
-                    <tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text-muted)">No payments found.</td></tr>
+                    <tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text-muted)">No payments found.</td></tr>
                 @endforelse
                 </tbody>
             </table>

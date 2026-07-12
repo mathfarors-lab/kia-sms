@@ -17,9 +17,12 @@ class SetBranchContext
             if ($user->hasRole('owner')) {
                 // Owner works "inside" one branch at a time via the topbar
                 // switcher; default to the first active branch on first login.
+                // A suspended branch stays reachable once explicitly selected —
+                // the owner must still be able to review its historical data —
+                // only the no-selection-yet fallback prefers an active branch.
                 $branchId = $request->session()->get('current_branch_id');
 
-                if (!$branchId || !Branch::where('id', $branchId)->where('is_active', true)->exists()) {
+                if (!$branchId || !Branch::where('id', $branchId)->exists()) {
                     $branchId = Branch::where('is_active', true)->orderBy('id')->value('id');
                     $request->session()->put('current_branch_id', $branchId);
                 }

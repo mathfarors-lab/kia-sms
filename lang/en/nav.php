@@ -46,4 +46,7 @@ return [
     'my_timetable'      => 'My Timetable',
     'admissions'        => 'Admissions',
     'children'          => 'Children',
+    'owner_section'     => 'Owner',
+    'owner_dashboard'   => 'Owner Dashboard',
+    'branches'          => 'Branches',
 ];

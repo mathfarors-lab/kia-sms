@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AcademicYear;
 use App\Models\AdmissionApplication;
 use App\Models\Attendance;
+use App\Models\Branch;
 use App\Models\HomeworkSubmission;
 use App\Models\Section;
 use App\Models\Student;
@@ -23,6 +24,34 @@ class DashboardController extends Controller
     public function redirect(Request $request)
     {
         return redirect()->route($request->user()->dashboardRoute());
+    }
+
+    /**
+     * Consolidated cross-branch comparison. The one dashboard that
+     * deliberately reads across every branch — see
+     * AnalyticsService::perBranchOverview() for why that's safe here and
+     * nowhere else. Route itself is owner-only (role:owner middleware).
+     */
+    public function owner()
+    {
+        $year = AcademicYear::where('is_active', true)->first();
+
+        $branchRows = $year ? $this->analytics->perBranchOverview($year) : [];
+
+        // Student/Staff carry the Eloquent BranchScope, which would otherwise
+        // silently count only the owner's currently-switched branch — these
+        // grand totals must deliberately cross every branch, same reasoning
+        // as perBranchOverview().
+        $totals = [
+            'branches'    => Branch::count(),
+            'active'      => Branch::where('is_active', true)->count(),
+            'students'    => Student::withoutGlobalScope(\App\Models\Scopes\BranchScope::class)->count(),
+            'staff'       => Staff::withoutGlobalScope(\App\Models\Scopes\BranchScope::class)->count(),
+            'revenue'     => array_sum(array_column($branchRows, 'revenue')),
+            'outstanding' => array_sum(array_column($branchRows, 'outstanding')),
+        ];
+
+        return view('dashboard.owner', compact('branchRows', 'totals', 'year'));
     }
 
     public function admin()

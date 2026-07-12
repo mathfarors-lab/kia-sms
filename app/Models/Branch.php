@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Branch extends Model
 {
-    protected $fillable = ['name_en', 'name_km', 'code', 'address', 'is_active'];
+    protected $fillable = ['name_en', 'name_km', 'code', 'address', 'logo_path', 'is_active'];
 
     protected function casts(): array
     {
@@ -17,4 +17,10 @@ class Branch extends Model
     public function users(): HasMany    { return $this->hasMany(User::class); }
     public function students(): HasMany { return $this->hasMany(Student::class); }
     public function staff(): HasMany    { return $this->hasMany(Staff::class); }
+
+    /** Users holding the 'admin' role scoped to this branch. */
+    public function admins()
+    {
+        return $this->users()->role('admin');
+    }
 }

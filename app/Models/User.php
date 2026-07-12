@@ -84,9 +84,7 @@ class User extends Authenticatable
     public function dashboardRoute(): string
     {
         return match (true) {
-            // Owner lands on the admin dashboard of the selected branch until
-            // the dedicated owner console (M2) replaces this.
-            $this->hasRole('owner')        => 'dashboard.admin',
+            $this->hasRole('owner')        => 'owner.dashboard',
             $this->hasRole('admin')        => 'dashboard.admin',
             $this->hasRole('principal')    => 'dashboard.principal',
             $this->hasRole('teacher')      => 'dashboard.teacher',

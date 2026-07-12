@@ -11,7 +11,7 @@ class SettingController extends Controller
     public function index()
     {
         $this->authorize('settings.manage');
-        $settings = Setting::orderBy('group')->orderBy('key')->get()->groupBy('group');
+        $settings = Setting::allForCurrentBranch()->sortBy('key')->groupBy('group');
         return view('settings.index', compact('settings'));
     }
 

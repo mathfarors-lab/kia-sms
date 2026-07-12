@@ -54,6 +54,23 @@
 
     <div class="kia-nav">
 
+        {{-- ── Owner ───────────────────────────────────────────────────── --}}
+        {{-- No separate "Owner Dashboard" link: the common Dashboard link
+             below already routes the owner to owner.dashboard via
+             User::dashboardRoute(). This section is for owner-only tools
+             that aren't already covered by an existing nav link. --}}
+        @role('owner')
+        <div class="kia-nav-section">{{ __('nav.owner_section') }}</div>
+
+        <a href="{{ route('owner.branches.index') }}" class="kia-nav-item {{ request()->routeIs('owner.branches.*') ? 'active' : '' }}">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/>
+                <line x1="9" y1="9" x2="9" y2="9.01"/><line x1="9" y1="13" x2="9" y2="13.01"/><line x1="9" y1="17" x2="9" y2="17.01"/>
+            </svg>
+            {{ __('nav.branches') }}
+        </a>
+        @endrole
+
         {{-- Common: Dashboard --}}
         <a href="{{ route(auth()->user()->dashboardRoute()) }}" class="kia-nav-item {{ request()->routeIs('dashboard.*') ? 'active' : '' }}">
             <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">

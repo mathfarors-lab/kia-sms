@@ -32,6 +32,33 @@ class Setting extends Model
     }
 
     /**
+     * All settings visible for the CURRENT branch context — one row per key,
+     * never a mix. This is the listing-page equivalent of get(): a plain
+     * `Setting::all()` (as the settings page used before this existed) has
+     * no branch filter at all, since this model doesn't use the Eloquent
+     * BelongsToBranch scope (its resolution is deliberately manual, same
+     * reason as get()/set() above) — every branch's rows, including two
+     * branches' own values for the same key, would render as duplicate
+     * same-named form fields with no way to tell them apart.
+     */
+    public static function allForCurrentBranch(): \Illuminate\Support\Collection
+    {
+        $branchId = BranchContext::current();
+
+        return static::query()
+            ->where(function ($q) use ($branchId) {
+                $q->whereNull('branch_id');
+                if ($branchId !== null) {
+                    $q->orWhere('branch_id', $branchId);
+                }
+            })
+            ->get()
+            ->groupBy('key')
+            ->map(fn ($rows) => $rows->firstWhere('branch_id', $branchId) ?? $rows->first())
+            ->values();
+    }
+
+    /**
      * Writes to the active branch when one is set (branch admins tune their
      * own campus), otherwise to the global fallback row (console/seeders).
      */

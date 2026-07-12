@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\AcademicYear;
 use App\Models\BakongCallback;
 use App\Models\BakongFailedVerification;
+use App\Models\Branch;
 use App\Support\BranchContext;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -228,6 +229,72 @@ class AnalyticsService
                 ->orderBy('month')
                 ->get()
                 ->toArray();
+        });
+    }
+
+    /**
+     * Owner-only consolidated comparison: one row per branch, side by side.
+     * Every other method in this class filters TO the active branch via
+     * BranchContext::apply() — this is the one legitimate place that must
+     * NOT do that. It groups BY branch_id instead, deliberately reading
+     * across every branch regardless of the caller's own BranchContext.
+     * Callers must still gate this behind hasRole('owner') themselves —
+     * this method has no way to know who's asking.
+     */
+    public function perBranchOverview(AcademicYear $year, int $ttl = 180): array
+    {
+        $key = "analytics:per-branch-overview:{$year->id}";
+
+        return Cache::remember($key, $ttl, function () use ($year) {
+            $branches = Branch::orderBy('id')->get()->keyBy('id');
+
+            $enrolled = DB::table('student_section')
+                ->join('students', 'students.id', '=', 'student_section.student_id')
+                ->where('student_section.academic_year_id', $year->id)
+                ->select('students.branch_id', DB::raw('COUNT(DISTINCT student_section.student_id) as total'))
+                ->groupBy('students.branch_id')
+                ->pluck('total', 'branch_id');
+
+            $revenue = DB::table('payments')
+                ->where('paid_at', '>=', now()->startOfMonth())
+                ->select('branch_id', DB::raw('SUM(amount) as total'))
+                ->groupBy('branch_id')
+                ->pluck('total', 'branch_id');
+
+            $attendance = DB::table('attendances')
+                ->join('student_section', function ($j) {
+                    $j->on('student_section.student_id', '=', 'attendances.student_id')
+                      ->on('student_section.section_id', '=', 'attendances.section_id');
+                })
+                ->where('student_section.academic_year_id', $year->id)
+                ->select(
+                    'attendances.branch_id',
+                    DB::raw('COUNT(*) as total'),
+                    DB::raw("SUM(CASE WHEN attendances.status = 'present' THEN 1 ELSE 0 END) as present")
+                )
+                ->groupBy('attendances.branch_id')
+                ->get()
+                ->keyBy('branch_id');
+
+            $outstanding = DB::table('invoices')
+                ->whereIn('status', ['unpaid', 'partial', 'overdue'])
+                ->select('branch_id', DB::raw('SUM(total - paid) as total'))
+                ->groupBy('branch_id')
+                ->pluck('total', 'branch_id');
+
+            return $branches->map(function (Branch $branch) use ($enrolled, $revenue, $attendance, $outstanding) {
+                $att = $attendance->get($branch->id);
+
+                return [
+                    'branch'      => $branch,
+                    'enrolled'    => (int) ($enrolled[$branch->id] ?? 0),
+                    'revenue'     => (float) ($revenue[$branch->id] ?? 0),
+                    'outstanding' => (float) ($outstanding[$branch->id] ?? 0),
+                    'attendance_rate' => ($att && $att->total > 0)
+                        ? round($att->present / $att->total * 100, 1)
+                        : null,
+                ];
+            })->values()->all();
         });
     }
 

@@ -246,8 +246,31 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/leaves/{leave}/approve', [LeaveController::class, 'approve'])->name('leaves.approve');
     Route::post('/leaves/{leave}/reject', [LeaveController::class, 'reject'])->name('leaves.reject');
 
-    // Owner-only: switch the branch the session operates in (M1 multi-branch)
+    // Owner-only: branch switcher (M1) + consolidated dashboard and branch
+    // management (M2). role:owner (not a Permissions constant — this is an
+    // architectural tier, not a grantable permission) returns 403 for
+    // everyone else via Spatie's RoleMiddleware.
     Route::post('/branch/switch', [BranchController::class, 'switch'])->name('branch.switch');
+
+    Route::middleware('role:owner')->prefix('owner')->name('owner.')->group(function () {
+        Route::get('/dashboard', [DashboardController::class, 'owner'])->name('dashboard');
+
+        Route::get('/branches',              [BranchController::class, 'index'])->name('branches.index');
+        Route::get('/branches/new',          [BranchController::class, 'create'])->name('branches.create');
+        Route::post('/branches',             [BranchController::class, 'store'])->name('branches.store');
+        Route::get('/branches/{branch}/edit',[BranchController::class, 'edit'])->name('branches.edit');
+        Route::patch('/branches/{branch}',   [BranchController::class, 'update'])->name('branches.update');
+        Route::post('/branches/{branch}/toggle-active', [BranchController::class, 'toggleActive'])->name('branches.toggle-active');
+
+        Route::get('/branches/{branch}/admins',  [BranchController::class, 'admins'])->name('branches.admins');
+        Route::post('/branches/{branch}/admins', [BranchController::class, 'appointAdmin'])->name('branches.admins.appoint');
+        Route::delete('/branches/{branch}/admins/{user}', [BranchController::class, 'removeAdmin'])->name('branches.admins.remove');
+    });
+
+    // Branch logo download — gated by branches.view-equivalent (owner-only
+    // for now; not under the prefix group so it stays a simple GET path).
+    Route::get('/branches/{branch}/logo', [BranchController::class, 'logo'])
+        ->middleware('role:owner')->name('branches.logo');
 
     // Admissions pipeline (receptionist/principal/admin)
     Route::prefix('admissions')->name('admissions.')->group(function () {
