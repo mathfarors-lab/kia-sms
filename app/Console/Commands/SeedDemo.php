@@ -27,6 +27,10 @@ class SeedDemo extends Command
         $this->call('db:seed', ['--class' => RolePermissionSeeder::class]);
         $this->call('db:seed', ['--class' => DemoUserSeeder::class]);
         $this->info('Demo data seeded.');
+        $this->newLine();
+        $this->warn('Every seeded account shares the password "password" — including owner@kia.edu.kh,');
+        $this->warn('which controls every branch. Before this is reachable by anyone real, run:');
+        $this->line('    php artisan kia:secure-demo');
         return self::SUCCESS;
     }
 }

@@ -21,7 +21,7 @@ class AuthTest extends TestCase
     {
         $response = $this->get('/login');
         $response->assertStatus(200);
-        $response->assertSee('KIA School');
+        $response->assertSee('KIA School System');
     }
 
     public function test_admin_can_login_and_reaches_admin_dashboard(): void

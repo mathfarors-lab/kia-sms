@@ -10,6 +10,26 @@ use Illuminate\Support\Facades\Hash;
 
 class DemoUserSeeder extends Seeder
 {
+    /**
+     * Every account this seeder creates — the single source of truth for
+     * "what counts as a demo account" elsewhere in the app (kia:secure-demo
+     * reads this list directly, so it can never silently drift out of sync
+     * with what actually gets seeded). Keep this updated if you add/remove
+     * a seeded user below.
+     */
+    public const DEMO_EMAILS = [
+        'admin@kia.edu.kh',
+        'principal@kia.edu.kh',
+        'teacher@kia.edu.kh',
+        'accountant@kia.edu.kh',
+        'librarian@kia.edu.kh',
+        'receptionist@kia.edu.kh',
+        'student@kia.edu.kh',
+        'parent@kia.edu.kh',
+        'owner@kia.edu.kh',
+        'admin.riverside@kia.edu.kh',
+    ];
+
     public function run(): void
     {
         // All demo people belong to Main Campus (branch 1): the creating-hooks

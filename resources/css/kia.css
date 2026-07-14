@@ -114,13 +114,6 @@ code, .mono {
     color: #fff;
 }
 
-.kia-sidebar-brand-name span {
-    display: block;
-    font-weight: 400;
-    font-size: .72rem;
-    color: rgba(255,255,255,.6);
-}
-
 .kia-nav { padding: 12px 0; flex: 1; }
 
 .kia-nav-section {

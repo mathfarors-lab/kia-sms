@@ -2,7 +2,7 @@
 
 return [
     'Dashboard'          => 'Dashboard',
-    'Management System'  => 'Management System',
+    'KIA School System'  => 'KIA School System',
     'Sign In'            => 'Sign In',
     'Sign out'           => 'Sign out',
     'My Profile'         => 'My Profile',

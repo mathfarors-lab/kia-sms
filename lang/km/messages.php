@@ -2,7 +2,7 @@
 
 return [
     'Dashboard'          => 'ផ្ទាំងគ្រប់គ្រង',
-    'Management System'  => 'ប្រព័ន្ធគ្រប់គ្រង',
+    'KIA School System'  => 'KIA School System',
     'Sign In'            => 'ចូលប្រព័ន្ធ',
     'Sign out'           => 'ចាកចេញ',
     'My Profile'         => 'ប្រវត្តិរូបខ្ញុំ',

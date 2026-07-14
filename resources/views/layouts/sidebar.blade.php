@@ -47,8 +47,7 @@
     <div class="kia-sidebar-brand">
         <div class="kia-sidebar-brand-logo">KIA</div>
         <div class="kia-sidebar-brand-name">
-            KIA School
-            <span>{{ __('Management System') }}</span>
+            {{ __('KIA School System') }}
         </div>
     </div>
 
@@ -423,7 +422,7 @@
     {{-- Sidebar footer --}}
     <div class="kia-sidebar-footer">
         <div style="font-size:.72rem;color:rgba(255,255,255,.35);line-height:1.4;">
-            KIA School &copy; {{ date('Y') }}<br>
+            {{ __('KIA School System') }} &copy; {{ date('Y') }}<br>
             v1.0.0
         </div>
     </div>
