@@ -44,6 +44,7 @@ class RolePermissionSeeder extends Seeder
                 P::ID_CARDS_GENERATE, P::TRANSCRIPTS_VIEW, P::CERTIFICATES_ISSUE,
                 P::PROMOTION_MANAGE,
                 P::AUDIT_VIEW,
+                P::REPORT_COMMENTS_MANAGE,
             ],
 
             'teacher' => [
@@ -81,7 +82,7 @@ class RolePermissionSeeder extends Seeder
                 P::TRANSPORT_MANAGE, P::TRANSPORT_VIEW,
                 P::MESSAGES_SEND, P::MESSAGES_VIEW,
                 P::LEAVES_SUBMIT, P::LEAVES_VIEW,
-                P::GATE_SCAN,
+                P::GATE_SCAN, P::VISITORS_MANAGE,
             ],
 
             'student' => [

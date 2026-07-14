@@ -123,6 +123,53 @@ class ParentPortalTest extends TestCase
              ->assertDontSee('Draft Exam');
     }
 
+    // ── Gate scan arrival/departure history (M4) ─────────────────────────────────
+
+    public function test_parent_sees_gate_scan_arrival_and_departure_times(): void
+    {
+        $parent = $this->makeParent();
+        $child  = $this->makeStudent();
+        $this->linkChild($parent, $child);
+
+        $class   = SchoolClass::create(['name' => 'Grade 5']);
+        $section = Section::create(['school_class_id' => $class->id, 'name' => 'A']);
+
+        Attendance::create([
+            'student_id' => $child->id, 'section_id' => $section->id, 'date' => today(),
+            'status' => 'present', 'method' => 'gate_scan',
+            'arrival_time' => '07:12:00', 'departure_time' => '15:05:00',
+        ]);
+
+        $html = $this->actingAs($parent)
+            ->get(route('parent.child.show', $child))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('7:12 AM', $html);
+        $this->assertStringContainsString('3:05 PM', $html);
+    }
+
+    public function test_parent_sees_dash_when_no_gate_scan_recorded(): void
+    {
+        $parent = $this->makeParent();
+        $child  = $this->makeStudent();
+        $this->linkChild($parent, $child);
+
+        $class   = SchoolClass::create(['name' => 'Grade 5']);
+        $section = Section::create(['school_class_id' => $class->id, 'name' => 'A']);
+
+        // Manually-marked attendance — no arrival/departure time at all.
+        Attendance::create([
+            'student_id' => $child->id, 'section_id' => $section->id, 'date' => today(),
+            'status' => 'present', 'method' => 'manual',
+        ]);
+
+        $this->actingAs($parent)
+            ->get(route('parent.child.show', $child))
+            ->assertOk()
+            ->assertSee('—', false);
+    }
+
     // ── Non-parent cannot access portal ────────────────────────────────────────
 
     public function test_non_parent_cannot_access_children_list(): void

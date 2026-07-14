@@ -46,6 +46,8 @@ return [
     'my_timetable'      => 'My Timetable',
     'admissions'        => 'Admissions',
     'gate_station'      => 'Gate Scan Station',
+    'visitors'          => 'Visitor Log',
+    'report_comments'   => 'Comment Bank',
     'children'          => 'Children',
     'owner_section'     => 'Owner',
     'owner_dashboard'   => 'Owner Dashboard',

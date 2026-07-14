@@ -25,6 +25,9 @@ class SettingSeeder extends Seeder
             // Finance
             ['key' => 'invoice_prefix',    'value' => 'INV',                          'group' => 'finance'],
             ['key' => 'invoice_due_days',  'value' => '30',                           'group' => 'finance'],
+            // Sibling/family discount (M4) — percent off the subtotal, auto-applied
+            // at invoice generation. Set to 0 to disable for a branch.
+            ['key' => 'sibling_discount_percent', 'value' => '10', 'group' => 'finance'],
             // Gate scan station (M3) — per-branch, overridable from Settings like any other row
             ['key' => 'gate_late_cutoff',    'value' => '07:30', 'group' => 'gate'],
             ['key' => 'gate_absent_cutoff',  'value' => '09:00', 'group' => 'gate'],

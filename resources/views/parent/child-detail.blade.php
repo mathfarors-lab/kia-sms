@@ -36,6 +36,8 @@
                     <tr>
                         <th>{{ __('Date') }}</th>
                         <th>{{ __('Status') }}</th>
+                        <th>{{ __('gate.col_arrival') }}</th>
+                        <th>{{ __('gate.col_departure') }}</th>
                         <th>{{ __('Remark') }}</th>
                     </tr>
                 </thead>
@@ -47,10 +49,17 @@
                             @php $colors = ['present'=>'pill-ok','late'=>'pill-warn','absent'=>'pill-danger','excused'=>'pill-muted']; @endphp
                             <span class="pill {{ $colors[$rec->status] ?? 'pill-muted' }}">{{ ucfirst($rec->status) }}</span>
                         </td>
+                        <td>
+                            @if($rec->arrival_time)
+                                {{ \Illuminate\Support\Carbon::parse($rec->arrival_time)->format('g:i A') }}
+                                @if($rec->method === 'gate_scan')<span class="pill pill-muted" style="font-size:.65rem;">{{ __('gate.via_gate') }}</span>@endif
+                            @else — @endif
+                        </td>
+                        <td>{{ $rec->departure_time ? \Illuminate\Support\Carbon::parse($rec->departure_time)->format('g:i A') : '—' }}</td>
                         <td>{{ $rec->remark ?? '—' }}</td>
                     </tr>
                     @empty
-                    <tr><td colspan="3" class="text-center">{{ __('No attendance records.') }}</td></tr>
+                    <tr><td colspan="5" class="text-center">{{ __('No attendance records.') }}</td></tr>
                     @endforelse
                 </tbody>
             </table>

@@ -41,6 +41,14 @@ final class Permissions
     // class's attendance, just to operate the scan kiosk.
     const GATE_SCAN = 'gate.scan';
 
+    // Visitor log — front-desk workflow, same audience as GATE_SCAN.
+    const VISITORS_MANAGE = 'visitors.manage';
+
+    // Report-card comment bank — managing the canned-phrase list itself is
+    // an academic-setup task (same tier as grade scales), separate from
+    // TERM_RESULTS_MANAGE which governs actually using a comment on a result.
+    const REPORT_COMMENTS_MANAGE = 'report-comments.manage';
+
     // Exams
     const EXAMS_VIEW    = 'exams.view';
     const EXAMS_MANAGE  = 'exams.manage';
@@ -140,6 +148,7 @@ final class Permissions
             self::ACADEMIC_YEARS_MANAGE, self::CLASSES_MANAGE, self::SECTIONS_MANAGE,
             self::SUBJECTS_MANAGE, self::TIMETABLES_MANAGE, self::TIMETABLES_VIEW,
             self::ATTENDANCE_VIEW, self::ATTENDANCE_MARK, self::GATE_SCAN,
+            self::VISITORS_MANAGE, self::REPORT_COMMENTS_MANAGE,
             self::EXAMS_VIEW, self::EXAMS_MANAGE, self::EXAMS_PUBLISH,
             self::MARKS_ENTRY, self::MARKS_VIEW,
             self::INVOICES_VIEW, self::INVOICES_CREATE, self::INVOICES_MANAGE,

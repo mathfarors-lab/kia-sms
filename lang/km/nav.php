@@ -46,6 +46,8 @@ return [
     'my_timetable'      => 'កាលវិភាគរបស់ខ្ញុំ',
     'admissions'        => 'ការចុះឈ្មោះចូលរៀន',
     'gate_station'      => 'ស្ថានីយ៍ស្កេនច្រកចូល',
+    'visitors'          => 'កំណត់ត្រាភ្ញៀវ',
+    'report_comments'   => 'ឃ្លាំងមតិយោបល់',
     'children'          => 'កូនៗ',
     'owner_section'     => 'ម្ចាស់',
     'owner_dashboard'   => 'ផ្ទាំងម្ចាស់',

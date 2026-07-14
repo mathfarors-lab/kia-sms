@@ -48,6 +48,8 @@ return [
     'weight'    => 'Weight',
 
     'teacher_remark'       => 'Class Teacher Remark',
+    'edit_remark'          => 'Edit Remark',
+    'remark_saved'         => 'Remark saved.',
     'missing_marks_flag'   => 'Missing marks',
     'missing_marks_warning' => 'This result has missing marks. The average may not reflect the full assessment.',
 

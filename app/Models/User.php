@@ -42,6 +42,8 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
     ];
 
     protected function casts(): array
@@ -49,7 +51,21 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'two_factor_secret' => 'encrypted',
+            'two_factor_recovery_codes' => 'encrypted:array',
+            'two_factor_confirmed_at' => 'datetime',
         ];
+    }
+
+    public function hasTwoFactorEnabled(): bool
+    {
+        return $this->two_factor_confirmed_at !== null;
+    }
+
+    /** Opt-in 2FA is available to everyone; these are the roles it's actively recommended for. */
+    public function shouldBeStronglyEncouragedToEnable2fa(): bool
+    {
+        return $this->hasAnyRole(['owner', 'admin', 'accountant', 'principal']);
     }
 
     public function student(): \Illuminate\Database\Eloquent\Relations\HasOne

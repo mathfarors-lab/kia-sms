@@ -8,6 +8,8 @@ use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Auth\TwoFactorChallengeController;
+use App\Http\Controllers\Auth\TwoFactorSettingsController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
@@ -34,6 +36,15 @@ Route::middleware('guest')->group(function () {
 
     Route::post('reset-password', [NewPasswordController::class, 'store'])
         ->name('password.store');
+
+    // Login-time second-factor step. Reached mid-login only (see
+    // AuthenticatedSessionController::store()) — Auth::logout() already ran
+    // by the time a user lands here, so 'guest' middleware is correct.
+    Route::get('two-factor-challenge', [TwoFactorChallengeController::class, 'show'])
+        ->name('two-factor.challenge');
+    Route::post('two-factor-challenge', [TwoFactorChallengeController::class, 'verify'])
+        ->middleware('throttle:10,1')
+        ->name('two-factor.challenge.verify');
 });
 
 Route::middleware('auth')->group(function () {
@@ -57,4 +68,11 @@ Route::middleware('auth')->group(function () {
 
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
+
+    // Self-service 2FA — opt-in for every authenticated user.
+    Route::get('security', [TwoFactorSettingsController::class, 'show'])->name('two-factor.settings');
+    Route::post('security/two-factor/enable', [TwoFactorSettingsController::class, 'enable'])->name('two-factor.enable');
+    Route::post('security/two-factor/confirm', [TwoFactorSettingsController::class, 'confirm'])->name('two-factor.confirm');
+    Route::get('security/two-factor/recovery-codes', [TwoFactorSettingsController::class, 'showRecoveryCodes'])->name('two-factor.recovery-codes.show');
+    Route::post('security/two-factor/disable', [TwoFactorSettingsController::class, 'disable'])->name('two-factor.disable');
 });

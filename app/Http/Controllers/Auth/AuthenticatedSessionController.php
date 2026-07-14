@@ -26,6 +26,22 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
+        $user = Auth::user();
+
+        // Opt-in 2FA: credentials are correct, but if this account has 2FA
+        // confirmed, undo the full login and hold them at a challenge step
+        // instead — session('2fa_user_id') is the only trace of who they
+        // are until the second factor passes.
+        if ($user->hasTwoFactorEnabled()) {
+            Auth::logout();
+
+            $request->session()->put('2fa_user_id', $user->id);
+            $request->session()->put('2fa_remember', $request->boolean('remember'));
+            $request->session()->put('2fa_intended', redirect()->intended(route('dashboard', absolute: false))->getTargetUrl());
+
+            return redirect()->route('two-factor.challenge');
+        }
+
         $request->session()->regenerate();
 
         return redirect()->intended(route('dashboard', absolute: false));

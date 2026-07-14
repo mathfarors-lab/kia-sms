@@ -28,7 +28,8 @@
         : null;
 
     $navAcademic = $can(P::ACADEMIC_YEARS_MANAGE) || $can(P::CLASSES_MANAGE)
-                || $can(P::SUBJECTS_MANAGE)        || $can(P::SETTINGS_MANAGE);
+                || $can(P::SUBJECTS_MANAGE)        || $can(P::SETTINGS_MANAGE)
+                || $can(P::REPORT_COMMENTS_MANAGE);
     $navStudents = $can(P::STUDENTS_VIEW) || $can(P::ATTENDANCE_MARK) || $can(P::PROMOTION_MANAGE)
                 || $can(P::ADMISSIONS_VIEW) || $can(P::GATE_SCAN) || $myTimetableSection !== null;
     $navExams    = $can(P::EXAMS_MANAGE)  || $can(P::MARKS_ENTRY)     || $can(P::TERM_RESULTS_MANAGE);
@@ -37,7 +38,7 @@
                 || $can(P::HOMEWORK_MANAGE)     || $can(P::HOMEWORK_GRADE)
                 || $can(P::HOMEWORK_SUBMIT)     || $can(P::HOMEWORK_VIEW);
     $navOps      = $can(P::BOOKS_VIEW) || $u->can('viewAny', TransportRoute::class)
-                || $can(P::LEAVES_VIEW) || $can(P::STAFF_VIEW);
+                || $can(P::LEAVES_VIEW) || $can(P::STAFF_VIEW) || $can(P::VISITORS_MANAGE);
     $navSystem   = $can(P::ANALYTICS_VIEW) || $can(P::REPORTS_VIEW) || $can(P::AUDIT_VIEW)
                 || $can(P::USERS_MANAGE)   || $can(P::SETTINGS_MANAGE);
 @endphp
@@ -119,6 +120,15 @@
                 <polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/>
             </svg>
             {{ __('nav.grade_scales') }}
+        </a>
+        @endif
+
+        @if($can(P::REPORT_COMMENTS_MANAGE))
+        <a href="{{ route('report-comments.index') }}" class="kia-nav-item {{ request()->routeIs('report-comments.*') ? 'active' : '' }}">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            {{ __('nav.report_comments') }}
         </a>
         @endif
         @endif
@@ -339,6 +349,16 @@
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
             </svg>
             {{ __('nav.staff') }}
+        </a>
+        @endif
+
+        @if($can(P::VISITORS_MANAGE))
+        <a href="{{ route('visitors.index') }}" class="kia-nav-item {{ request()->routeIs('visitors.*') ? 'active' : '' }}">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                <path d="M22 21v-1a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            {{ __('nav.visitors') }}
         </a>
         @endif
         @endif

@@ -48,6 +48,8 @@ return [
     'weight'    => 'ទំងន់',
 
     'teacher_remark'        => 'យោបល់គ្រូថ្នាក់',
+    'edit_remark'           => 'កែសម្រួលយោបល់',
+    'remark_saved'          => 'បានរក្សាទុកយោបល់។',
     'missing_marks_flag'    => 'ពិន្ទុខ្វះ',
     'missing_marks_warning' => 'លទ្ធផលនេះមានពិន្ទុខ្វះ។ មធ្យមប្រហែលជាមិនបញ្ជាក់ពេញ។',
 

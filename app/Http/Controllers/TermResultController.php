@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AcademicYear;
 use App\Models\Exam;
+use App\Models\ReportComment;
 use App\Models\Section;
 use App\Models\Student;
 use App\Models\TermResult;
@@ -160,6 +161,43 @@ class TermResultController extends Controller
         $filename = "term-report-{$student->student_code}-{$academicYear->id}-{$label}.pdf";
 
         return $pdf->download($filename);
+    }
+
+    /** Edit form for a single student's teacher_remark, with a pick-from-bank shortcut. */
+    public function editRemark(AcademicYear $academicYear, string $semesterSlug, Student $student)
+    {
+        $this->authorize(P::TERM_RESULTS_MANAGE);
+
+        $semester   = $semesterSlug === 'annual' ? null : (int) $semesterSlug;
+        $termResult = TermResult::where([
+            'academic_year_id' => $academicYear->id,
+            'semester'         => $semester,
+            'student_id'       => $student->id,
+        ])->firstOrFail();
+
+        $comments = ReportComment::orderBy('category')->orderBy('id')->get();
+
+        return view('term-results.edit-remark', compact(
+            'academicYear', 'semesterSlug', 'student', 'termResult', 'comments'
+        ));
+    }
+
+    public function updateRemark(Request $request, AcademicYear $academicYear, string $semesterSlug, Student $student)
+    {
+        $this->authorize(P::TERM_RESULTS_MANAGE);
+
+        $data = $request->validate(['teacher_remark' => ['nullable', 'string', 'max:2000']]);
+
+        $semester = $semesterSlug === 'annual' ? null : (int) $semesterSlug;
+        TermResult::where([
+            'academic_year_id' => $academicYear->id,
+            'semester'         => $semester,
+            'student_id'       => $student->id,
+        ])->firstOrFail()->update(['teacher_remark' => $data['teacher_remark']]);
+
+        return redirect()
+            ->route('term-results.show', [$academicYear, $semesterSlug, $student])
+            ->with('success', __('term_results.remark_saved'));
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────────

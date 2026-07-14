@@ -32,4 +32,9 @@ return [
     'col_on_time'                => 'On Time',
     'col_late'                   => 'Late',
     'col_total_days'             => 'Days Recorded',
+
+    // Parent portal entry/exit history
+    'col_arrival'   => 'Arrival',
+    'col_departure' => 'Departure',
+    'via_gate'      => 'Gate',
 ];

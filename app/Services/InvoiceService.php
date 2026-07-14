@@ -7,7 +7,9 @@ use App\Models\FeeStructure;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\InvoiceSequence;
+use App\Models\Scholarship;
 use App\Models\SchoolClass;
+use App\Models\Setting;
 use App\Models\Student;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -55,6 +57,8 @@ class InvoiceService
             }
 
             $student = Student::with('scholarships')->find($studentId);
+            $this->syncSiblingDiscount($student);
+            $student->load('scholarships'); // sync above may have added/removed a row
             $scholarship = $student->scholarships()->where('is_active', true)->first();
 
             DB::transaction(function () use ($student, $year, $term, $fees, $scholarship, $dueDate, &$created, &$numbers) {
@@ -113,6 +117,65 @@ class InvoiceService
         }
 
         return ['created' => $created, 'skipped' => $skipped, 'invoice_numbers' => $numbers];
+    }
+
+    /**
+     * Auto-applies (or removes) a sibling/family discount just before
+     * invoice generation reads a student's scholarship — "auto-apply...
+     * instead of manually creating a scholarship per child" means this is a
+     * REPLACEMENT for the manual step, not a bonus stacked on top: a
+     * sibling discount never applies if the student already has some OTHER
+     * active scholarship (merit, staff-child, etc.), and — because
+     * generateForClass() only ever reads a single "first active
+     * scholarship" — stacking would be silently arbitrary (whichever row
+     * happens to come back first) rather than a real policy.
+     *
+     * "Siblings" = shares at least one guardian with another currently
+     * enrolled student. Percent is a per-branch Setting (sibling_discount_
+     * percent, default 10) so each branch can tune or disable it — set to
+     * 0 to opt out entirely.
+     *
+     * The scholarship row itself is marked is_sibling_discount so this sync
+     * can always find and own ONLY the row it created — a manually-entered
+     * scholarship is never touched, activated, or deactivated by this.
+     */
+    private function syncSiblingDiscount(Student $student): void
+    {
+        $guardianIds = DB::table('student_guardian')->where('student_id', $student->id)->pluck('guardian_id');
+
+        $hasEnrolledSibling = $guardianIds->isNotEmpty() && DB::table('student_guardian')
+            ->join('students', 'students.id', '=', 'student_guardian.student_id')
+            ->whereIn('student_guardian.guardian_id', $guardianIds)
+            ->where('student_guardian.student_id', '!=', $student->id)
+            ->where('students.status', 'enrolled')
+            ->exists();
+
+        $hasOtherActiveScholarship = $student->scholarships()
+            ->where('is_active', true)
+            ->where('is_sibling_discount', false)
+            ->exists();
+
+        $existing = $student->scholarships()->where('is_sibling_discount', true)->first();
+        $percent = (float) Setting::get('sibling_discount_percent', '10');
+
+        $shouldApply = $hasEnrolledSibling && !$hasOtherActiveScholarship && $percent > 0;
+
+        if ($shouldApply) {
+            if ($existing) {
+                $existing->update(['value' => $percent, 'is_active' => true]);
+            } else {
+                Scholarship::create([
+                    'student_id'          => $student->id,
+                    'type'                => 'percent',
+                    'value'               => $percent,
+                    'reason'              => __('scholarship.sibling_discount_reason'),
+                    'is_active'           => true,
+                    'is_sibling_discount' => true,
+                ]);
+            }
+        } elseif ($existing && $existing->is_active) {
+            $existing->update(['is_active' => false]);
+        }
     }
 
     /**

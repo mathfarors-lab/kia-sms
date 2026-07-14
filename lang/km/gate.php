@@ -32,4 +32,9 @@ return [
     'col_on_time'                => 'ទាន់ពេល',
     'col_late'                   => 'យឺត',
     'col_total_days'             => 'ចំនួនថ្ងៃដែលបានកត់ត្រា',
+
+    // Parent portal entry/exit history
+    'col_arrival'   => 'ម៉ោងមកដល់',
+    'col_departure' => 'ម៉ោងចាកចេញ',
+    'via_gate'      => 'ច្រកចូល',
 ];

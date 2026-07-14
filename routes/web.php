@@ -22,6 +22,7 @@ use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportCardController;
+use App\Http\Controllers\ReportCommentController;
 use App\Http\Controllers\ScholarshipController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\StudentController;
@@ -33,6 +34,7 @@ use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\TimetableController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\GateController;
+use App\Http\Controllers\VisitorLogController;
 use App\Http\Controllers\GradeScaleController;
 use App\Http\Controllers\ExamController;
 use App\Http\Controllers\ExamMarkController;
@@ -111,6 +113,11 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/gate/scan', [GateController::class, 'scan'])->name('gate.scan');
     Route::get('/gate/arrivals-feed', [GateController::class, 'arrivalsFeed'])->name('gate.arrivals-feed');
 
+    // Visitor log (M4) — same front-desk audience as the gate station.
+    Route::get('/visitors', [VisitorLogController::class, 'index'])->name('visitors.index');
+    Route::post('/visitors', [VisitorLogController::class, 'store'])->name('visitors.store');
+    Route::post('/visitors/{visitor}/check-out', [VisitorLogController::class, 'checkOut'])->name('visitors.check-out');
+
     // Grade Scales
     Route::resource('grade-scales', GradeScaleController::class)->except(['show']);
 
@@ -135,6 +142,16 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/{academicYear}/publish', [TermResultController::class, 'publish'])->name('publish');
         Route::get('/{academicYear}/{semesterSlug}/{student}', [TermResultController::class, 'show'])->name('show');
         Route::get('/{academicYear}/{semesterSlug}/{student}/pdf', [TermResultController::class, 'pdf'])->name('pdf');
+        Route::get('/{academicYear}/{semesterSlug}/{student}/remark', [TermResultController::class, 'editRemark'])->name('remark.edit');
+        Route::patch('/{academicYear}/{semesterSlug}/{student}/remark', [TermResultController::class, 'updateRemark'])->name('remark.update');
+    });
+
+    // Report-card comment bank (M4)
+    Route::prefix('report-comments')->name('report-comments.')->group(function () {
+        Route::get('/', [ReportCommentController::class, 'index'])->name('index');
+        Route::post('/', [ReportCommentController::class, 'store'])->name('store');
+        Route::patch('/{comment}', [ReportCommentController::class, 'update'])->name('update');
+        Route::delete('/{comment}', [ReportCommentController::class, 'destroy'])->name('destroy');
     });
 
     // ID Cards

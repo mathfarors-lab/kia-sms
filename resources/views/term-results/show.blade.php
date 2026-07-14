@@ -7,6 +7,10 @@
             <p class="kia-page-sub">{{ $academicYear->name }}</p>
         </div>
         <div style="display:flex;gap:8px;">
+            @can('term-results.manage')
+            <a href="{{ route('term-results.remark.edit', [$academicYear, $semesterSlug, $student]) }}"
+               class="btn btn-outline">{{ __('term_results.edit_remark') }}</a>
+            @endcan
             <a href="{{ route('term-results.pdf', [$academicYear, $semesterSlug, $student]) }}"
                class="btn btn-primary">{{ __('term_results.download_pdf') }}</a>
             <a href="{{ route('term-results.index', ['year' => $academicYear->id, 'semester' => $semesterSlug]) }}"
