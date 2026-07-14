@@ -30,7 +30,7 @@
     $navAcademic = $can(P::ACADEMIC_YEARS_MANAGE) || $can(P::CLASSES_MANAGE)
                 || $can(P::SUBJECTS_MANAGE)        || $can(P::SETTINGS_MANAGE);
     $navStudents = $can(P::STUDENTS_VIEW) || $can(P::ATTENDANCE_MARK) || $can(P::PROMOTION_MANAGE)
-                || $can(P::ADMISSIONS_VIEW) || $myTimetableSection !== null;
+                || $can(P::ADMISSIONS_VIEW) || $can(P::GATE_SCAN) || $myTimetableSection !== null;
     $navExams    = $can(P::EXAMS_MANAGE)  || $can(P::MARKS_ENTRY)     || $can(P::TERM_RESULTS_MANAGE);
     $navFinance  = $can(P::INVOICES_VIEW) || $can(P::FEES_MANAGE)     || $can(P::REPORTS_VIEW);
     $navEngage   = $can(P::ANNOUNCEMENTS_VIEW) || $can(P::MESSAGES_VIEW)
@@ -154,6 +154,16 @@
                 <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
             </svg>
             {{ __('nav.attendance') }}
+        </a>
+        @endif
+
+        @if($can(P::GATE_SCAN))
+        <a href="{{ route('gate.station') }}" class="kia-nav-item" target="_blank">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <rect x="3" y="8" width="18" height="12" rx="2"/><path d="M7 8V6a5 5 0 0 1 10 0v2"/>
+                <circle cx="12" cy="14" r="1.5"/>
+            </svg>
+            {{ __('nav.gate_station') }}
         </a>
         @endif
 

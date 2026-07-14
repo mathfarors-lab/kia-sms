@@ -36,6 +36,11 @@ final class Permissions
     const ATTENDANCE_VIEW = 'attendance.view';
     const ATTENDANCE_MARK = 'attendance.mark';
 
+    // Gate scan station — deliberately separate from ATTENDANCE_MARK: a gate
+    // operator (receptionist/guard) doesn't need the ability to hand-edit a
+    // class's attendance, just to operate the scan kiosk.
+    const GATE_SCAN = 'gate.scan';
+
     // Exams
     const EXAMS_VIEW    = 'exams.view';
     const EXAMS_MANAGE  = 'exams.manage';
@@ -134,7 +139,7 @@ final class Permissions
             self::STAFF_VIEW, self::STAFF_CREATE, self::STAFF_EDIT, self::STAFF_DELETE,
             self::ACADEMIC_YEARS_MANAGE, self::CLASSES_MANAGE, self::SECTIONS_MANAGE,
             self::SUBJECTS_MANAGE, self::TIMETABLES_MANAGE, self::TIMETABLES_VIEW,
-            self::ATTENDANCE_VIEW, self::ATTENDANCE_MARK,
+            self::ATTENDANCE_VIEW, self::ATTENDANCE_MARK, self::GATE_SCAN,
             self::EXAMS_VIEW, self::EXAMS_MANAGE, self::EXAMS_PUBLISH,
             self::MARKS_ENTRY, self::MARKS_VIEW,
             self::INVOICES_VIEW, self::INVOICES_CREATE, self::INVOICES_MANAGE,

@@ -27,3 +27,13 @@ Schedule::command('bakong:check-transactions')
  */
 Schedule::command('backup:clean')->dailyAt('01:30');
 Schedule::command('backup:run')->dailyAt('02:00');
+
+/**
+ * Gate attendance: sweep students who never scanned in past each branch's
+ * own gate_absent_cutoff setting. Idempotent (see the command's own
+ * docblock) — every-15-minutes just controls how promptly a branch's
+ * cutoff gets noticed, not correctness.
+ */
+Schedule::command('attendance:sweep-gate-absentees')
+    ->everyFifteenMinutes()
+    ->withoutOverlapping();

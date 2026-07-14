@@ -25,6 +25,10 @@ class SettingSeeder extends Seeder
             // Finance
             ['key' => 'invoice_prefix',    'value' => 'INV',                          'group' => 'finance'],
             ['key' => 'invoice_due_days',  'value' => '30',                           'group' => 'finance'],
+            // Gate scan station (M3) — per-branch, overridable from Settings like any other row
+            ['key' => 'gate_late_cutoff',    'value' => '07:30', 'group' => 'gate'],
+            ['key' => 'gate_absent_cutoff',  'value' => '09:00', 'group' => 'gate'],
+            ['key' => 'gate_track_departure','value' => '0',     'group' => 'gate'],
         ];
 
         foreach ($settings as $s) {

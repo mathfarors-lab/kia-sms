@@ -32,6 +32,7 @@ use App\Http\Controllers\SectionController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\TimetableController;
 use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\GateController;
 use App\Http\Controllers\GradeScaleController;
 use App\Http\Controllers\ExamController;
 use App\Http\Controllers\ExamMarkController;
@@ -104,6 +105,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance.index');
     Route::get('/sections/{section}/attendance', [AttendanceController::class, 'markForm'])->name('attendance.mark');
     Route::post('/sections/{section}/attendance', [AttendanceController::class, 'mark'])->name('attendance.store');
+
+    // Gate scan station (M3) — kiosk page + the API it polls/posts to.
+    Route::get('/gate', [GateController::class, 'station'])->name('gate.station');
+    Route::post('/gate/scan', [GateController::class, 'scan'])->name('gate.scan');
+    Route::get('/gate/arrivals-feed', [GateController::class, 'arrivalsFeed'])->name('gate.arrivals-feed');
 
     // Grade Scales
     Route::resource('grade-scales', GradeScaleController::class)->except(['show']);
@@ -238,6 +244,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/reports/enrollment', [ReportController::class, 'enrollmentRoster'])->name('reports.enrollment');
     Route::get('/reports/attendance', [ReportController::class, 'attendanceSummary'])->name('reports.attendance');
     Route::get('/reports/fees', [ReportController::class, 'feeCollection'])->name('reports.fees');
+    Route::get('/reports/staff-punctuality', [ReportController::class, 'staffPunctuality'])->name('reports.staff-punctuality');
 
     // Leave
     Route::get('/leaves', [LeaveController::class, 'index'])->name('leaves.index');

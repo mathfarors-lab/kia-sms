@@ -81,6 +81,7 @@ class RolePermissionSeeder extends Seeder
                 P::TRANSPORT_MANAGE, P::TRANSPORT_VIEW,
                 P::MESSAGES_SEND, P::MESSAGES_VIEW,
                 P::LEAVES_SUBMIT, P::LEAVES_VIEW,
+                P::GATE_SCAN,
             ],
 
             'student' => [

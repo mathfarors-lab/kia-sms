@@ -18,6 +18,9 @@
             <div class="kia-stat-value">{{ $stats['total_staff'] }}</div>
         </div>
     </div>
+
+    @include('dashboard.partials.arrivals-widget')
+
     <div class="kia-card">
         <div class="kia-card-header" style="display:flex;align-items:center;justify-content:space-between;">
             <h2 class="kia-card-title">

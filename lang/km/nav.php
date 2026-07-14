@@ -45,6 +45,7 @@ return [
     'my_attendance'     => 'វត្តមានរបស់ខ្ញុំ',
     'my_timetable'      => 'កាលវិភាគរបស់ខ្ញុំ',
     'admissions'        => 'ការចុះឈ្មោះចូលរៀន',
+    'gate_station'      => 'ស្ថានីយ៍ស្កេនច្រកចូល',
     'children'          => 'កូនៗ',
     'owner_section'     => 'ម្ចាស់',
     'owner_dashboard'   => 'ផ្ទាំងម្ចាស់',

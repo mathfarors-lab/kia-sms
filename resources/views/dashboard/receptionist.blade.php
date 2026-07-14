@@ -13,11 +13,16 @@
             <div class="kia-stat-value">{{ $stats['enrolled'] }}</div>
         </div>
     </div>
-    <div class="kia-card">
+    <div class="kia-card" style="margin-bottom:24px;">
         <div class="kia-card-header"><h2 class="kia-card-title">{{ __('Quick Actions') }}</h2></div>
         <div class="kia-card-body" style="display:flex;gap:12px;">
             <a href="{{ route('students.create') }}" class="btn btn-primary">{{ __('Register Student') }}</a>
             <a href="{{ route('students.index') }}" class="btn btn-outline">{{ __('Search Students') }}</a>
+            @can('gate.scan')
+            <a href="{{ route('gate.station') }}" class="btn btn-outline" target="_blank">{{ __('gate.view_gate_station') }}</a>
+            @endcan
         </div>
     </div>
+
+    @include('dashboard.partials.arrivals-widget')
 </x-app-layout>

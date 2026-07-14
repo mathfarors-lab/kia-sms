@@ -176,6 +176,46 @@ class AnalyticsService
         });
     }
 
+    /**
+     * "Arrivals Today" dashboard widget data: live counts + a recent-scans
+     * feed. Deliberately NOT cached (unlike every other method here) — the
+     * whole point is a live-feeling widget via short polling; caching this
+     * would defeat that.
+     */
+    public function todayArrivalsFeed(int $recentLimit = 10): array
+    {
+        $today = today()->toDateString();
+
+        $counts = BranchContext::apply(
+            DB::table('attendances')->whereDate('date', $today)
+        )->selectRaw("
+                SUM(CASE WHEN status = 'present' THEN 1 ELSE 0 END) as present,
+                SUM(CASE WHEN status = 'late' THEN 1 ELSE 0 END) as late,
+                SUM(CASE WHEN status = 'absent' THEN 1 ELSE 0 END) as absent
+            ")->first();
+
+        $recent = BranchContext::apply(
+            DB::table('attendances')
+                ->join('students', 'students.id', '=', 'attendances.student_id')
+                ->whereDate('attendances.date', $today)
+                ->where('attendances.method', 'gate_scan'),
+            'attendances.branch_id'
+        )->select(
+                'students.name_en', 'students.name_km', 'students.student_code',
+                'attendances.status', 'attendances.arrival_time', 'attendances.departure_time'
+            )
+            ->orderByDesc('attendances.arrival_time')
+            ->limit($recentLimit)
+            ->get();
+
+        return [
+            'present' => (int) ($counts->present ?? 0),
+            'late'    => (int) ($counts->late ?? 0),
+            'absent'  => (int) ($counts->absent ?? 0),
+            'recent'  => $recent,
+        ];
+    }
+
     public function attendanceByMonth(AcademicYear $year): array
     {
         $key = "analytics:attendance-by-month:{$year->id}:" . BranchContext::cacheKeySuffix();

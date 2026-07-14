@@ -45,6 +45,7 @@ return [
     'my_attendance'     => 'My Attendance',
     'my_timetable'      => 'My Timetable',
     'admissions'        => 'Admissions',
+    'gate_station'      => 'Gate Scan Station',
     'children'          => 'Children',
     'owner_section'     => 'Owner',
     'owner_dashboard'   => 'Owner Dashboard',

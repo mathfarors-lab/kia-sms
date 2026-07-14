@@ -206,6 +206,45 @@ class ReportController extends Controller
         return view('reports.fee', compact('year', 'rows', 'totalCollected'));
     }
 
+    /** Staff punctuality: on-time vs. late gate-scan arrivals per staff member, by month. */
+    public function staffPunctuality(Request $request)
+    {
+        Gate::authorize(Permissions::REPORTS_VIEW);
+
+        $month = $request->input('month') ?: now()->format('Y-m');
+        $start = \Illuminate\Support\Carbon::createFromFormat('Y-m', $month)->startOfMonth();
+        $end   = $start->copy()->endOfMonth();
+
+        $rows = BranchContext::apply(
+            DB::table('staff_attendances')
+                ->join('staff', 'staff.id', '=', 'staff_attendances.staff_id')
+                ->join('users', 'users.id', '=', 'staff.user_id')
+                ->whereBetween('staff_attendances.date', [$start->toDateString(), $end->toDateString()]),
+            'staff_attendances.branch_id'
+        )->select(
+                'users.name',
+                'staff.staff_code',
+                DB::raw("SUM(CASE WHEN staff_attendances.status = 'present' THEN 1 ELSE 0 END) as on_time"),
+                DB::raw("SUM(CASE WHEN staff_attendances.status = 'late' THEN 1 ELSE 0 END) as late"),
+                DB::raw("COUNT(*) as total_days")
+            )
+            ->groupBy('staff.id', 'users.name', 'staff.staff_code')
+            ->orderBy('users.name')
+            ->get();
+
+        if ($request->format === 'pdf') {
+            return $this->pdfResponse('reports.pdf.staff-punctuality', compact('month', 'rows'), "staff-punctuality-{$month}.pdf");
+        }
+
+        if ($request->format === 'excel') {
+            return $this->excelResponse($rows, "staff-punctuality-{$month}.xlsx", [
+                'Staff', 'Code', 'On Time', 'Late', 'Days Recorded',
+            ], ['name', 'staff_code', 'on_time', 'late', 'total_days']);
+        }
+
+        return view('reports.staff-punctuality', compact('month', 'rows'));
+    }
+
     private function pdfResponse(string $view, array $data, string $filename)
     {
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView($view, $data);

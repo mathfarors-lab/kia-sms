@@ -78,5 +78,18 @@
                 </div>
             </form>
         </div>
+
+        <div class="kia-card" style="padding:1.5rem">
+            <h3 style="font-size:1rem;font-weight:600;margin-bottom:.5rem">{{ __('gate.staff_punctuality') }}</h3>
+            <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:1rem">{{ __('gate.staff_punctuality_desc') }}</p>
+            <form method="GET" action="{{ route('reports.staff-punctuality') }}" style="display:flex;flex-direction:column;gap:.5rem">
+                <input type="month" name="month" class="form-control" value="{{ now()->format('Y-m') }}">
+                <div style="display:flex;gap:.5rem">
+                    <button name="format" value="pdf" class="btn btn-secondary" style="flex:1">PDF</button>
+                    <button name="format" value="excel" class="btn btn-secondary" style="flex:1">CSV</button>
+                    <button class="btn btn-primary" style="flex:1">View</button>
+                </div>
+            </form>
+        </div>
     </div>
 </x-app-layout>

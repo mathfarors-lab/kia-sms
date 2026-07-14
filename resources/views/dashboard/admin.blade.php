@@ -94,6 +94,8 @@
         </div>
     </div>
 
+    @include('dashboard.partials.arrivals-widget')
+
     {{-- Recent activity — same sensitive-field stripping as /audit --}}
     <div class="kia-card">
         <div class="kia-card-header">
