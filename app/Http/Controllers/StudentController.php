@@ -59,7 +59,7 @@ class StudentController extends Controller
     public function show(Student $student)
     {
         $this->authorize('students.view');
-        $student->load('guardians');
+        $student->load('guardians', 'issuedDocuments');
         return view('students.show', compact('student'));
     }
 

@@ -3,11 +3,13 @@
 namespace Tests\Feature;
 
 use App\Models\AcademicYear;
+use App\Models\IssuedDocument;
 use App\Models\SchoolClass;
 use App\Models\Section;
 use App\Models\Staff;
 use App\Models\Student;
 use App\Models\User;
+use App\Services\StaffService;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
@@ -64,6 +66,13 @@ class IdCardTest extends TestCase
         $section = Section::create(['school_class_id' => $class->id, 'name' => 'A']);
         $section->students()->attach($student->id, ['academic_year_id' => $year->id]);
         return $section;
+    }
+
+    private function makeStaff(string $role = 'teacher'): Staff
+    {
+        return app(StaffService::class)->store([
+            'name' => 'Staff-' . uniqid(), 'email' => 'staff-' . uniqid() . '@kia.edu.kh', 'role' => $role,
+        ]);
     }
 
     // ── Tests ─────────────────────────────────────────────────────────────────────
@@ -196,6 +205,83 @@ class IdCardTest extends TestCase
 
         $this->actingAs($teacher)
             ->get(route('id-cards.student.show', $student))
+            ->assertOk();
+    }
+
+    /** Viewing a student ID card auto-backfills an IssuedDocument record. */
+    public function test_viewing_student_id_card_records_issuance(): void
+    {
+        $year = $this->makeYear();
+        [, $student] = $this->makeStudentUser();
+        $this->attachToSection($student, $year);
+
+        $this->actingAs($this->makeAdmin())->get(route('id-cards.student.show', $student));
+
+        $this->assertDatabaseHas('issued_documents', [
+            'student_id' => $student->id, 'type' => IssuedDocument::TYPE_ID_CARD,
+        ]);
+    }
+
+    // ── Staff card authorization (regression: this used to have no ownership check) ─
+
+    public function test_staff_member_can_download_their_own_id_card(): void
+    {
+        $staff = $this->makeStaff();
+
+        $this->actingAs($staff->user)
+            ->get(route('id-cards.staff.pdf', $staff))
+            ->assertOk();
+    }
+
+    public function test_staff_member_cannot_download_another_staffs_id_card(): void
+    {
+        $staffA = $this->makeStaff();
+        $staffB = $this->makeStaff();
+
+        $this->actingAs($staffA->user)
+            ->get(route('id-cards.staff.pdf', $staffB))
+            ->assertForbidden();
+    }
+
+    /** The actual bug: a student holds id-cards.generate for their OWN card, which used to be enough to pass pdfStaff() too. */
+    public function test_student_cannot_download_a_staff_id_card(): void
+    {
+        $staff = $this->makeStaff();
+        [$studentUser] = $this->makeStudentUser();
+
+        $this->actingAs($studentUser)
+            ->get(route('id-cards.staff.pdf', $staff))
+            ->assertForbidden();
+    }
+
+    public function test_parent_cannot_download_a_staff_id_card(): void
+    {
+        $staff  = $this->makeStaff();
+        $parent = User::factory()->create(['status' => 'active']);
+        $parent->assignRole('parent');
+
+        $this->actingAs($parent)
+            ->get(route('id-cards.staff.pdf', $staff))
+            ->assertForbidden();
+    }
+
+    public function test_admin_can_download_any_staff_id_card(): void
+    {
+        $staff = $this->makeStaff();
+
+        $this->actingAs($this->makeAdmin())
+            ->get(route('id-cards.staff.pdf', $staff))
+            ->assertOk();
+    }
+
+    public function test_receptionist_can_download_any_staff_id_card(): void
+    {
+        $staff = $this->makeStaff();
+        $receptionist = User::factory()->create(['status' => 'active']);
+        $receptionist->assignRole('receptionist');
+
+        $this->actingAs($receptionist)
+            ->get(route('id-cards.staff.pdf', $staff))
             ->assertOk();
     }
 }

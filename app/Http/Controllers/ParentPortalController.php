@@ -74,8 +74,10 @@ class ParentPortalController extends Controller
             ->latest()
             ->get();
 
+        $documents = $student->issuedDocuments()->latest('issued_at')->get();
+
         return view('parent.child-detail', compact(
-            'student', 'attendancePct', 'records', 'publishedExams', 'invoices'
+            'student', 'attendancePct', 'records', 'publishedExams', 'invoices', 'documents'
         ));
     }
 }

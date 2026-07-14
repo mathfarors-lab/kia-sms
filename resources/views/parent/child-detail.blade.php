@@ -67,6 +67,8 @@
         <div style="padding:1rem;">{{ $records->links() }}</div>
     </div>
 
+    @include('documents._list', ['documents' => $documents])
+
     {{-- Published exams --}}
     @if($publishedExams->isNotEmpty())
     <div class="kia-card" style="margin-bottom:20px;">

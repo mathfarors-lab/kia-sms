@@ -50,4 +50,6 @@
             </table>
         </div>
     </div>
+
+    @include('documents._list', ['documents' => $staff->issuedDocuments])
 </x-app-layout>

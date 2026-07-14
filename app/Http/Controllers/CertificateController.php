@@ -3,24 +3,25 @@
 namespace App\Http\Controllers;
 
 use App\Models\AcademicYear;
+use App\Models\IssuedDocument;
 use App\Models\Student;
-use App\Services\DocumentService;
+use App\Services\DocumentIssuanceService;
 use App\Support\Permissions as P;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class CertificateController extends Controller
 {
-    public function __construct(private DocumentService $docs) {}
+    public function __construct(private DocumentIssuanceService $issuance) {}
 
     // ── Enrollment Confirmation ──────────────────────────────────────────────────
 
     public function enrollment(Student $student)
     {
         $this->authorize(P::CERTIFICATES_ISSUE);
-        abort_unless(in_array($student->status, ['enrolled', 'active']), 422, __('documents.cert_requires_enrolled'));
+        abort_unless($student->status === 'enrolled', 422, __('documents.cert_requires_enrolled'));
 
         $year   = AcademicYear::where('is_active', true)->first();
-        $certNo = $this->docs->nextCertNumber('enroll');
+        $certNo = $this->issuance->issueForStudent($student, IssuedDocument::TYPE_ENROLLMENT_CERT)->number;
 
         return view('certificates.enrollment', compact('student', 'year', 'certNo'));
     }
@@ -28,10 +29,10 @@ class CertificateController extends Controller
     public function enrollmentPdf(Student $student)
     {
         $this->authorize(P::CERTIFICATES_ISSUE);
-        abort_unless(in_array($student->status, ['enrolled', 'active']), 422, __('documents.cert_requires_enrolled'));
+        abort_unless($student->status === 'enrolled', 422, __('documents.cert_requires_enrolled'));
 
         $year   = AcademicYear::where('is_active', true)->first();
-        $certNo = $this->docs->nextCertNumber('enroll');
+        $certNo = $this->issuance->issueForStudent($student, IssuedDocument::TYPE_ENROLLMENT_CERT)->number;
 
         $pdf = Pdf::loadView('pdf.certificate-enrollment', compact('student', 'year', 'certNo'))
             ->setPaper('a4')
@@ -47,7 +48,7 @@ class CertificateController extends Controller
         $this->authorize(P::CERTIFICATES_ISSUE);
 
         $year   = AcademicYear::where('is_active', true)->first();
-        $certNo = $this->docs->nextCertNumber('leave');
+        $certNo = $this->issuance->issueForStudent($student, IssuedDocument::TYPE_LEAVING_CERT)->number;
 
         return view('certificates.leaving', compact('student', 'year', 'certNo'));
     }
@@ -57,7 +58,7 @@ class CertificateController extends Controller
         $this->authorize(P::CERTIFICATES_ISSUE);
 
         $year   = AcademicYear::where('is_active', true)->first();
-        $certNo = $this->docs->nextCertNumber('leave');
+        $certNo = $this->issuance->issueForStudent($student, IssuedDocument::TYPE_LEAVING_CERT)->number;
 
         $pdf = Pdf::loadView('pdf.certificate-leaving', compact('student', 'year', 'certNo'))
             ->setPaper('a4')
@@ -74,7 +75,7 @@ class CertificateController extends Controller
         abort_unless($student->status === 'graduated', 403, __('documents.cert_requires_graduated'));
 
         $year   = AcademicYear::where('is_active', true)->first();
-        $certNo = $this->docs->nextCertNumber('grad');
+        $certNo = $this->issuance->issueForStudent($student, IssuedDocument::TYPE_GRADUATION_CERT)->number;
 
         return view('certificates.graduation', compact('student', 'year', 'certNo'));
     }
@@ -85,7 +86,7 @@ class CertificateController extends Controller
         abort_unless($student->status === 'graduated', 403, __('documents.cert_requires_graduated'));
 
         $year   = AcademicYear::where('is_active', true)->first();
-        $certNo = $this->docs->nextCertNumber('grad');
+        $certNo = $this->issuance->issueForStudent($student, IssuedDocument::TYPE_GRADUATION_CERT)->number;
 
         $pdf = Pdf::loadView('pdf.certificate-graduation', compact('student', 'year', 'certNo'))
             ->setPaper('a4')

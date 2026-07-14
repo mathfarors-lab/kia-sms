@@ -57,7 +57,7 @@ class StaffController extends Controller
     public function show(Staff $staff)
     {
         $this->authorize('staff.view');
-        $staff->load('user');
+        $staff->load('user', 'issuedDocuments');
         return view('staff.show', compact('staff'));
     }
 

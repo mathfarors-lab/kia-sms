@@ -25,6 +25,10 @@ return [
     'cert_requires_enrolled'   => 'An enrollment certificate requires the student to be enrolled.',
     'cert_requires_graduated'  => 'A graduation certificate can only be issued to graduated students.',
 
+    'section_title' => 'Documents',
+    'issued_on'     => 'Issued',
+    'none_issued'   => 'No documents issued yet.',
+
     'enrollment_preview_note' => 'Preview of enrollment confirmation letter. Click "Download PDF" to generate.',
     'leaving_preview_note'    => 'Preview of leaving certificate. Click "Download PDF" to generate.',
     'graduation_preview_note' => 'Preview of graduation certificate. Click "Download PDF" to generate.',

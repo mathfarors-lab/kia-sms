@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Storage;
 
 class StaffService
 {
+    public function __construct(private DocumentIssuanceService $documents) {}
+
     /**
      * See StudentService::generateCode() for why the branch code gets
      * embedded once a branch context is active: staff_code is globally
@@ -43,7 +45,7 @@ class StaffService
             $user->assignRole($data['role']);
         }
 
-        return Staff::create([
+        $staff = Staff::create([
             'user_id'    => $user->id,
             'staff_code' => $this->generateCode(),
             'position'   => $data['position'] ?? null,
@@ -52,6 +54,10 @@ class StaffService
             'salary'     => $data['salary'] ?? null,
             'photo'      => $photo?->store('staff/photos', 'local'),
         ]);
+
+        $this->documents->issueForStaff($staff);
+
+        return $staff;
     }
 
     public function update(Staff $staff, array $data, ?UploadedFile $photo = null): Staff

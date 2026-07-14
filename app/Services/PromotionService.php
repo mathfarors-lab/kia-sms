@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\AcademicYear;
+use App\Models\IssuedDocument;
 use App\Models\Section;
 use App\Models\Student;
 use App\Models\TermResult;
@@ -11,6 +12,8 @@ use Illuminate\Support\Facades\DB;
 
 class PromotionService
 {
+    public function __construct(private DocumentIssuanceService $documents) {}
+
     /**
      * Build the dry-run preview — no DB writes.
      *
@@ -201,12 +204,14 @@ class PromotionService
             // Graduate → update student status, no new enrollment
             foreach ($preview['graduate'] as $item) {
                 $item['student']->update(['status' => 'graduated']);
+                $this->documents->issueForStudent($item['student'], IssuedDocument::TYPE_GRADUATION_CERT);
                 $counts['graduated']++;
             }
 
             // Withdraw → update student status, no new enrollment
             foreach ($preview['withdraw'] as $item) {
                 $item['student']->update(['status' => 'dropped']);
+                $this->documents->issueForStudent($item['student'], IssuedDocument::TYPE_LEAVING_CERT);
                 $counts['withdrawn']++;
             }
 

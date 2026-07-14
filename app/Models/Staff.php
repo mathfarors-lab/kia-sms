@@ -50,4 +50,9 @@ class Staff extends Model
     {
         return $this->hasMany(Section::class, 'class_teacher_id');
     }
+
+    public function issuedDocuments(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(IssuedDocument::class);
+    }
 }

@@ -82,6 +82,11 @@ class Student extends Model
         return $this->hasMany(ExamResult::class);
     }
 
+    public function issuedDocuments(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(IssuedDocument::class);
+    }
+
     public function getDisplayNameAttribute(): string
     {
         return $this->name_km ?: $this->name_en;

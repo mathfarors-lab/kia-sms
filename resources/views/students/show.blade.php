@@ -71,4 +71,6 @@
             </div>
         </div>
     </div>
+
+    @include('documents._list', ['documents' => $student->issuedDocuments])
 </x-app-layout>

@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\AcademicYear;
+use App\Models\IssuedDocument;
 use App\Models\Section;
 use App\Models\Staff;
 use App\Models\Student;
+use App\Services\DocumentIssuanceService;
 use App\Services\DocumentService;
 use App\Support\Permissions as P;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -13,7 +15,10 @@ use Illuminate\Support\Facades\Auth;
 
 class IdCardController extends Controller
 {
-    public function __construct(private DocumentService $docs) {}
+    public function __construct(
+        private DocumentService $docs,
+        private DocumentIssuanceService $issuance,
+    ) {}
 
     // ── Student ID card ──────────────────────────────────────────────────────────
 
@@ -21,6 +26,7 @@ class IdCardController extends Controller
     public function showStudent(Student $student)
     {
         $this->authorizeStudent($student);
+        $this->issuance->issueForStudent($student, IssuedDocument::TYPE_ID_CARD);
 
         $year    = AcademicYear::where('is_active', true)->first();
         $secQ    = $student->sections()->with('schoolClass');
@@ -39,6 +45,7 @@ class IdCardController extends Controller
     public function pdfStudent(Student $student)
     {
         $this->authorizeStudent($student);
+        $this->issuance->issueForStudent($student, IssuedDocument::TYPE_ID_CARD);
 
         $year    = AcademicYear::where('is_active', true)->first();
         $secQ    = $student->sections()->with('schoolClass');
@@ -62,7 +69,8 @@ class IdCardController extends Controller
 
     public function pdfStaff(Staff $staff)
     {
-        $this->authorize(P::ID_CARDS_GENERATE);
+        $this->authorizeStaff($staff);
+        $this->issuance->issueForStaff($staff);
 
         $staff->load('user');
         $photoUri = $this->docs->photoDataUri($staff->photo);
@@ -156,5 +164,23 @@ class IdCardController extends Controller
         }
 
         abort(403);
+    }
+
+    /**
+     * Deliberately does NOT fall back to P::ID_CARDS_GENERATE the way
+     * authorizeStudent() does — that permission is granted to student/parent
+     * roles for their own self-service ID card, which would otherwise let
+     * any student or parent download an arbitrary staff member's card by ID.
+     */
+    private function authorizeStaff(Staff $staff): void
+    {
+        $user = Auth::user();
+
+        if ($user->hasRole(['admin', 'principal', 'receptionist'])) {
+            return;
+        }
+
+        // Any staff member may always view/download their own card.
+        abort_unless($staff->user_id === $user->id, 403);
     }
 }
