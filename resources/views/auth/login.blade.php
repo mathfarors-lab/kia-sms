@@ -9,7 +9,7 @@
         <div class="form-group">
             <label class="form-label" for="email">{{ __('Email') }} <span class="req">*</span></label>
             <input id="email" type="email" name="email" class="form-control {{ $errors->has('email') ? 'is-invalid' : '' }}"
-                   value="{{ old('email') }}" required autofocus autocomplete="username" placeholder="admin@kia.edu.kh">
+                   value="{{ old('email') }}" required autofocus autocomplete="username" placeholder="admin@edu.kh">
             @error('email')<span class="invalid-feedback">{{ $message }}</span>@enderror
         </div>
 

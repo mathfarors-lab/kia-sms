@@ -29,7 +29,7 @@
 
     $navAcademic = $can(P::ACADEMIC_YEARS_MANAGE) || $can(P::CLASSES_MANAGE)
                 || $can(P::SUBJECTS_MANAGE)        || $can(P::SETTINGS_MANAGE)
-                || $can(P::REPORT_COMMENTS_MANAGE);
+                || $can(P::REPORT_COMMENTS_MANAGE) || $can(P::TIMETABLES_MANAGE);
     $navStudents = $can(P::STUDENTS_VIEW) || $can(P::ATTENDANCE_MARK) || $can(P::PROMOTION_MANAGE)
                 || $can(P::ADMISSIONS_VIEW) || $can(P::GATE_SCAN) || $myTimetableSection !== null;
     $navExams    = $can(P::EXAMS_MANAGE)  || $can(P::MARKS_ENTRY)     || $can(P::TERM_RESULTS_MANAGE);
@@ -129,6 +129,18 @@
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
             </svg>
             {{ __('nav.report_comments') }}
+        </a>
+        @endif
+
+        {{-- Standalone entry point — additive to the existing Classes &
+             Sections → section → Timetable drill-down, not a replacement. --}}
+        @if($can(P::TIMETABLES_MANAGE))
+        <a href="{{ route('timetables.index') }}" class="kia-nav-item {{ request()->routeIs('timetables.index') ? 'active' : '' }}">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/>
+            </svg>
+            {{ __('nav.timetables') }}
         </a>
         @endif
         @endif

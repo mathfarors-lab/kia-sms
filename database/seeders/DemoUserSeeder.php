@@ -18,16 +18,16 @@ class DemoUserSeeder extends Seeder
      * a seeded user below.
      */
     public const DEMO_EMAILS = [
-        'admin@kia.edu.kh',
-        'principal@kia.edu.kh',
-        'teacher@kia.edu.kh',
-        'accountant@kia.edu.kh',
-        'librarian@kia.edu.kh',
-        'receptionist@kia.edu.kh',
-        'student@kia.edu.kh',
-        'parent@kia.edu.kh',
-        'owner@kia.edu.kh',
-        'admin.riverside@kia.edu.kh',
+        'admin@edu.kh',
+        'principal@edu.kh',
+        'teacher@edu.kh',
+        'accountant@edu.kh',
+        'librarian@edu.kh',
+        'receptionist@edu.kh',
+        'student@edu.kh',
+        'parent@edu.kh',
+        'owner@edu.kh',
+        'admin.riverside@edu.kh',
     ];
 
     public function run(): void
@@ -38,56 +38,56 @@ class DemoUserSeeder extends Seeder
         $users = [
             [
                 'name'   => 'Admin User',
-                'email'  => 'admin@kia.edu.kh',
+                'email'  => 'admin@edu.kh',
                 'phone'  => '012000001',
                 'role'   => 'admin',
                 'locale' => 'en',
             ],
             [
                 'name'   => 'Principal Sophea',
-                'email'  => 'principal@kia.edu.kh',
+                'email'  => 'principal@edu.kh',
                 'phone'  => '012000002',
                 'role'   => 'principal',
                 'locale' => 'km',
             ],
             [
                 'name'   => 'Teacher Dara',
-                'email'  => 'teacher@kia.edu.kh',
+                'email'  => 'teacher@edu.kh',
                 'phone'  => '012000003',
                 'role'   => 'teacher',
                 'locale' => 'km',
             ],
             [
                 'name'   => 'Accountant Chenda',
-                'email'  => 'accountant@kia.edu.kh',
+                'email'  => 'accountant@edu.kh',
                 'phone'  => '012000004',
                 'role'   => 'accountant',
                 'locale' => 'km',
             ],
             [
                 'name'   => 'Librarian Mony',
-                'email'  => 'librarian@kia.edu.kh',
+                'email'  => 'librarian@edu.kh',
                 'phone'  => '012000005',
                 'role'   => 'librarian',
                 'locale' => 'km',
             ],
             [
                 'name'   => 'Receptionist Bopha',
-                'email'  => 'receptionist@kia.edu.kh',
+                'email'  => 'receptionist@edu.kh',
                 'phone'  => '012000006',
                 'role'   => 'receptionist',
                 'locale' => 'km',
             ],
             [
                 'name'   => 'Sokha Chea',
-                'email'  => 'student@kia.edu.kh',
+                'email'  => 'student@edu.kh',
                 'phone'  => '012000007',
                 'role'   => 'student',
                 'locale' => 'km',
             ],
             [
                 'name'   => 'Parent Vanna',
-                'email'  => 'parent@kia.edu.kh',
+                'email'  => 'parent@edu.kh',
                 'phone'  => '012000008',
                 'role'   => 'parent',
                 'locale' => 'km',
@@ -179,7 +179,7 @@ class DemoUserSeeder extends Seeder
         // Owner (superadmin) — deliberately NO branch: reaches every branch
         // through the topbar switcher instead of being locked to one.
         $owner = User::updateOrCreate(
-            ['email' => 'owner@kia.edu.kh'],
+            ['email' => 'owner@edu.kh'],
             [
                 'name'              => 'Owner Sovann',
                 'password'          => Hash::make('password'),
@@ -203,7 +203,7 @@ class DemoUserSeeder extends Seeder
 
         \App\Support\BranchContext::within($riverside->id, function () {
             $admin = User::updateOrCreate(
-                ['email' => 'admin.riverside@kia.edu.kh'],
+                ['email' => 'admin.riverside@edu.kh'],
                 [
                     'name'              => 'Riverside Admin',
                     'password'          => Hash::make('password'),

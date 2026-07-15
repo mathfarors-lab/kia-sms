@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
 
 /**
  * The pre-launch blocker: every seeded demo account (including
- * owner@kia.edu.kh, which controls every branch) shares the password
+ * owner@edu.kh, which controls every branch) shares the password
  * "password" until this runs. Deliberately NOT production-guarded like
  * kia:seed-demo — this is the opposite kind of command: it's meant to be
  * run wherever demo accounts exist, production included, to lock them down

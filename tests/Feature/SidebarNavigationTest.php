@@ -45,7 +45,7 @@ class SidebarNavigationTest extends TestCase
 
         foreach ([
             'students.index', 'staff.index', 'academic-years.index', 'classes.index',
-            'subjects.index', 'grade-scales.index', 'attendance.index', 'promotion.index',
+            'subjects.index', 'grade-scales.index', 'timetables.index', 'attendance.index', 'promotion.index',
             'exams.index', 'exam-marks.index', 'term-results.index',
             'invoices.index', 'fee-structures.index', 'scholarships.index',
             'finance.dashboard', 'finance.report',
@@ -166,6 +166,21 @@ class SidebarNavigationTest extends TestCase
         foreach (['users.index', 'audit.index', 'fee-structures.index', 'exams.index', 'homework.index'] as $routeName) {
             $this->assertStringNotContainsString(route($routeName), $html, "parent should NOT see {$routeName}");
         }
+    }
+
+    // ── Standalone Timetable link — gated by timetables.manage specifically ─────
+    // (a separate permission from sections.manage, which is what the existing
+    // Classes & Sections drill-down to the same page is gated by).
+
+    public function test_timetable_link_only_appears_for_timetables_manage_holders(): void
+    {
+        // admin holds every permission (P::all()), including timetables.manage.
+        $this->assertStringContainsString(route('timetables.index'), $this->dashboardHtml('admin'));
+
+        // principal and teacher hold sections.manage/timetables.view respectively,
+        // but neither holds timetables.manage — the link must stay hidden for both.
+        $this->assertStringNotContainsString(route('timetables.index'), $this->dashboardHtml('principal'));
+        $this->assertStringNotContainsString(route('timetables.index'), $this->dashboardHtml('teacher'));
     }
 
     // ── Structural: a section header must never render with nothing under it ────

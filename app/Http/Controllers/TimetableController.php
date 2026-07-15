@@ -13,6 +13,27 @@ class TimetableController extends Controller
     private const DAYS    = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
     private const PERIODS = [1, 2, 3, 4, 5, 6, 7, 8];
 
+    /**
+     * Standalone entry point — every section across every class, one click
+     * from the sidebar. The Classes & Sections drill-down (pick a class,
+     * then a section) still reaches the same timetable.show page; this is
+     * an additional, more direct path for people who manage timetables
+     * without needing to think in terms of "classes contain sections."
+     */
+    public function picker()
+    {
+        $this->authorize('timetables.manage');
+
+        $sections = Section::with(['schoolClass', 'classTeacher.user'])
+            ->get()
+            ->sortBy([
+                fn ($s) => $s->schoolClass?->name ?? '',
+                fn ($s) => $s->name,
+            ]);
+
+        return view('timetables.index', compact('sections'));
+    }
+
     public function index(Section $section)
     {
         $user      = auth()->user();

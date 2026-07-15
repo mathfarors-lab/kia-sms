@@ -64,14 +64,19 @@ Route::middleware(['auth'])->group(function () {
 
     // Dashboard (role-aware redirect)
     Route::get('/dashboard', [DashboardController::class, 'redirect'])->name('dashboard');
-    Route::get('/dashboard/admin',        [DashboardController::class, 'admin'])->name('dashboard.admin');
-    Route::get('/dashboard/principal',    [DashboardController::class, 'principal'])->name('dashboard.principal');
-    Route::get('/dashboard/teacher',      [DashboardController::class, 'teacher'])->name('dashboard.teacher');
-    Route::get('/dashboard/accountant',   [DashboardController::class, 'accountant'])->name('dashboard.accountant');
-    Route::get('/dashboard/librarian',    [DashboardController::class, 'librarian'])->name('dashboard.librarian');
-    Route::get('/dashboard/receptionist', [DashboardController::class, 'receptionist'])->name('dashboard.receptionist');
-    Route::get('/dashboard/student',      [DashboardController::class, 'student'])->name('dashboard.student');
-    Route::get('/dashboard/parent',       [DashboardController::class, 'parent'])->name('dashboard.parent');
+
+    // Each role-specific dashboard redirects a wrong-role visitor to their
+    // own dashboard rather than rendering (own-dashboard:ROLE — see
+    // EnsureOwnDashboard). Owner's dashboard is separately guarded by
+    // role:owner in its own route group below.
+    Route::get('/dashboard/admin',        [DashboardController::class, 'admin'])->name('dashboard.admin')->middleware('own-dashboard:admin');
+    Route::get('/dashboard/principal',    [DashboardController::class, 'principal'])->name('dashboard.principal')->middleware('own-dashboard:principal');
+    Route::get('/dashboard/teacher',      [DashboardController::class, 'teacher'])->name('dashboard.teacher')->middleware('own-dashboard:teacher');
+    Route::get('/dashboard/accountant',   [DashboardController::class, 'accountant'])->name('dashboard.accountant')->middleware('own-dashboard:accountant');
+    Route::get('/dashboard/librarian',    [DashboardController::class, 'librarian'])->name('dashboard.librarian')->middleware('own-dashboard:librarian');
+    Route::get('/dashboard/receptionist', [DashboardController::class, 'receptionist'])->name('dashboard.receptionist')->middleware('own-dashboard:receptionist');
+    Route::get('/dashboard/student',      [DashboardController::class, 'student'])->name('dashboard.student')->middleware('own-dashboard:student');
+    Route::get('/dashboard/parent',       [DashboardController::class, 'parent'])->name('dashboard.parent')->middleware('own-dashboard:parent');
 
     // Profile
     Route::get('/profile',    [ProfileController::class, 'edit'])->name('profile.edit');
@@ -99,6 +104,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('subjects', SubjectController::class);
 
     // Timetable
+    Route::get('/timetables', [TimetableController::class, 'picker'])->name('timetables.index');
     Route::get('/sections/{section}/timetable', [TimetableController::class, 'index'])->name('timetable.show');
     Route::post('/sections/{section}/timetable', [TimetableController::class, 'store'])->name('timetable.store');
     Route::delete('/timetable/{timetable}', [TimetableController::class, 'destroy'])->name('timetable.destroy');

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Student;
 use App\Models\User;
 use Database\Seeders\DemoUserSeeder;
 use Database\Seeders\RolePermissionSeeder;
@@ -37,6 +38,24 @@ class DemoAccountSecurityTest extends TestCase
         $this->assertEquals($declaredEmails, $seededEmails);
     }
 
+    /**
+     * Regression guard for a real incident: live-verification testing across
+     * earlier phases left a second "Sokha Chea" student in the dev database,
+     * confusingly distinct from the seeded one only by Khmer name/DOB/code.
+     * DemoUserSeeder itself must never produce that — a fresh seed is the
+     * one guaranteed-clean state going into the pilot.
+     */
+    public function test_seeded_students_never_share_an_english_name(): void
+    {
+        $names = Student::pluck('name_en');
+
+        $this->assertEquals(
+            $names->count(),
+            $names->unique()->count(),
+            'Two or more seeded students share the same name_en — pick distinct demo names.'
+        );
+    }
+
     public function test_no_seeded_account_authenticates_with_password_after_running_the_command(): void
     {
         $this->artisan('kia:secure-demo')->assertSuccessful();
@@ -54,7 +73,7 @@ class DemoAccountSecurityTest extends TestCase
     {
         $this->artisan('kia:secure-demo');
 
-        $owner = User::where('email', 'owner@kia.edu.kh')->firstOrFail();
+        $owner = User::where('email', 'owner@edu.kh')->firstOrFail();
         $this->assertFalse(Hash::check('password', $owner->password));
     }
 
@@ -72,10 +91,10 @@ class DemoAccountSecurityTest extends TestCase
     public function test_running_twice_is_safe_and_still_ends_with_a_working_new_password(): void
     {
         $this->artisan('kia:secure-demo')->assertSuccessful();
-        $firstHash = User::where('email', 'admin@kia.edu.kh')->value('password');
+        $firstHash = User::where('email', 'admin@edu.kh')->value('password');
 
         $this->artisan('kia:secure-demo')->assertSuccessful();
-        $secondHash = User::where('email', 'admin@kia.edu.kh')->firstOrFail();
+        $secondHash = User::where('email', 'admin@edu.kh')->firstOrFail();
 
         // Second run produced a different (fresh) password, not a crash or a
         // reversion to a known/guessable state.

@@ -127,4 +127,45 @@ class TimetableTest extends TestCase
 
         $this->assertStringNotContainsString('/timetable"', $html);
     }
+
+    // ── Standalone picker page ("Timetable" sidebar link) ────────────────────────
+
+    public function test_admin_can_view_the_timetable_picker_listing_every_section(): void
+    {
+        $admin = User::factory()->create(['status' => 'active']);
+        $admin->assignRole('admin');
+
+        $sectionA = $this->makeSection();
+        $sectionB = $this->makeSection();
+
+        $html = $this->actingAs($admin)
+            ->get(route('timetables.index'))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString(route('timetable.show', $sectionA), $html);
+        $this->assertStringContainsString(route('timetable.show', $sectionB), $html);
+    }
+
+    public function test_teacher_cannot_view_the_timetable_picker(): void
+    {
+        [$user] = $this->makeTeacher();
+
+        $this->actingAs($user)
+            ->get(route('timetables.index'))
+            ->assertForbidden();
+    }
+
+    public function test_principal_cannot_view_the_timetable_picker(): void
+    {
+        // Principal holds sections.manage (reaches the Classes & Sections
+        // drill-down) but not timetables.manage specifically — the picker
+        // stays gated to the narrower permission, same as the picker link.
+        $principal = User::factory()->create(['status' => 'active']);
+        $principal->assignRole('principal');
+
+        $this->actingAs($principal)
+            ->get(route('timetables.index'))
+            ->assertForbidden();
+    }
 }

@@ -44,6 +44,7 @@ return [
     'settings'          => 'Settings',
     'my_attendance'     => 'My Attendance',
     'my_timetable'      => 'My Timetable',
+    'timetables'        => 'Timetable',
     'admissions'        => 'Admissions',
     'gate_station'      => 'Gate Scan Station',
     'visitors'          => 'Visitor Log',

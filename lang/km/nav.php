@@ -44,6 +44,7 @@ return [
     'settings'          => 'ការកំណត់',
     'my_attendance'     => 'វត្តមានរបស់ខ្ញុំ',
     'my_timetable'      => 'កាលវិភាគរបស់ខ្ញុំ',
+    'timetables'        => 'កាលវិភាគ',
     'admissions'        => 'ការចុះឈ្មោះចូលរៀន',
     'gate_station'      => 'ស្ថានីយ៍ស្កេនច្រកចូល',
     'visitors'          => 'កំណត់ត្រាភ្ញៀវ',

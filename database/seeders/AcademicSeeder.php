@@ -32,7 +32,7 @@ class AcademicSeeder extends Seeder
         );
 
         // 2. Teacher staff
-        $teacher = Staff::whereHas('user', fn($q) => $q->where('email', 'teacher@kia.edu.kh'))->first();
+        $teacher = Staff::whereHas('user', fn($q) => $q->where('email', 'teacher@edu.kh'))->first();
 
         // 3. School classes
         $classNames = ['Grade 10', 'Grade 11', 'Grade 12'];
