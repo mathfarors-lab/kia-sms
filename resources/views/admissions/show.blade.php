@@ -54,16 +54,30 @@
             </form>
             @endif
 
-            @if($application->status === 'accepted')
-            <form method="POST" action="{{ route('admissions.convert', $application) }}"
-                  onsubmit="return confirm('{{ __('admissions.convert_confirm') }}')">
-                @csrf
-                <button class="btn btn-primary" style="background:var(--ok);" type="submit">{{ __('admissions.convert_to_student') }} →</button>
-            </form>
-            @endif
         </div>
     </div>
     @endunless
+    @endcan
+
+    {{-- Prominent, dedicated call-out — pulled out of the generic action row so
+         the admissions→student relationship is obvious from the UI itself,
+         not just from what convert() happens to do under the hood. --}}
+    @can('admissions.manage')
+    @if($application->status === 'accepted' && !$application->isConverted())
+    <div class="kia-card" style="margin-bottom:16px;border:2px solid var(--ok);background:linear-gradient(0deg, var(--paper), transparent);">
+        <div class="kia-card-body" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+            <div style="flex:1;min-width:240px;">
+                <div style="font-weight:700;color:var(--ok);font-size:.95rem;margin-bottom:4px;">✓ {{ __('admissions.ready_to_convert') }}</div>
+                <p style="margin:0;color:var(--muted);font-size:.85rem;max-width:60ch;">{{ __('admissions.ready_to_convert_hint') }}</p>
+            </div>
+            <form method="POST" action="{{ route('admissions.convert', $application) }}"
+                  onsubmit="return confirm('{{ __('admissions.convert_confirm') }}')">
+                @csrf
+                <button class="btn btn-primary" style="background:var(--ok);font-size:.95rem;padding:12px 24px;" type="submit">{{ __('admissions.convert_to_student') }} →</button>
+            </form>
+        </div>
+    </div>
+    @endif
     @endcan
 
     @if($application->isConverted() && $application->student)

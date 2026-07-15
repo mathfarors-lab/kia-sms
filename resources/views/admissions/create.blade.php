@@ -11,6 +11,8 @@
         <h1 class="kia-page-title">{{ __('admissions.new_application') }}</h1>
     </div>
 
+    <p style="color:var(--muted);font-size:.875rem;max-width:70ch;margin:-8px 0 16px;">{{ __('admissions.relationship_note') }}</p>
+
     <div class="kia-card" style="max-width:760px;">
         <div class="kia-card-body">
             <form method="POST" action="{{ route('admissions.store') }}" enctype="multipart/form-data">

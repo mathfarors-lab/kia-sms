@@ -67,6 +67,16 @@
                 </div>
                 @empty
                 <p style="color:var(--muted);font-size:.875rem;">{{ __('No guardians linked.') }}</p>
+                @if($student->admissionApplication?->guardian_name)
+                <div style="background:var(--paper);border-radius:8px;padding:10px 12px;margin-top:8px;font-size:.82rem;">
+                    <div style="font-weight:600;color:var(--muted);text-transform:uppercase;font-size:.7rem;letter-spacing:.04em;margin-bottom:4px;">{{ __('admissions.guardian_on_file') }}</div>
+                    <div>{{ $student->admissionApplication->guardian_name }}</div>
+                    <div style="color:var(--muted);">
+                        {{ $student->admissionApplication->guardian_phone ?? '—' }}
+                        @if($student->admissionApplication->guardian_relation) &middot; {{ $student->admissionApplication->guardian_relation }} @endif
+                    </div>
+                </div>
+                @endif
                 @endforelse
             </div>
         </div>

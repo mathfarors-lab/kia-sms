@@ -105,6 +105,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Timetable
     Route::get('/timetables', [TimetableController::class, 'picker'])->name('timetables.index');
+    Route::get('/staff/{staff}/teaching-schedule', [TimetableController::class, 'teacherSchedule'])->name('staff.teaching-schedule');
     Route::get('/sections/{section}/timetable', [TimetableController::class, 'index'])->name('timetable.show');
     Route::post('/sections/{section}/timetable', [TimetableController::class, 'store'])->name('timetable.store');
     Route::delete('/timetable/{timetable}', [TimetableController::class, 'destroy'])->name('timetable.destroy');

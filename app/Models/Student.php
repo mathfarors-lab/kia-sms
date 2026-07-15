@@ -87,6 +87,12 @@ class Student extends Model
         return $this->hasMany(IssuedDocument::class);
     }
 
+    /** The admission application this student was converted from, if any (direct creates have none). */
+    public function admissionApplication(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(AdmissionApplication::class);
+    }
+
     public function getDisplayNameAttribute(): string
     {
         return $this->name_km ?: $this->name_en;

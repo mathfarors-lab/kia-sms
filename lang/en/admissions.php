@@ -46,4 +46,10 @@ return [
     // Dashboard
     'pending_admissions' => 'Pending Admissions',
     'view_all'           => 'View All Applications',
+
+    // Admissions ↔ Students relationship clarity
+    'relationship_note'   => 'Admissions tracks applicants before they\'re enrolled. Accepting and converting an application automatically creates the student\'s full record — including their ID card and enrollment certificate.',
+    'ready_to_convert'    => 'Ready to convert',
+    'ready_to_convert_hint' => 'This application is accepted. Converting creates the enrolled student record now — name, gender, date of birth, and address carry over automatically, and their ID card and enrollment certificate are issued at the same time.',
+    'guardian_on_file'    => 'Guardian on file (from admission)',
 ];

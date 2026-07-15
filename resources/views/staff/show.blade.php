@@ -24,6 +24,9 @@
             </div>
         </div>
         <div class="d-flex gap-2">
+            @if($staff->user->hasRole('teacher'))
+            <a href="{{ route('staff.teaching-schedule', $staff) }}" class="btn btn-outline">{{ __('timetable.teaching_schedule') }}</a>
+            @endif
             @can('staff.edit')
             <a href="{{ route('staff.edit', $staff) }}" class="btn btn-outline">{{ __('Edit') }}</a>
             @endcan

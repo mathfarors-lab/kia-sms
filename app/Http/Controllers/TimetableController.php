@@ -34,6 +34,43 @@ class TimetableController extends Controller
         return view('timetables.index', compact('sections'));
     }
 
+    /**
+     * The reverse of index(): every slot a given teacher is assigned to,
+     * across every section, in one grid — instead of having to check each
+     * section's own timetable one at a time. Reuses the exact same
+     * Timetable rows, store()/destroy() endpoints, and clash-detection as
+     * the section-side view; this only adds a different way to look at
+     * (and add to) the same data.
+     */
+    public function teacherSchedule(Staff $staff)
+    {
+        $user = auth()->user();
+
+        // Same self-view carve-out as ID cards: staff.view normally gates
+        // this profile-adjacent page, but a teacher must be able to see
+        // their own schedule even without the broader staff.view permission
+        // (which only admin/principal/receptionist hold today).
+        if (!$user->can('staff.view')) {
+            abort_unless($staff->user_id === $user->id, 403);
+        }
+
+        $staff->load('user');
+
+        $slots = Timetable::where('teacher_id', $staff->id)
+            ->with(['subject', 'section.schoolClass'])
+            ->get()
+            ->groupBy(fn ($t) => $t->day . '_' . $t->period);
+
+        $canManage = $user->can('timetables.manage');
+        $sections  = $canManage ? Section::with('schoolClass')->get()->sortBy([
+            fn ($s) => $s->schoolClass?->name ?? '',
+            fn ($s) => $s->name,
+        ]) : collect();
+        $subjects  = $canManage ? Subject::all() : collect();
+
+        return view('staff.teaching-schedule', compact('staff', 'slots', 'canManage', 'sections', 'subjects'));
+    }
+
     public function index(Section $section)
     {
         $user      = auth()->user();

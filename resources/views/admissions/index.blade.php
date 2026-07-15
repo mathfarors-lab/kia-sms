@@ -8,6 +8,8 @@
         @endcan
     </div>
 
+    <p style="color:var(--muted);font-size:.875rem;max-width:70ch;margin:-8px 0 16px;">{{ __('admissions.relationship_note') }}</p>
+
     @if(session('success'))<div class="kia-alert kia-alert-success">{{ session('success') }}</div>@endif
     @if(session('error'))<div class="kia-alert" style="background:var(--danger-light,#fee2e2);color:var(--danger,#991b1b)">{{ session('error') }}</div>@endif
 
