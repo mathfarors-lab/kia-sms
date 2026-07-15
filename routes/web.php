@@ -164,6 +164,7 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('id-cards')->name('id-cards.')->group(function () {
         Route::get('/student/{student}', [IdCardController::class, 'showStudent'])->name('student.show');
         Route::get('/student/{student}/pdf', [IdCardController::class, 'pdfStudent'])->name('student.pdf');
+        Route::get('/staff/{staff}', [IdCardController::class, 'showStaff'])->name('staff.show');
         Route::get('/staff/{staff}/pdf', [IdCardController::class, 'pdfStaff'])->name('staff.pdf');
         Route::get('/section/{section}/batch', [IdCardController::class, 'batchPreview'])->name('batch.preview');
         Route::get('/section/{section}/batch/pdf', [IdCardController::class, 'batchPdf'])->name('batch.pdf');

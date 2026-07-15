@@ -28,6 +28,7 @@ return [
     'section_title' => 'Documents',
     'issued_on'     => 'Issued',
     'none_issued'   => 'No documents issued yet.',
+    'view_card'     => 'View ID card',
 
     'enrollment_preview_note' => 'Preview of enrollment confirmation letter. Click "Download PDF" to generate.',
     'leaving_preview_note'    => 'Preview of leaving certificate. Click "Download PDF" to generate.',

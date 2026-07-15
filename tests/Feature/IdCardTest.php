@@ -284,4 +284,56 @@ class IdCardTest extends TestCase
             ->get(route('id-cards.staff.pdf', $staff))
             ->assertOk();
     }
+
+    // ── Staff HTML preview (showStaff — the student-side counterpart already existed) ─
+
+    public function test_staff_member_can_view_their_own_id_card_html_preview(): void
+    {
+        $staff = $this->makeStaff();
+
+        $this->actingAs($staff->user)
+            ->get(route('id-cards.staff.show', $staff))
+            ->assertOk()
+            ->assertSee($staff->staff_code);
+    }
+
+    public function test_staff_member_cannot_view_another_staffs_id_card_html_preview(): void
+    {
+        $staffA = $this->makeStaff();
+        $staffB = $this->makeStaff();
+
+        $this->actingAs($staffA->user)
+            ->get(route('id-cards.staff.show', $staffB))
+            ->assertForbidden();
+    }
+
+    public function test_admin_can_view_any_staff_id_card_html_preview(): void
+    {
+        $staff = $this->makeStaff();
+
+        $this->actingAs($this->makeAdmin())
+            ->get(route('id-cards.staff.show', $staff))
+            ->assertOk();
+    }
+
+    public function test_staff_id_card_html_preview_qr_encodes_only_staff_code(): void
+    {
+        $staff = $this->makeStaff();
+
+        $this->actingAs($staff->user)
+            ->get(route('id-cards.staff.show', $staff))
+            ->assertOk()
+            ->assertSee('data-qr-payload="' . $staff->staff_code . '"', false);
+    }
+
+    public function test_viewing_staff_id_card_html_preview_records_issuance(): void
+    {
+        $staff = $this->makeStaff();
+
+        $this->actingAs($staff->user)->get(route('id-cards.staff.show', $staff));
+
+        $this->assertDatabaseHas('issued_documents', [
+            'staff_id' => $staff->id, 'type' => IssuedDocument::TYPE_ID_CARD,
+        ]);
+    }
 }

@@ -344,4 +344,54 @@ class DocumentIssuanceTest extends TestCase
         $this->assertStringContainsString(__('documents.id_card'), $html);
         $this->assertStringContainsString(route('id-cards.staff.pdf', $staff), $html);
     }
+
+    // ── Visual ID-card preview in the Documents section ─────────────────────────
+
+    public function test_student_documents_section_shows_a_visual_card_preview(): void
+    {
+        $student = $this->makeStudent('enrolled');
+
+        $html = $this->actingAs($this->makeAdmin())
+            ->get(route('students.show', $student))
+            ->assertOk()
+            ->getContent();
+
+        // The mini preview: student's name/code rendered inside a card visual
+        // (data-qr-payload marks it as the actual card widget, not just text),
+        // wrapped in a link to the full HTML preview page.
+        $this->assertStringContainsString('data-qr-payload="' . $student->student_code . '"', $html);
+        $this->assertStringContainsString(route('id-cards.student.show', $student), $html);
+    }
+
+    public function test_staff_documents_section_shows_a_visual_card_preview(): void
+    {
+        $staff = app(StaffService::class)->store([
+            'name' => 'Preview Check', 'email' => 'previewcheck-' . uniqid() . '@edu.kh', 'role' => 'teacher',
+        ]);
+
+        $html = $this->actingAs($this->makeAdmin())
+            ->get(route('staff.show', $staff))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('data-qr-payload="' . $staff->staff_code . '"', $html);
+        $this->assertStringContainsString(route('id-cards.staff.show', $staff), $html);
+    }
+
+    public function test_parent_sees_a_visual_card_preview_of_their_own_child_only(): void
+    {
+        $myChild    = $this->makeStudent('enrolled');
+        $otherChild = $this->makeStudent('enrolled');
+        $parent     = User::factory()->create(['status' => 'active']);
+        $parent->assignRole('parent');
+        $parent->wards()->attach($myChild->id, ['relation' => 'parent', 'is_primary' => true]);
+
+        $html = $this->actingAs($parent)
+            ->get(route('parent.child.show', $myChild))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('data-qr-payload="' . $myChild->student_code . '"', $html);
+        $this->assertStringNotContainsString($otherChild->student_code, $html);
+    }
 }

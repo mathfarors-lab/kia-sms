@@ -67,6 +67,19 @@ class IdCardController extends Controller
 
     // ── Staff ID card ────────────────────────────────────────────────────────────
 
+    /** HTML preview — the staff-side counterpart to showStudent(); this route never existed before. */
+    public function showStaff(Staff $staff)
+    {
+        $this->authorizeStaff($staff);
+        $this->issuance->issueForStaff($staff);
+
+        $staff->load('user');
+        $photoUri = $this->docs->photoDataUri($staff->photo);
+        $qrUri    = $this->docs->qrDataUri($staff->staff_code);
+
+        return view('id-cards.staff', compact('staff', 'photoUri', 'qrUri'));
+    }
+
     public function pdfStaff(Staff $staff)
     {
         $this->authorizeStaff($staff);
