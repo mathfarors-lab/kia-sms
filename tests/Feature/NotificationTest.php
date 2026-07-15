@@ -4,10 +4,13 @@ namespace Tests\Feature;
 
 use App\Models\AcademicYear;
 use App\Models\Exam;
+use App\Models\Student;
 use App\Models\User;
 use App\Notifications\ResultPublished;
+use App\Notifications\StudentGateEvent;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
@@ -112,6 +115,25 @@ class NotificationTest extends TestCase
         $this->assertArrayHasKey('title', $payload);
         $this->assertArrayHasKey('url', $payload);
         $this->assertStringContainsString('Final Exam', $payload['title']);
+    }
+
+    /**
+     * Mobile-polish regression: tapping a gate-arrival notification used to
+     * fall back to the generic notifications list (no url in the payload)
+     * instead of landing on anything showing the actual arrival time.
+     */
+    public function test_gate_event_toarray_has_url_to_the_childs_detail_page(): void
+    {
+        $student = Student::create([
+            'name_en' => 'Gate Event Student', 'gender' => 'male',
+            'student_code' => 'S-' . uniqid(), 'status' => 'enrolled',
+        ]);
+        $notification = new StudentGateEvent($student, 'arrival', Carbon::now());
+
+        $payload = $notification->toArray($this->makeAdmin());
+
+        $this->assertArrayHasKey('url', $payload);
+        $this->assertEquals(route('parent.child.show', $student), $payload['url']);
     }
 
     // ---------------------------------------------------------------

@@ -273,6 +273,12 @@ code, .mono {
     padding-top: var(--topbar-h);
     min-height: 100vh;
     flex: 1;
+    /* Flex items default to min-width:auto, which refuses to shrink below
+       the intrinsic width of their content — on a page with enough content
+       (e.g. a stats grid + a couple of cards), that intrinsic width can
+       exceed a phone's viewport, silently widening the whole shell and
+       pushing the topbar's right-side icons off-screen. */
+    min-width: 0;
 }
 
 .kia-page {
@@ -717,7 +723,34 @@ textarea.form-control { resize: vertical; min-height: 90px; }
         left: 0;
     }
 
-    .kia-mobile-toggle { display: flex; }
+    /* Tap targets — 44x44px baseline for shared topbar/nav/button controls.
+       Scoped to this mobile breakpoint only, so the desktop experience
+       (what staff/admin primarily use) is completely unchanged. */
+    .kia-mobile-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+    }
+
+    .kia-topbar-btn {
+        width: 44px;
+        height: 44px;
+    }
+
+    .kia-topbar-actions .kia-avatar {
+        width: 44px;
+        height: 44px;
+    }
+
+    .kia-nav-item {
+        min-height: 44px;
+    }
+
+    .btn {
+        min-height: 44px;
+    }
 
     .kia-page { padding: 16px; }
 

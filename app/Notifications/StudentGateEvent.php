@@ -52,6 +52,7 @@ class StudentGateEvent extends Notification implements ShouldQueue
             'time'       => $this->time->format('g:i A'),
             'message_en' => "{$this->student->name_en} {$this->eventType} at school at {$this->time->format('g:i A')}.",
             'message_km' => "{$name} បាន" . ($this->eventType === 'arrival' ? 'មកដល់សាលា' : 'ចាកចេញពីសាលា') . "នៅម៉ោង {$this->time->format('g:i A')}។",
+            'url'        => route('parent.child.show', $this->student),
         ];
     }
 }
