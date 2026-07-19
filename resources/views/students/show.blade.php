@@ -83,4 +83,5 @@
     </div>
 
     @include('documents._list', ['documents' => $student->issuedDocuments])
+    @include('students._uploaded_documents', ['student' => $student])
 </x-app-layout>

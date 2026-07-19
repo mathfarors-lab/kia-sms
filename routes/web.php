@@ -26,6 +26,7 @@ use App\Http\Controllers\ReportCommentController;
 use App\Http\Controllers\ScholarshipController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\StudentController;
+use App\Http\Controllers\StudentDocumentController;
 use App\Http\Controllers\TransportController;
 use App\Http\Controllers\AcademicYearController;
 use App\Http\Controllers\SchoolClassController;
@@ -85,6 +86,9 @@ Route::middleware(['auth'])->group(function () {
 
     // Students
     Route::resource('students', StudentController::class);
+    Route::post('/students/{student}/documents', [StudentDocumentController::class, 'store'])->name('student-documents.store');
+    Route::delete('/student-documents/{document}', [StudentDocumentController::class, 'destroy'])->name('student-documents.destroy');
+    Route::get('/student-documents/{document}/download', [StudentDocumentController::class, 'download'])->name('student-documents.download');
 
     // Staff
     Route::resource('staff', StaffController::class);

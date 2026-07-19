@@ -68,6 +68,7 @@
     </div>
 
     @include('documents._list', ['documents' => $documents])
+    @include('students._uploaded_documents', ['student' => $student])
 
     {{-- Published exams --}}
     @if($publishedExams->isNotEmpty())

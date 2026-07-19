@@ -87,6 +87,12 @@ class Student extends Model
         return $this->hasMany(IssuedDocument::class);
     }
 
+    /** Supporting files uploaded to this student's record (ID scans, medical records, etc.) — distinct from issuedDocuments(), which the school generates and issues. */
+    public function documents(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(StudentDocument::class)->latest();
+    }
+
     /** The admission application this student was converted from, if any (direct creates have none). */
     public function admissionApplication(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
