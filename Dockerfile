@@ -41,5 +41,5 @@ COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-EXPOSE 8080
+EXPOSE 9000
 ENTRYPOINT ["/entrypoint.sh"]
