@@ -275,6 +275,61 @@ class EngagementTest extends TestCase
         $response->assertForbidden();
     }
 
+    // Regression — index()/show()/download() had no authorize() call at all, so any
+    // authenticated user of any role (including ones holding zero homework permission)
+    // could browse and download every homework in the school.
+
+    public function test_role_with_no_homework_permission_cannot_view_homework(): void
+    {
+        $hw = Homework::create([
+            'section_id'  => $this->section->id,
+            'subject_id'  => Subject::create(['name_en' => 'Geo', 'name_km' => 'ភ', 'code' => 'GEO'])->id,
+            'teacher_id'  => $this->staffRecord->id,
+            'title'       => 'Geography Map',
+            'due_date'    => now()->addWeek()->toDateString(),
+            'published_at' => now(),
+        ]);
+
+        foreach (['parent', 'accountant', 'librarian', 'receptionist'] as $role) {
+            $user = $this->makeUser($role);
+
+            $this->actingAs($user)->get(route('homework.index'))->assertForbidden();
+            $this->actingAs($user)->get(route('homework.show', $hw))->assertForbidden();
+            $this->actingAs($user)->get(route('homework.download', $hw))->assertForbidden();
+        }
+    }
+
+    public function test_student_cannot_view_homework_outside_their_section(): void
+    {
+        $otherSection = Section::create(['school_class_id' => $this->section->school_class_id, 'name' => 'B']);
+
+        $hw = Homework::create([
+            'section_id'  => $otherSection->id,
+            'subject_id'  => Subject::create(['name_en' => 'Music', 'name_km' => 'ត', 'code' => 'MUS'])->id,
+            'teacher_id'  => $this->staffRecord->id,
+            'title'       => 'Music Theory',
+            'due_date'    => now()->addWeek()->toDateString(),
+            'published_at' => now(),
+        ]);
+
+        $this->actingAs($this->student)->get(route('homework.show', $hw))->assertForbidden();
+    }
+
+    public function test_student_cannot_view_unpublished_draft_homework(): void
+    {
+        $draft = Homework::create([
+            'section_id'   => $this->section->id,
+            'subject_id'   => Subject::create(['name_en' => 'Draft', 'name_km' => 'ព', 'code' => 'DFT'])->id,
+            'teacher_id'   => $this->staffRecord->id,
+            'title'        => 'Not Yet Published',
+            'due_date'     => now()->addWeek()->toDateString(),
+            'published_at' => null,
+        ]);
+
+        // Student is enrolled in the section, but the homework is still a draft.
+        $this->actingAs($this->student)->get(route('homework.show', $draft))->assertForbidden();
+    }
+
     // ── 4. Library ──────────────────────────────────────────────────────────
 
     public function test_cannot_issue_book_when_no_copies_available(): void

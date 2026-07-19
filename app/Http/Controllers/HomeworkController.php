@@ -17,6 +17,8 @@ class HomeworkController extends Controller
 
     public function index(Request $request)
     {
+        $this->authorize('viewAny', Homework::class);
+
         $user = $request->user();
 
         $query = Homework::with(['section', 'subject', 'teacher'])
@@ -67,6 +69,8 @@ class HomeworkController extends Controller
 
     public function show(Request $request, Homework $homework)
     {
+        $this->authorize('view', $homework);
+
         $user       = $request->user();
         $submission = null;
 
@@ -118,6 +122,8 @@ class HomeworkController extends Controller
     // GET /homework/{homework}/attachment  — gated download
     public function download(Request $request, Homework $homework)
     {
+        $this->authorize('view', $homework);
+
         if (! $homework->attachment_path) abort(404);
         // Anyone who can view the homework can download its attachment
         return response()->download(

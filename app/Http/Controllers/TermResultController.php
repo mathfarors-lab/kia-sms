@@ -23,6 +23,10 @@ class TermResultController extends Controller
     public function index(Request $request)
     {
         $this->authorize(P::EXAMS_VIEW);
+        // EXAMS_VIEW is also held by student/parent (for their own single-student
+        // report elsewhere) — this listing shows every section's results for the
+        // whole school, so it's restricted further to the staff console roles.
+        abort_unless(Auth::user()->hasAnyRole(['admin', 'principal', 'teacher']), 403);
 
         $years           = AcademicYear::orderByDesc('start_date')->get();
         $selectedYear    = $request->year

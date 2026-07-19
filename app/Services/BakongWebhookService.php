@@ -213,10 +213,19 @@ class BakongWebhookService
             'reference' => $callback->transaction_reference,
         ]);
 
-        $totalPaid = $invoice->payments()->sum('amount');
-        if (bccomp((string) $totalPaid, (string) $invoice->total, 2) >= 0) {
-            $invoice->update(['status' => 'paid']);
-        }
+        // Keep `paid`/`status` in lockstep with the manual path (PaymentService::record()).
+        // Summing payments() live (rather than trusting the cached `paid` column) keeps
+        // this correct even if `paid` had already drifted before this fix.
+        $totalPaid    = $invoice->payments()->sum('amount');
+        $newRemaining = bcsub((string) $invoice->total, (string) $totalPaid, 2);
+
+        $status = match (true) {
+            bccomp($newRemaining, '0.00', 2) <= 0      => 'paid',
+            bccomp((string) $totalPaid, '0.00', 2) > 0 => 'partial',
+            default                                    => 'unpaid',
+        };
+
+        $invoice->update(['paid' => $totalPaid, 'status' => $status]);
     }
 
     private function flagCallback(BakongCallback $callback, string $reason): void

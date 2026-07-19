@@ -320,6 +320,44 @@ class TermResultTest extends TestCase
             ->assertRedirect();
     }
 
+    // ── Test: the whole-school results listing is a staff console, not just  ────
+    // ── gated by EXAMS_VIEW (which student/parent also hold for their own    ────
+    // ── single-student page elsewhere). Regression — index() previously had  ────
+    // ── no role/ownership scoping at all, leaking every section's rank/GPA.  ────
+
+    public function test_student_cannot_view_term_results_index(): void
+    {
+        $year = $this->makeYear();
+        $studentUser = User::factory()->create(['status' => 'active']);
+        $studentUser->assignRole('student');
+
+        $this->actingAs($studentUser)
+            ->get(route('term-results.index', ['year' => $year->id]))
+            ->assertForbidden();
+    }
+
+    public function test_parent_cannot_view_term_results_index(): void
+    {
+        $year = $this->makeYear();
+        $parentUser = User::factory()->create(['status' => 'active']);
+        $parentUser->assignRole('parent');
+
+        $this->actingAs($parentUser)
+            ->get(route('term-results.index', ['year' => $year->id]))
+            ->assertForbidden();
+    }
+
+    public function test_teacher_can_view_term_results_index(): void
+    {
+        $year = $this->makeYear();
+        $teacher = User::factory()->create(['status' => 'active']);
+        $teacher->assignRole('teacher');
+
+        $this->actingAs($teacher)
+            ->get(route('term-results.index', ['year' => $year->id]))
+            ->assertOk();
+    }
+
     // ── Test: student sees only own published term result ────────────────────────
 
     public function test_student_sees_only_own_published_term_result(): void

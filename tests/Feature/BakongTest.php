@@ -124,6 +124,54 @@ class BakongTest extends TestCase
         $this->assertEquals('paid', $invoice->fresh()->status);
     }
 
+    // Regression — applyPayment() set `status` on full settlement but never updated
+    // the cached `paid` column, so remainingBalance() (and the cash-payment form's
+    // pre-filled amount) still showed the full original total after a partial KHQR
+    // payment. A second, manual payment could then double-collect on top of it.
+
+    public function test_partial_khqr_payment_updates_invoice_paid_and_status(): void
+    {
+        $invoice = $this->makeInvoice('INV-PARTIAL-001', '100.00');
+
+        [$data, $sig] = $this->signedPost($this->basePayload([
+            'transaction_id' => 'TXN-PARTIAL-001',
+            'amount'         => '40.00',
+            'merchantRef'    => 'INV-PARTIAL-001',
+        ]));
+
+        $this->postJson(route('webhooks.bakong'), $data, ['X-Bakong-Signature' => $sig])
+            ->assertOk();
+
+        $invoice->refresh();
+        $this->assertEquals('40.00', $invoice->paid);
+        $this->assertEquals('partial', $invoice->status);
+        $this->assertEquals('60.00', $invoice->remainingBalance());
+    }
+
+    public function test_second_khqr_payment_completes_a_partially_paid_invoice(): void
+    {
+        $invoice = $this->makeInvoice('INV-PARTIAL-002', '100.00');
+
+        [$data1, $sig1] = $this->signedPost($this->basePayload([
+            'transaction_id' => 'TXN-PARTIAL-002A',
+            'amount'         => '40.00',
+            'merchantRef'    => 'INV-PARTIAL-002',
+        ]));
+        $this->postJson(route('webhooks.bakong'), $data1, ['X-Bakong-Signature' => $sig1])->assertOk();
+
+        [$data2, $sig2] = $this->signedPost($this->basePayload([
+            'transaction_id' => 'TXN-PARTIAL-002B',
+            'amount'         => '60.00',
+            'merchantRef'    => 'INV-PARTIAL-002',
+        ]));
+        $this->postJson(route('webhooks.bakong'), $data2, ['X-Bakong-Signature' => $sig2])->assertOk();
+
+        $invoice->refresh();
+        $this->assertEquals('100.00', $invoice->paid);
+        $this->assertEquals('paid', $invoice->status);
+        $this->assertEquals('0.00', $invoice->remainingBalance());
+    }
+
     // -------------------------------------------------------------------------
     // 🔒 Idempotency — issue 1 core fix
     // -------------------------------------------------------------------------

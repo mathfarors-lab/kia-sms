@@ -16,6 +16,41 @@ class HomeworkPolicy
         return $user->hasAnyRole(['admin', 'teacher']);
     }
 
+    /** Can the user browse the homework list at all? */
+    public function viewAny(User $user): bool
+    {
+        if ($user->hasAnyRole(['admin', 'principal', 'teacher'])) {
+            return true;
+        }
+
+        return $user->hasRole('student') && $user->student !== null;
+    }
+
+    /** Can the user open this specific homework (and, by extension, download its attachment)? */
+    public function view(User $user, Homework $hw): bool
+    {
+        if ($user->hasAnyRole(['admin', 'principal'])) {
+            return true;
+        }
+
+        if ($user->hasRole('teacher')) {
+            return $user->staff && $hw->teacher_id === $user->staff->id;
+        }
+
+        if ($user->hasRole('student') && $user->student) {
+            if (is_null($hw->published_at)) {
+                return false;
+            }
+
+            return DB::table('student_section')
+                ->where('section_id', $hw->section_id)
+                ->where('student_id', $user->student->id)
+                ->exists();
+        }
+
+        return false;
+    }
+
     public function update(User $user, Homework $hw): bool
     {
         if ($user->hasRole('admin')) return true;
