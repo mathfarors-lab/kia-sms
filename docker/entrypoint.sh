@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-: "${PORT:=8080}"
+: "${PORT:=9000}"
 envsubst '${PORT}' < /etc/nginx/templates/default.conf.template > /etc/nginx/sites-enabled/default
 
 cd /var/www/html
