@@ -17,6 +17,7 @@ use App\Support\Permissions;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Schema;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -27,6 +28,11 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Some hosts run MySQL/MariaDB without the large-index-prefix default,
+        // where a utf8mb4 varchar(255) unique/primary key exceeds the 767-byte
+        // limit. Capping the default keeps migrations portable across hosts.
+        Schema::defaultStringLength(191);
+
         // Explicit policy registrations (for models whose name doesn't match Policy class name)
         Gate::policy(Announcement::class,      AnnouncementPolicy::class);
         Gate::policy(Conversation::class,      ConversationPolicy::class);
