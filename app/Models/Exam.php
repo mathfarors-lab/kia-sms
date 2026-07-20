@@ -2,23 +2,26 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Spatie\Activitylog\Traits\LogsActivity;
-use Spatie\Activitylog\LogOptions;
 use App\Models\Concerns\BelongsToBranch;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Exam extends Model
 {
     use BelongsToBranch;
     use LogsActivity;
 
-    protected $fillable = ['academic_year_id', 'name', 'type', 'semester', 'weight', 'is_published'];
+    protected $fillable = ['academic_year_id', 'name', 'type', 'semester', 'exam_date', 'weight', 'is_published'];
 
     protected function casts(): array
     {
         return [
             'is_published' => 'boolean',
-            'weight'       => 'decimal:2',
+            'weight' => 'decimal:2',
+            'exam_date' => 'date',
         ];
     }
 
@@ -27,17 +30,17 @@ class Exam extends Model
         return LogOptions::defaults()->logFillable()->logOnlyDirty();
     }
 
-    public function academicYear(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function academicYear(): BelongsTo
     {
         return $this->belongsTo(AcademicYear::class);
     }
 
-    public function marks(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function marks(): HasMany
     {
         return $this->hasMany(ExamMark::class);
     }
 
-    public function results(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function results(): HasMany
     {
         return $this->hasMany(ExamResult::class);
     }

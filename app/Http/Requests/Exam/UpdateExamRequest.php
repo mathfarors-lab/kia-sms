@@ -15,10 +15,11 @@ class UpdateExamRequest extends FormRequest
     {
         return [
             'academic_year_id' => ['required', 'exists:academic_years,id'],
-            'name'             => ['required', 'string', 'max:200'],
-            'type'             => ['required', 'in:monthly,midterm,final'],
-            'semester'         => ['required', 'in:1,2'],
-            'weight'           => ['required', 'numeric', 'min:0'],
+            'name' => ['required', 'string', 'max:200'],
+            'type' => ['required', 'in:monthly,midterm,final'],
+            'semester' => ['required', 'in:1,2'],
+            'exam_date' => ['nullable', 'date'],
+            'weight' => ['required', 'numeric', 'min:0'],
         ];
     }
 }

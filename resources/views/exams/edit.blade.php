@@ -52,6 +52,12 @@
                     @error('weight')<span class="kia-field-error">{{ $message }}</span>@enderror
                 </div>
             </div>
+            <div class="kia-form-group">
+                <label class="kia-label">Exam Date</label>
+                <input type="date" name="exam_date" value="{{ old('exam_date', $exam->exam_date?->toDateString()) }}" class="kia-input @error('exam_date') is-invalid @enderror">
+                <div style="font-size:.75rem;color:var(--muted);margin-top:4px;">Optional — shown on the Academic Calendar once set.</div>
+                @error('exam_date')<span class="kia-field-error">{{ $message }}</span>@enderror
+            </div>
             <div class="kia-form-actions">
                 <button type="submit" class="btn btn-primary">Update Exam</button>
                 <a href="{{ route('exams.index') }}" class="btn btn-ghost">Cancel</a>

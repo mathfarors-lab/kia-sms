@@ -178,6 +178,22 @@ final class Permissions
     // a role/ownership check in the controller, not this permission.
     const STAFF_EVALUATIONS_MANAGE = 'staff-evaluations.manage';
 
+    // Curriculum — viewing a syllabus is broader than authoring one (a
+    // teacher needs to see what to teach; only academic leadership defines
+    // it). Toggling a topic's completion is a separate self-scoped
+    // carve-out in the controller (the assigned class_subject.teacher_id),
+    // independent of this permission, same shape as staff evaluations.
+    const CURRICULUM_VIEW = 'curriculum.view';
+
+    const CURRICULUM_MANAGE = 'curriculum.manage';
+
+    // Academic Calendar — viewing it needs no permission at all (term
+    // dates/holidays/exam dates are school-wide informational data, same
+    // spirit as the dashboard). This only gates editing the holidays list;
+    // semester date-setting rides on the existing ACADEMIC_YEARS_MANAGE
+    // since a semester is just a sub-period of an academic year.
+    const ACADEMIC_CALENDAR_MANAGE = 'academic-calendar.manage';
+
     /**
      * Safe permission check for UI gating (nav links, quick-action buttons).
      * Spatie's User::can() throws PermissionDoesNotExist — a hard 500 — when
@@ -227,6 +243,8 @@ final class Permissions
             self::FEEDBACK_VIEW, self::FEEDBACK_MANAGE,
             self::SURVEYS_VIEW, self::SURVEYS_MANAGE,
             self::STAFF_EVALUATIONS_MANAGE,
+            self::CURRICULUM_VIEW, self::CURRICULUM_MANAGE,
+            self::ACADEMIC_CALENDAR_MANAGE,
         ];
     }
 }

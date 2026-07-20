@@ -1,0 +1,28 @@
+<?php
+
+return [
+    'nav' => 'Curriculum',
+    'index_title' => 'Curriculum',
+    'select_a_class' => 'Select a class to view its curriculum.',
+    'class' => 'Class',
+    'no_classes_yet' => 'No classes found.',
+    'subjects_count' => 'Subjects',
+    'subject' => 'Subject',
+    'teacher' => 'Teacher',
+    'progress' => 'Progress',
+    'view_syllabus' => 'View Syllabus',
+    'topics' => 'Topics',
+    'add_topic' => 'Add Topic',
+    'edit_topic' => 'Edit Topic',
+    'topic_title' => 'Title',
+    'description' => 'Description',
+    'no_topics_yet' => 'No syllabus topics added yet.',
+    'mark_complete' => 'Mark Complete',
+    'mark_incomplete' => 'Mark Incomplete',
+    'completed' => 'Completed',
+    'not_started' => 'Not started',
+    'topic_added' => 'Topic added to the syllabus.',
+    'topic_updated' => 'Topic updated.',
+    'topic_deleted' => 'Topic removed.',
+    'confirm_delete_topic' => 'Delete this topic?',
+];

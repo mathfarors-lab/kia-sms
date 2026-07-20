@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class AcademicYear extends Model
 {
@@ -15,8 +16,8 @@ class AcademicYear extends Model
     {
         return [
             'start_date' => 'date',
-            'end_date'   => 'date',
-            'is_active'  => 'bool',
+            'end_date' => 'date',
+            'is_active' => 'bool',
         ];
     }
 
@@ -25,8 +26,13 @@ class AcademicYear extends Model
         $q->where('is_active', true);
     }
 
-    public function schoolClasses(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function schoolClasses(): HasMany
     {
         return $this->hasMany(SchoolClass::class);
+    }
+
+    public function semesters(): HasMany
+    {
+        return $this->hasMany(Semester::class)->orderBy('semester_number');
     }
 }

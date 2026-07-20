@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AcademicAnalyticsController;
+use App\Http\Controllers\AcademicCalendarController;
 use App\Http\Controllers\AcademicYearController;
 use App\Http\Controllers\AdmissionController;
 use App\Http\Controllers\AnalyticsController;
@@ -14,6 +15,7 @@ use App\Http\Controllers\BookController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\ConversationController;
+use App\Http\Controllers\CurriculumController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExamController;
 use App\Http\Controllers\ExamMarkController;
@@ -23,6 +25,7 @@ use App\Http\Controllers\FeeStructureController;
 use App\Http\Controllers\FinanceReportController;
 use App\Http\Controllers\GateController;
 use App\Http\Controllers\GradeScaleController;
+use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\HomeworkController;
 use App\Http\Controllers\IdCardController;
 use App\Http\Controllers\InvoiceController;
@@ -40,6 +43,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ScholarshipController;
 use App\Http\Controllers\SchoolClassController;
 use App\Http\Controllers\SectionController;
+use App\Http\Controllers\SemesterController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\StaffDevelopmentLogController;
@@ -143,6 +147,8 @@ Route::middleware(['auth'])->group(function () {
 
     // Academic Years
     Route::resource('academic-years', AcademicYearController::class);
+    Route::post('/academic-years/{academicYear}/semesters', [SemesterController::class, 'store'])->name('semesters.store');
+    Route::delete('/semesters/{semester}', [SemesterController::class, 'destroy'])->name('semesters.destroy');
 
     // Classes & Sections
     Route::resource('classes', SchoolClassController::class);
@@ -179,6 +185,20 @@ Route::middleware(['auth'])->group(function () {
     // Exams
     Route::resource('exams', ExamController::class)->except(['show']);
     Route::post('/exams/{exam}/publish', [ExamController::class, 'publish'])->name('exams.publish');
+
+    // Curriculum (G3) — syllabus content per class-subject.
+    Route::get('/curriculum', [CurriculumController::class, 'index'])->name('curriculum.index');
+    Route::get('/classes/{class}/curriculum', [CurriculumController::class, 'forClass'])->name('curriculum.for-class');
+    Route::get('/class-subjects/{classSubject}/curriculum', [CurriculumController::class, 'show'])->name('curriculum.show');
+    Route::post('/class-subjects/{classSubject}/curriculum-topics', [CurriculumController::class, 'store'])->name('curriculum-topics.store');
+    Route::get('/curriculum-topics/{topic}/edit', [CurriculumController::class, 'edit'])->name('curriculum-topics.edit');
+    Route::put('/curriculum-topics/{topic}', [CurriculumController::class, 'update'])->name('curriculum-topics.update');
+    Route::post('/curriculum-topics/{topic}/toggle', [CurriculumController::class, 'toggle'])->name('curriculum-topics.toggle');
+    Route::delete('/curriculum-topics/{topic}', [CurriculumController::class, 'destroy'])->name('curriculum-topics.destroy');
+
+    // Academic Calendar (G3) — read-only view, open to any authenticated user.
+    Route::get('/academic-calendar', [AcademicCalendarController::class, 'index'])->name('academic-calendar.index');
+    Route::resource('holidays', HolidayController::class)->except(['show']);
 
     // Exam Marks
     Route::get('/exam-marks', [ExamMarkController::class, 'index'])->name('exam-marks.index');
