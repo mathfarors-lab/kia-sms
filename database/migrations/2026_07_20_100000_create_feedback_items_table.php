@@ -23,7 +23,15 @@ return new class extends Migration
             $table->timestamp('resolved_at')->nullable();
             $table->timestamps();
 
-            $table->index(['status', 'category']);
+            // Two single-column indexes, not a composite — this database's
+            // tables are MyISAM (confirmed server-wide, not just here; see
+            // the G4-deploy investigation), whose 1000-byte max key length
+            // a composite of two utf8mb4 string(191) columns exceeds
+            // (764+764=1528 bytes). Query planners can still use both via
+            // index merge for a combined WHERE; that's the tradeoff for
+            // staying inside the limit without truncating either column.
+            $table->index('status');
+            $table->index('category');
             $table->index('submitted_by');
         });
     }
