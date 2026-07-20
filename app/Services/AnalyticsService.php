@@ -338,10 +338,72 @@ class AnalyticsService
         });
     }
 
+    /** Monthly submission volume — same monthExpr/groupByRaw bucketing as attendanceByMonth/feeByMonth. */
+    public function feedbackVolumeByMonth(int $ttl = 300): array
+    {
+        $key = 'analytics:feedback-volume-by-month:' . BranchContext::cacheKeySuffix();
+
+        return Cache::remember($key, $ttl, function () {
+            $monthExpr = $this->monthExpr('created_at');
+
+            return BranchContext::apply(DB::table('feedback_items'))
+                ->selectRaw("{$monthExpr} as month, COUNT(*) as total")
+                ->groupByRaw($monthExpr)
+                ->orderBy('month')
+                ->get()
+                ->toArray();
+        });
+    }
+
+    /** Average hours from submission to first resolution, across items that have ever been resolved. */
+    public function feedbackAverageResolutionHours(int $ttl = 300): ?float
+    {
+        $key = 'analytics:feedback-avg-resolution-hours:' . BranchContext::cacheKeySuffix();
+
+        return Cache::remember($key, $ttl, function () {
+            $diffExpr = $this->hoursDiffExpr('created_at', 'resolved_at');
+
+            $avg = BranchContext::apply(
+                DB::table('feedback_items')->whereNotNull('resolved_at')
+            )->selectRaw("AVG({$diffExpr}) as avg_hours")->value('avg_hours');
+
+            return $avg !== null ? round((float) $avg, 1) : null;
+        });
+    }
+
+    /** Status breakdown per category — the satisfaction dashboard's main table. */
+    public function feedbackCountsByCategory(int $ttl = 300): array
+    {
+        $key = 'analytics:feedback-counts-by-category:' . BranchContext::cacheKeySuffix();
+
+        return Cache::remember($key, $ttl, function () {
+            return BranchContext::apply(DB::table('feedback_items'))
+                ->selectRaw("
+                    category,
+                    COUNT(*) as total,
+                    SUM(CASE WHEN status = 'open' THEN 1 ELSE 0 END) as open,
+                    SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) as in_progress,
+                    SUM(CASE WHEN status = 'resolved' THEN 1 ELSE 0 END) as resolved,
+                    SUM(CASE WHEN status = 'closed' THEN 1 ELSE 0 END) as closed
+                ")
+                ->groupBy('category')
+                ->orderBy('category')
+                ->get()
+                ->toArray();
+        });
+    }
+
     private function monthExpr(string $column): string
     {
         return DB::connection()->getDriverName() === 'mysql'
             ? "DATE_FORMAT({$column}, '%Y-%m')"
             : "strftime('%Y-%m', {$column})";
+    }
+
+    private function hoursDiffExpr(string $from, string $to): string
+    {
+        return DB::connection()->getDriverName() === 'mysql'
+            ? "TIMESTAMPDIFF(HOUR, {$from}, {$to})"
+            : "(julianday({$to}) - julianday({$from})) * 24";
     }
 }

@@ -36,7 +36,8 @@
     $navFinance  = $can(P::INVOICES_VIEW) || $can(P::FEES_MANAGE)     || $can(P::REPORTS_VIEW);
     $navEngage   = $can(P::ANNOUNCEMENTS_VIEW) || $can(P::MESSAGES_VIEW)
                 || $can(P::HOMEWORK_MANAGE)     || $can(P::HOMEWORK_GRADE)
-                || $can(P::HOMEWORK_SUBMIT)     || $can(P::HOMEWORK_VIEW);
+                || $can(P::HOMEWORK_SUBMIT)     || $can(P::HOMEWORK_VIEW)
+                || $can(P::FEEDBACK_VIEW);
     $navOps      = $can(P::BOOKS_VIEW) || $u->can('viewAny', TransportRoute::class)
                 || $can(P::LEAVES_VIEW) || $can(P::STAFF_VIEW) || $can(P::VISITORS_MANAGE);
     $navSystem   = $can(P::ANALYTICS_VIEW) || $can(P::REPORTS_VIEW) || $can(P::AUDIT_VIEW)
@@ -312,6 +313,15 @@
         </a>
         @endif
 
+        @if($can(P::FEEDBACK_VIEW))
+        <a href="{{ route('feedback.index') }}" class="kia-nav-item {{ request()->routeIs('feedback.*') ? 'active' : '' }}">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M8 9h8M8 13h5"/><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            {{ __('nav.feedback') }}
+        </a>
+        @endif
+
         @if($can(P::HOMEWORK_MANAGE) || $can(P::HOMEWORK_GRADE) || $can(P::HOMEWORK_SUBMIT) || $can(P::HOMEWORK_VIEW))
         <a href="{{ route('homework.index') }}" class="kia-nav-item {{ request()->routeIs('homework.*') || request()->routeIs('homework-submissions.*') ? 'active' : '' }}">
             <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -447,6 +457,12 @@
             </svg>
             {{ __('nav.my_attendance') }}
         </a>
+        <a href="{{ route('feedback.index') }}" class="kia-nav-item {{ request()->routeIs('feedback.*') ? 'active' : '' }}">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M8 9h8M8 13h5"/><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            {{ __('nav.feedback') }}
+        </a>
         @endrole
 
         {{-- ── Parent portal ───────────────────────────────────────────── --}}
@@ -457,6 +473,12 @@
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
             </svg>
             {{ __('nav.children') }}
+        </a>
+        <a href="{{ route('feedback.index') }}" class="kia-nav-item {{ request()->routeIs('feedback.*') ? 'active' : '' }}">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M8 9h8M8 13h5"/><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            {{ __('nav.feedback') }}
         </a>
         @endrole
     </div>

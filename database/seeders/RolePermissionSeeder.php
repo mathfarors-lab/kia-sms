@@ -45,6 +45,7 @@ class RolePermissionSeeder extends Seeder
                 P::PROMOTION_MANAGE,
                 P::AUDIT_VIEW,
                 P::REPORT_COMMENTS_MANAGE,
+                P::FEEDBACK_VIEW, P::FEEDBACK_MANAGE,
             ],
 
             'teacher' => [

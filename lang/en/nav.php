@@ -31,6 +31,7 @@ return [
     'finance_reports'   => 'Finance Reports',
     'announcements'     => 'Announcements',
     'messages'          => 'Messages',
+    'feedback'          => 'Feedback',
     'homework'          => 'Homework',
     'library'           => 'Library',
     'transport'         => 'Transport',

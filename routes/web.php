@@ -39,6 +39,8 @@ use App\Http\Controllers\VisitorLogController;
 use App\Http\Controllers\GradeScaleController;
 use App\Http\Controllers\ExamController;
 use App\Http\Controllers\ExamMarkController;
+use App\Http\Controllers\FeedbackController;
+use App\Http\Controllers\FeedbackDashboardController;
 use App\Http\Controllers\TermResultController;
 use App\Http\Controllers\IdCardController;
 use App\Http\Controllers\TranscriptController;
@@ -376,6 +378,20 @@ Route::middleware(['auth'])->group(function () {
 
     // Student self-service portal
     Route::get('/student/attendance', [StudentPortalController::class, 'attendance'])->name('student.attendance');
+
+    // Feedback & Complaints — parent/student submission, staff inbox, satisfaction dashboard
+    Route::prefix('feedback')->name('feedback.')->group(function () {
+        Route::get('/',            [FeedbackController::class, 'index'])->name('index');
+        Route::get('/new',         [FeedbackController::class, 'create'])->name('create');
+        Route::post('/',           [FeedbackController::class, 'store'])->name('store');
+        Route::get('/dashboard',   [FeedbackDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/{feedback}',  [FeedbackController::class, 'show'])->name('show');
+        Route::post('/{feedback}/reply',      [FeedbackController::class, 'reply'])->name('reply');
+        Route::post('/{feedback}/assign',     [FeedbackController::class, 'assign'])->name('assign');
+        Route::post('/{feedback}/status',     [FeedbackController::class, 'updateStatus'])->name('status');
+        Route::post('/{feedback}/reopen',     [FeedbackController::class, 'reopen'])->name('reopen');
+        Route::get('/{feedback}/attachment',  [FeedbackController::class, 'downloadAttachment'])->name('attachment');
+    });
 });
 
 // Bakong KHQR webhook (push model — bank/PSP integration).

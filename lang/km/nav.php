@@ -31,6 +31,7 @@ return [
     'finance_reports'   => 'របាយការណ៍ហិរញ្ញវត្ថុ',
     'announcements'     => 'សេចក្តីប្រកាស',
     'messages'          => 'សារ',
+    'feedback'          => 'មតិកែលម្អ',
     'homework'          => 'កិច្ចការផ្ទះ',
     'library'           => 'បណ្ណាល័យ',
     'transport'         => 'ការដឹកជញ្ជូន',

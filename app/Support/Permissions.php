@@ -120,6 +120,11 @@ final class Permissions
     // Audit-log viewer — admin/principal only; never expose to lower roles
     const AUDIT_VIEW = 'audit.view';
 
+    // Feedback & Complaints — the inbox/dashboard side; submitting is a
+    // parent/student role check, not a permission (matches invoices/transcripts).
+    const FEEDBACK_VIEW   = 'feedback.view';
+    const FEEDBACK_MANAGE = 'feedback.manage';
+
     /**
      * Safe permission check for UI gating (nav links, quick-action buttons).
      * Spatie's User::can() throws PermissionDoesNotExist — a hard 500 — when
@@ -166,6 +171,7 @@ final class Permissions
             self::PROMOTION_MANAGE,
             self::AUDIT_VIEW,
             self::ANALYTICS_VIEW, self::REPORTS_VIEW,
+            self::FEEDBACK_VIEW, self::FEEDBACK_MANAGE,
         ];
     }
 }
