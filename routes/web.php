@@ -39,6 +39,7 @@ use App\Http\Controllers\VisitorLogController;
 use App\Http\Controllers\GradeScaleController;
 use App\Http\Controllers\ExamController;
 use App\Http\Controllers\ExamMarkController;
+use App\Http\Controllers\AcademicAnalyticsController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\FeedbackDashboardController;
 use App\Http\Controllers\StudentTransferController;
@@ -293,6 +294,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Analytics
     Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics.index');
+    Route::get('/academic-analytics', [AcademicAnalyticsController::class, 'index'])->name('academic-analytics.index');
 
     // Reports
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');

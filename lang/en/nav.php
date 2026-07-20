@@ -38,6 +38,7 @@ return [
     'leaves'            => 'Leaves',
     'staff'             => 'Staff',
     'analytics'         => 'Analytics',
+    'academic_analytics' => 'Academic Analytics',
     'reports'           => 'Reports',
     'audit_log'         => 'Audit Log',
     'bakong_review'     => 'Bakong Review',

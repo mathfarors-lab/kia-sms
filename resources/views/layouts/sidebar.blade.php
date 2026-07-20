@@ -396,6 +396,12 @@
             </svg>
             {{ __('nav.analytics') }}
         </a>
+        <a href="{{ route('academic-analytics.index') }}" class="kia-nav-item {{ request()->routeIs('academic-analytics.*') ? 'active' : '' }}">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M22 10v6M2 10l10-5 10 5-10 5-10-5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
+            </svg>
+            {{ __('nav.academic_analytics') }}
+        </a>
         @endif
 
         @if($can(P::REPORTS_VIEW))

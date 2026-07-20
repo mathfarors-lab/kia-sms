@@ -393,6 +393,113 @@ class AnalyticsService
         });
     }
 
+    /** % of published annual term results with result = 'pass'. Null when none published yet. */
+    public function academicPassRate(AcademicYear $year, int $ttl = 300): ?float
+    {
+        $key = "analytics:academic-pass-rate:{$year->id}:" . BranchContext::cacheKeySuffix();
+
+        return Cache::remember($key, $ttl, function () use ($year) {
+            $summary = BranchContext::apply(
+                DB::table('term_results')
+                    ->where('academic_year_id', $year->id)
+                    ->where('is_published', true)
+                    ->whereNull('semester')
+            )->selectRaw("
+                    COUNT(*) as total,
+                    SUM(CASE WHEN result = 'pass' THEN 1 ELSE 0 END) as passed
+                ")->first();
+
+            return $summary->total > 0 ? round($summary->passed / $summary->total * 100, 1) : null;
+        });
+    }
+
+    /**
+     * Average score/GPA per section, from published annual term results — one
+     * row per section, highest average first (the view flags the first/last
+     * row as the top/bottom performer, so this order is load-bearing).
+     */
+    public function academicAverageBySection(AcademicYear $year, int $ttl = 300): array
+    {
+        $key = "analytics:academic-avg-by-section:{$year->id}:" . BranchContext::cacheKeySuffix();
+
+        return Cache::remember($key, $ttl, function () use ($year) {
+            return BranchContext::apply(
+                DB::table('term_results')
+                    ->join('sections', 'sections.id', '=', 'term_results.section_id')
+                    ->join('school_classes', 'school_classes.id', '=', 'sections.school_class_id')
+                    ->where('term_results.academic_year_id', $year->id)
+                    ->where('term_results.is_published', true)
+                    ->whereNull('term_results.semester'),
+                'term_results.branch_id'
+            )->select(
+                    'school_classes.name as class_name', 'sections.name as section_name',
+                    DB::raw('AVG(term_results.average) as avg_score'),
+                    DB::raw('AVG(term_results.gpa) as avg_gpa'),
+                    DB::raw('COUNT(*) as student_count')
+                )
+                ->groupBy('sections.id', 'school_classes.name', 'sections.name')
+                ->orderByDesc('avg_score')
+                ->get()
+                ->toArray();
+        });
+    }
+
+    /**
+     * Average score per subject, from published exams only — one row per
+     * subject, highest average first (same load-bearing order as above).
+     */
+    public function academicSubjectAverages(AcademicYear $year, int $ttl = 300): array
+    {
+        $key = "analytics:academic-subject-averages:{$year->id}:" . BranchContext::cacheKeySuffix();
+
+        return Cache::remember($key, $ttl, function () use ($year) {
+            return BranchContext::apply(
+                DB::table('exam_marks')
+                    ->join('exams', 'exams.id', '=', 'exam_marks.exam_id')
+                    ->join('subjects', 'subjects.id', '=', 'exam_marks.subject_id')
+                    ->where('exams.academic_year_id', $year->id)
+                    ->where('exams.is_published', true),
+                'exam_marks.branch_id'
+            )->select(
+                    'subjects.name_en', 'subjects.name_km',
+                    DB::raw('AVG(exam_marks.score) as avg_score'),
+                    DB::raw('COUNT(*) as mark_count')
+                )
+                ->groupBy('subjects.id', 'subjects.name_en', 'subjects.name_km')
+                ->orderByDesc('avg_score')
+                ->get()
+                ->toArray();
+        });
+    }
+
+    /**
+     * Count of exam marks per letter grade, from published exams only — grade
+     * is computed here via a range join against grade_scales rather than
+     * reading exam_marks.grade, which the mark-entry grid always leaves null.
+     */
+    public function academicGradeDistribution(AcademicYear $year, int $ttl = 300): array
+    {
+        $key = "analytics:academic-grade-distribution:{$year->id}:" . BranchContext::cacheKeySuffix();
+
+        return Cache::remember($key, $ttl, function () use ($year) {
+            return BranchContext::apply(
+                DB::table('exam_marks')
+                    ->join('exams', 'exams.id', '=', 'exam_marks.exam_id')
+                    ->join('grade_scales', function ($join) {
+                        $join->on('exam_marks.score', '>=', 'grade_scales.min_score')
+                             ->on('exam_marks.score', '<=', 'grade_scales.max_score');
+                    })
+                    ->where('exams.academic_year_id', $year->id)
+                    ->where('exams.is_published', true),
+                'exam_marks.branch_id'
+            )->select('grade_scales.grade', DB::raw('COUNT(*) as total'))
+                ->groupBy('grade_scales.grade', 'grade_scales.min_score')
+                ->orderByDesc('grade_scales.min_score')
+                ->get()
+                ->toArray();
+        });
+    }
+
     private function monthExpr(string $column): string
     {
         return DB::connection()->getDriverName() === 'mysql'
