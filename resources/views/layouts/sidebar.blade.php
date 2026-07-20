@@ -27,6 +27,12 @@
         ? \App\Models\Section::where('class_teacher_id', $u->staff->id)->first()
         : null;
 
+    // Any staff member (not just teachers) may have evaluation records —
+    // resolved here so the self-service "My Evaluations" link works
+    // regardless of staff.view, matching the controller's self-view
+    // carve-out (finalized-only) rather than gating on a role list.
+    $myStaffId = $u->staff?->id;
+
     $navAcademic = $can(P::ACADEMIC_YEARS_MANAGE) || $can(P::CLASSES_MANAGE)
                 || $can(P::SUBJECTS_MANAGE)        || $can(P::SETTINGS_MANAGE)
                 || $can(P::REPORT_COMMENTS_MANAGE) || $can(P::TIMETABLES_MANAGE);
@@ -37,9 +43,10 @@
     $navEngage   = $can(P::ANNOUNCEMENTS_VIEW) || $can(P::MESSAGES_VIEW)
                 || $can(P::HOMEWORK_MANAGE)     || $can(P::HOMEWORK_GRADE)
                 || $can(P::HOMEWORK_SUBMIT)     || $can(P::HOMEWORK_VIEW)
-                || $can(P::FEEDBACK_VIEW);
+                || $can(P::FEEDBACK_VIEW)       || $can(P::SURVEYS_VIEW);
     $navOps      = $can(P::BOOKS_VIEW) || $u->can('viewAny', TransportRoute::class)
-                || $can(P::LEAVES_VIEW) || $can(P::STAFF_VIEW) || $can(P::VISITORS_MANAGE);
+                || $can(P::LEAVES_VIEW) || $can(P::STAFF_VIEW) || $can(P::VISITORS_MANAGE)
+                || $myStaffId !== null;
     $navSystem   = $can(P::ANALYTICS_VIEW) || $can(P::REPORTS_VIEW) || $can(P::AUDIT_VIEW)
                 || $can(P::USERS_MANAGE)   || $can(P::SETTINGS_MANAGE);
 @endphp
@@ -79,6 +86,14 @@
                 <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
             </svg>
             {{ __('nav.dashboard') }}
+        </a>
+
+        {{-- Common: My Surveys — role-agnostic, any user may be targeted --}}
+        <a href="{{ route('surveys.my') }}" class="kia-nav-item {{ request()->routeIs('surveys.my') || request()->routeIs('surveys.take') || request()->routeIs('surveys.submit') ? 'active' : '' }}">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+            </svg>
+            {{ __('surveys.my_surveys') }}
         </a>
 
         {{-- ── Academic ────────────────────────────────────────────────── --}}
@@ -322,6 +337,15 @@
         </a>
         @endif
 
+        @if($can(P::SURVEYS_VIEW))
+        <a href="{{ route('surveys.index') }}" class="kia-nav-item {{ request()->routeIs('surveys.index') || request()->routeIs('surveys.show') || request()->routeIs('surveys.create') || request()->routeIs('surveys.edit') || request()->routeIs('surveys.results') ? 'active' : '' }}">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+            </svg>
+            {{ __('surveys.title') }}
+        </a>
+        @endif
+
         @if($can(P::HOMEWORK_MANAGE) || $can(P::HOMEWORK_GRADE) || $can(P::HOMEWORK_SUBMIT) || $can(P::HOMEWORK_VIEW))
         <a href="{{ route('homework.index') }}" class="kia-nav-item {{ request()->routeIs('homework.*') || request()->routeIs('homework-submissions.*') ? 'active' : '' }}">
             <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -371,6 +395,15 @@
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
             </svg>
             {{ __('nav.staff') }}
+        </a>
+        @endif
+
+        @if($myStaffId)
+        <a href="{{ route('staff-evaluations.index', $myStaffId) }}" class="kia-nav-item {{ request()->routeIs('staff-evaluations.*') ? 'active' : '' }}">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+            </svg>
+            {{ __('staff_evaluations.my_evaluations') }}
         </a>
         @endif
 

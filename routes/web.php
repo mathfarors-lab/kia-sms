@@ -1,58 +1,66 @@
 <?php
 
+use App\Http\Controllers\AcademicAnalyticsController;
+use App\Http\Controllers\AcademicYearController;
 use App\Http\Controllers\AdmissionController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\AnnouncementController;
+use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\AuditController;
 use App\Http\Controllers\BakongAdminController;
 use App\Http\Controllers\BakongController;
-use App\Http\Controllers\BranchController;
-use App\Http\Controllers\LeaveController;
-use App\Http\Controllers\ParentPortalController;
-use App\Http\Controllers\StudentPortalController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\ReportController;
+use App\Http\Controllers\BillingStatementController;
 use App\Http\Controllers\BookController;
+use App\Http\Controllers\BranchController;
+use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\ConversationController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\FeeStructureController;
-use App\Http\Controllers\FinanceReportController;
-use App\Http\Controllers\HomeworkController;
-use App\Http\Controllers\InvoiceController;
-use App\Http\Controllers\LocaleController;
-use App\Http\Controllers\PaymentController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\ReportCardController;
-use App\Http\Controllers\ReportCommentController;
-use App\Http\Controllers\ScholarshipController;
-use App\Http\Controllers\StaffController;
-use App\Http\Controllers\StudentController;
-use App\Http\Controllers\StudentDocumentController;
-use App\Http\Controllers\TransportController;
-use App\Http\Controllers\AcademicYearController;
-use App\Http\Controllers\SchoolClassController;
-use App\Http\Controllers\SectionController;
-use App\Http\Controllers\SubjectController;
-use App\Http\Controllers\TimetableController;
-use App\Http\Controllers\AttendanceController;
-use App\Http\Controllers\GateController;
-use App\Http\Controllers\VisitorLogController;
-use App\Http\Controllers\GradeScaleController;
 use App\Http\Controllers\ExamController;
 use App\Http\Controllers\ExamMarkController;
-use App\Http\Controllers\AcademicAnalyticsController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\FeedbackDashboardController;
-use App\Http\Controllers\StudentTransferController;
-use App\Http\Controllers\TermResultController;
+use App\Http\Controllers\FeeStructureController;
+use App\Http\Controllers\FinanceReportController;
+use App\Http\Controllers\GateController;
+use App\Http\Controllers\GradeScaleController;
+use App\Http\Controllers\HomeworkController;
 use App\Http\Controllers\IdCardController;
-use App\Http\Controllers\TranscriptController;
-use App\Http\Controllers\BillingStatementController;
-use App\Http\Controllers\CertificateController;
-use App\Http\Controllers\PromotionController;
+use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\LeaveController;
+use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\AuditController;
+use App\Http\Controllers\ParentPortalController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PhotoController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PromotionController;
+use App\Http\Controllers\ReportCardController;
+use App\Http\Controllers\ReportCommentController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ScholarshipController;
+use App\Http\Controllers\SchoolClassController;
+use App\Http\Controllers\SectionController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\StaffController;
+use App\Http\Controllers\StaffDevelopmentLogController;
+use App\Http\Controllers\StaffDocumentController;
+use App\Http\Controllers\StaffEvaluationController;
+use App\Http\Controllers\StaffQualificationController;
+use App\Http\Controllers\StudentController;
+use App\Http\Controllers\StudentDocumentController;
+use App\Http\Controllers\StudentPortalController;
+use App\Http\Controllers\StudentTransferController;
+use App\Http\Controllers\SubjectController;
+use App\Http\Controllers\SurveyController;
+use App\Http\Controllers\SurveyResponseController;
+use App\Http\Controllers\SurveyResultController;
+use App\Http\Controllers\TermResultController;
+use App\Http\Controllers\TimetableController;
+use App\Http\Controllers\TranscriptController;
+use App\Http\Controllers\TransportController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\VisitorLogController;
+use App\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Route;
 
 // Home → redirect to login or dashboard
@@ -75,18 +83,18 @@ Route::middleware(['auth'])->group(function () {
     // own dashboard rather than rendering (own-dashboard:ROLE — see
     // EnsureOwnDashboard). Owner's dashboard is separately guarded by
     // role:owner in its own route group below.
-    Route::get('/dashboard/admin',        [DashboardController::class, 'admin'])->name('dashboard.admin')->middleware('own-dashboard:admin');
-    Route::get('/dashboard/principal',    [DashboardController::class, 'principal'])->name('dashboard.principal')->middleware('own-dashboard:principal');
-    Route::get('/dashboard/teacher',      [DashboardController::class, 'teacher'])->name('dashboard.teacher')->middleware('own-dashboard:teacher');
-    Route::get('/dashboard/accountant',   [DashboardController::class, 'accountant'])->name('dashboard.accountant')->middleware('own-dashboard:accountant');
-    Route::get('/dashboard/librarian',    [DashboardController::class, 'librarian'])->name('dashboard.librarian')->middleware('own-dashboard:librarian');
+    Route::get('/dashboard/admin', [DashboardController::class, 'admin'])->name('dashboard.admin')->middleware('own-dashboard:admin');
+    Route::get('/dashboard/principal', [DashboardController::class, 'principal'])->name('dashboard.principal')->middleware('own-dashboard:principal');
+    Route::get('/dashboard/teacher', [DashboardController::class, 'teacher'])->name('dashboard.teacher')->middleware('own-dashboard:teacher');
+    Route::get('/dashboard/accountant', [DashboardController::class, 'accountant'])->name('dashboard.accountant')->middleware('own-dashboard:accountant');
+    Route::get('/dashboard/librarian', [DashboardController::class, 'librarian'])->name('dashboard.librarian')->middleware('own-dashboard:librarian');
     Route::get('/dashboard/receptionist', [DashboardController::class, 'receptionist'])->name('dashboard.receptionist')->middleware('own-dashboard:receptionist');
-    Route::get('/dashboard/student',      [DashboardController::class, 'student'])->name('dashboard.student')->middleware('own-dashboard:student');
-    Route::get('/dashboard/parent',       [DashboardController::class, 'parent'])->name('dashboard.parent')->middleware('own-dashboard:parent');
+    Route::get('/dashboard/student', [DashboardController::class, 'student'])->name('dashboard.student')->middleware('own-dashboard:student');
+    Route::get('/dashboard/parent', [DashboardController::class, 'parent'])->name('dashboard.parent')->middleware('own-dashboard:parent');
 
     // Profile
-    Route::get('/profile',    [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile',  [ProfileController::class, 'update'])->name('profile.update');
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Students
@@ -100,19 +108,38 @@ Route::middleware(['auth'])->group(function () {
     // Guided transfer / withdrawal — wraps StudentService::update() so the
     // existing leaving-certificate auto-issuance fires exactly as it does
     // for a direct status edit.
-    Route::get('/students/{student}/transfer',  [StudentTransferController::class, 'transferForm'])->name('students.transfer.form');
+    Route::get('/students/{student}/transfer', [StudentTransferController::class, 'transferForm'])->name('students.transfer.form');
     Route::post('/students/{student}/transfer', [StudentTransferController::class, 'transfer'])->name('students.transfer');
-    Route::get('/students/{student}/withdraw',  [StudentTransferController::class, 'withdrawForm'])->name('students.withdraw.form');
+    Route::get('/students/{student}/withdraw', [StudentTransferController::class, 'withdrawForm'])->name('students.withdraw.form');
     Route::post('/students/{student}/withdraw', [StudentTransferController::class, 'withdraw'])->name('students.withdraw');
 
     // Staff
     Route::resource('staff', StaffController::class);
     Route::get('/staff/export/excel', [StaffController::class, 'exportExcel'])->name('staff.export-excel');
     Route::get('/staff/export/pdf', [StaffController::class, 'exportPdf'])->name('staff.export-pdf');
+    Route::post('/staff/{staff}/qualifications', [StaffQualificationController::class, 'store'])->name('staff-qualifications.store');
+    Route::delete('/staff-qualifications/{qualification}', [StaffQualificationController::class, 'destroy'])->name('staff-qualifications.destroy');
+    Route::post('/staff/{staff}/documents', [StaffDocumentController::class, 'store'])->name('staff-documents.store');
+    Route::delete('/staff-documents/{document}', [StaffDocumentController::class, 'destroy'])->name('staff-documents.destroy');
+    Route::get('/staff-documents/{document}/download', [StaffDocumentController::class, 'download'])->name('staff-documents.download');
+
+    // Staff evaluations — deliberately NOT under staff.view (excludes teacher
+    // today); index()/show() carve out self-access to finalized rows only.
+    Route::get('/staff/{staff}/evaluations', [StaffEvaluationController::class, 'index'])->name('staff-evaluations.index');
+    Route::get('/staff/{staff}/evaluations/create', [StaffEvaluationController::class, 'create'])->name('staff-evaluations.create');
+    Route::post('/staff/{staff}/evaluations', [StaffEvaluationController::class, 'store'])->name('staff-evaluations.store');
+    Route::get('/staff-evaluations/{evaluation}', [StaffEvaluationController::class, 'show'])->name('staff-evaluations.show');
+    Route::get('/staff-evaluations/{evaluation}/edit', [StaffEvaluationController::class, 'edit'])->name('staff-evaluations.edit');
+    Route::put('/staff-evaluations/{evaluation}', [StaffEvaluationController::class, 'update'])->name('staff-evaluations.update');
+    Route::post('/staff-evaluations/{evaluation}/finalize', [StaffEvaluationController::class, 'finalize'])->name('staff-evaluations.finalize');
+
+    // Staff development / CPD log — same audience as qualifications (G1).
+    Route::post('/staff/{staff}/development-logs', [StaffDevelopmentLogController::class, 'store'])->name('staff-development-logs.store');
+    Route::delete('/staff-development-logs/{log}', [StaffDevelopmentLogController::class, 'destroy'])->name('staff-development-logs.destroy');
 
     // Settings
-    Route::get('/settings',   [SettingController::class, 'index'])->name('settings.index');
-    Route::post('/settings',  [SettingController::class, 'update'])->name('settings.update');
+    Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
+    Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
 
     // Academic Years
     Route::resource('academic-years', AcademicYearController::class);
@@ -251,6 +278,17 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/announcements/{announcement}/publish', [AnnouncementController::class, 'publish'])
         ->name('announcements.publish');
 
+    // Surveys — proactive/structured, distinct from Feedback's reactive/open-ended flow
+    Route::get('/my-surveys', [SurveyResponseController::class, 'index'])->name('surveys.my');
+    Route::resource('surveys', SurveyController::class);
+    Route::post('/surveys/{survey}/publish', [SurveyController::class, 'publish'])->name('surveys.publish');
+    Route::post('/surveys/{survey}/close', [SurveyController::class, 'close'])->name('surveys.close');
+    Route::get('/surveys/{survey}/take', [SurveyResponseController::class, 'create'])->name('surveys.take');
+    Route::post('/surveys/{survey}/take', [SurveyResponseController::class, 'store'])->name('surveys.submit');
+    Route::get('/surveys/{survey}/results', [SurveyResultController::class, 'show'])->name('surveys.results');
+    Route::get('/surveys/{survey}/results/export/excel', [SurveyResultController::class, 'exportExcel'])->name('surveys.export-excel');
+    Route::get('/surveys/{survey}/results/export/pdf', [SurveyResultController::class, 'exportPdf'])->name('surveys.export-pdf');
+
     // Messaging
     Route::get('/conversations', [ConversationController::class, 'index'])->name('conversations.index');
     Route::get('/conversations/new', [ConversationController::class, 'create'])->name('conversations.create');
@@ -319,14 +357,14 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware('role:owner')->prefix('owner')->name('owner.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'owner'])->name('dashboard');
 
-        Route::get('/branches',              [BranchController::class, 'index'])->name('branches.index');
-        Route::get('/branches/new',          [BranchController::class, 'create'])->name('branches.create');
-        Route::post('/branches',             [BranchController::class, 'store'])->name('branches.store');
-        Route::get('/branches/{branch}/edit',[BranchController::class, 'edit'])->name('branches.edit');
-        Route::patch('/branches/{branch}',   [BranchController::class, 'update'])->name('branches.update');
+        Route::get('/branches', [BranchController::class, 'index'])->name('branches.index');
+        Route::get('/branches/new', [BranchController::class, 'create'])->name('branches.create');
+        Route::post('/branches', [BranchController::class, 'store'])->name('branches.store');
+        Route::get('/branches/{branch}/edit', [BranchController::class, 'edit'])->name('branches.edit');
+        Route::patch('/branches/{branch}', [BranchController::class, 'update'])->name('branches.update');
         Route::post('/branches/{branch}/toggle-active', [BranchController::class, 'toggleActive'])->name('branches.toggle-active');
 
-        Route::get('/branches/{branch}/admins',  [BranchController::class, 'admins'])->name('branches.admins');
+        Route::get('/branches/{branch}/admins', [BranchController::class, 'admins'])->name('branches.admins');
         Route::post('/branches/{branch}/admins', [BranchController::class, 'appointAdmin'])->name('branches.admins.appoint');
         Route::delete('/branches/{branch}/admins/{user}', [BranchController::class, 'removeAdmin'])->name('branches.admins.remove');
     });
@@ -338,35 +376,35 @@ Route::middleware(['auth'])->group(function () {
 
     // Admissions pipeline (receptionist/principal/admin)
     Route::prefix('admissions')->name('admissions.')->group(function () {
-        Route::get('/',            [AdmissionController::class, 'index'])->name('index');
+        Route::get('/', [AdmissionController::class, 'index'])->name('index');
         Route::get('/export/excel', [AdmissionController::class, 'exportExcel'])->name('export-excel');
-        Route::get('/export/pdf',   [AdmissionController::class, 'exportPdf'])->name('export-pdf');
-        Route::get('/new',         [AdmissionController::class, 'create'])->name('create');
-        Route::post('/',           [AdmissionController::class, 'store'])->name('store');
+        Route::get('/export/pdf', [AdmissionController::class, 'exportPdf'])->name('export-pdf');
+        Route::get('/new', [AdmissionController::class, 'create'])->name('create');
+        Route::post('/', [AdmissionController::class, 'store'])->name('store');
         Route::get('/{admission}', [AdmissionController::class, 'show'])->name('show');
-        Route::get('/{admission}/edit',     [AdmissionController::class, 'edit'])->name('edit');
-        Route::patch('/{admission}',        [AdmissionController::class, 'update'])->name('update');
-        Route::post('/{admission}/status',  [AdmissionController::class, 'updateStatus'])->name('status');
+        Route::get('/{admission}/edit', [AdmissionController::class, 'edit'])->name('edit');
+        Route::patch('/{admission}', [AdmissionController::class, 'update'])->name('update');
+        Route::post('/{admission}/status', [AdmissionController::class, 'updateStatus'])->name('status');
         Route::post('/{admission}/convert', [AdmissionController::class, 'convert'])->name('convert');
         Route::get('/{admission}/document', [AdmissionController::class, 'document'])->name('document');
     });
 
     // Year-end promotion & rollover (admin/principal only)
     Route::prefix('promotion')->name('promotion.')->group(function () {
-        Route::get('/',       [PromotionController::class, 'index'])->name('index');
+        Route::get('/', [PromotionController::class, 'index'])->name('index');
         Route::post('/preview', [PromotionController::class, 'preview'])->name('preview');
         Route::post('/execute', [PromotionController::class, 'execute'])->name('execute');
     });
 
     // Gated photo routes — private disk, authorized users only
     Route::get('/students/{student}/photo', [PhotoController::class, 'student'])->name('students.photo');
-    Route::get('/staff/{staff}/photo',      [PhotoController::class, 'staff'])->name('staff.photo');
+    Route::get('/staff/{staff}/photo', [PhotoController::class, 'staff'])->name('staff.photo');
 
     // In-app notifications
     Route::prefix('notifications')->name('notifications.')->group(function () {
-        Route::get('/',              [NotificationController::class, 'index'])->name('index');
+        Route::get('/', [NotificationController::class, 'index'])->name('index');
         Route::get('/{id}/read-go', [NotificationController::class, 'readAndGo'])->name('read-go');
-        Route::post('/read-all',    [NotificationController::class, 'markAllRead'])->name('read-all');
+        Route::post('/read-all', [NotificationController::class, 'markAllRead'])->name('read-all');
     });
 
     // Audit-log viewer (admin/principal only)
@@ -392,16 +430,16 @@ Route::middleware(['auth'])->group(function () {
 
     // Feedback & Complaints — parent/student submission, staff inbox, satisfaction dashboard
     Route::prefix('feedback')->name('feedback.')->group(function () {
-        Route::get('/',            [FeedbackController::class, 'index'])->name('index');
-        Route::get('/new',         [FeedbackController::class, 'create'])->name('create');
-        Route::post('/',           [FeedbackController::class, 'store'])->name('store');
-        Route::get('/dashboard',   [FeedbackDashboardController::class, 'index'])->name('dashboard');
-        Route::get('/{feedback}',  [FeedbackController::class, 'show'])->name('show');
-        Route::post('/{feedback}/reply',      [FeedbackController::class, 'reply'])->name('reply');
-        Route::post('/{feedback}/assign',     [FeedbackController::class, 'assign'])->name('assign');
-        Route::post('/{feedback}/status',     [FeedbackController::class, 'updateStatus'])->name('status');
-        Route::post('/{feedback}/reopen',     [FeedbackController::class, 'reopen'])->name('reopen');
-        Route::get('/{feedback}/attachment',  [FeedbackController::class, 'downloadAttachment'])->name('attachment');
+        Route::get('/', [FeedbackController::class, 'index'])->name('index');
+        Route::get('/new', [FeedbackController::class, 'create'])->name('create');
+        Route::post('/', [FeedbackController::class, 'store'])->name('store');
+        Route::get('/dashboard', [FeedbackDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/{feedback}', [FeedbackController::class, 'show'])->name('show');
+        Route::post('/{feedback}/reply', [FeedbackController::class, 'reply'])->name('reply');
+        Route::post('/{feedback}/assign', [FeedbackController::class, 'assign'])->name('assign');
+        Route::post('/{feedback}/status', [FeedbackController::class, 'updateStatus'])->name('status');
+        Route::post('/{feedback}/reopen', [FeedbackController::class, 'reopen'])->name('reopen');
+        Route::get('/{feedback}/attachment', [FeedbackController::class, 'downloadAttachment'])->name('attachment');
     });
 });
 
@@ -412,6 +450,6 @@ Route::middleware(['auth'])->group(function () {
 // Never run both as live payment paths simultaneously.
 Route::post('/webhooks/bakong', [BakongController::class, 'webhook'])
     ->name('webhooks.bakong')
-    ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
+    ->withoutMiddleware([VerifyCsrfToken::class]);
 
 require __DIR__.'/auth.php';

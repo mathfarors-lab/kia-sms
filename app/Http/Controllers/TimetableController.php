@@ -10,7 +10,8 @@ use Illuminate\Http\Request;
 
 class TimetableController extends Controller
 {
-    private const DAYS    = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+    private const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+
     private const PERIODS = [1, 2, 3, 4, 5, 6, 7, 8];
 
     /**
@@ -50,7 +51,7 @@ class TimetableController extends Controller
         // this profile-adjacent page, but a teacher must be able to see
         // their own schedule even without the broader staff.view permission
         // (which only admin/principal/receptionist hold today).
-        if (!$user->can('staff.view')) {
+        if (! $user->can('staff.view')) {
             abort_unless($staff->user_id === $user->id, 403);
         }
 
@@ -59,25 +60,32 @@ class TimetableController extends Controller
         $slots = Timetable::where('teacher_id', $staff->id)
             ->with(['subject', 'section.schoolClass'])
             ->get()
-            ->groupBy(fn ($t) => $t->day . '_' . $t->period);
+            ->groupBy(fn ($t) => $t->day.'_'.$t->period);
+
+        // Workload summary — a report over the same Timetable rows above, no
+        // new scheduling logic.
+        $totalPeriods = Timetable::where('teacher_id', $staff->id)->count();
+        $sectionsTaught = Timetable::where('teacher_id', $staff->id)->distinct('section_id')->count('section_id');
 
         $canManage = $user->can('timetables.manage');
-        $sections  = $canManage ? Section::with('schoolClass')->get()->sortBy([
+        $sections = $canManage ? Section::with('schoolClass')->get()->sortBy([
             fn ($s) => $s->schoolClass?->name ?? '',
             fn ($s) => $s->name,
         ]) : collect();
-        $subjects  = $canManage ? Subject::all() : collect();
+        $subjects = $canManage ? Subject::all() : collect();
 
-        return view('staff.teaching-schedule', compact('staff', 'slots', 'canManage', 'sections', 'subjects'));
+        return view('staff.teaching-schedule', compact(
+            'staff', 'slots', 'canManage', 'sections', 'subjects', 'totalPeriods', 'sectionsTaught'
+        ));
     }
 
     public function index(Section $section)
     {
-        $user      = auth()->user();
+        $user = auth()->user();
         $canManage = $user->can('timetables.manage');
         $isOwnSection = $user->staff && $section->class_teacher_id === $user->staff->id;
 
-        if (!$canManage && !($user->can('timetables.view') && $isOwnSection)) {
+        if (! $canManage && ! ($user->can('timetables.view') && $isOwnSection)) {
             abort(403);
         }
 
@@ -86,10 +94,10 @@ class TimetableController extends Controller
         $timetables = $section->timetables()
             ->with(['subject', 'teacher.user'])
             ->get()
-            ->groupBy(fn($t) => $t->day . '_' . $t->period);
+            ->groupBy(fn ($t) => $t->day.'_'.$t->period);
 
         $subjects = Subject::all();
-        $staff    = Staff::with('user')->get();
+        $staff = Staff::with('user')->get();
 
         return view('timetable.show', compact('section', 'timetables', 'subjects', 'staff', 'canManage'));
     }
@@ -99,20 +107,20 @@ class TimetableController extends Controller
         $this->authorize('timetables.manage');
 
         $data = $request->validate([
-            'subject_id'  => ['required', 'exists:subjects,id'],
-            'teacher_id'  => ['nullable', 'exists:staff,id'],
-            'day'         => ['required', 'in:monday,tuesday,wednesday,thursday,friday'],
-            'period'      => ['required', 'integer', 'min:1', 'max:8'],
-            'start_time'  => ['required', 'date_format:H:i'],
-            'end_time'    => ['required', 'date_format:H:i', 'after:start_time'],
-            'room'        => ['nullable', 'string', 'max:50'],
+            'subject_id' => ['required', 'exists:subjects,id'],
+            'teacher_id' => ['nullable', 'exists:staff,id'],
+            'day' => ['required', 'in:monday,tuesday,wednesday,thursday,friday'],
+            'period' => ['required', 'integer', 'min:1', 'max:8'],
+            'start_time' => ['required', 'date_format:H:i'],
+            'end_time' => ['required', 'date_format:H:i', 'after:start_time'],
+            'room' => ['nullable', 'string', 'max:50'],
         ]);
 
         if (Timetable::hasConflict($section->id, $data['day'], $data['period'])) {
             return response()->json(['error' => 'This period is already taken for this section.'], 422);
         }
 
-        if (!empty($data['teacher_id']) && Timetable::hasTeacherConflict($data['teacher_id'], $data['day'], $data['period'])) {
+        if (! empty($data['teacher_id']) && Timetable::hasTeacherConflict($data['teacher_id'], $data['day'], $data['period'])) {
             return response()->json(['error' => 'Teacher has another class at this time.'], 422);
         }
 
@@ -126,6 +134,7 @@ class TimetableController extends Controller
     {
         $this->authorize('timetables.manage');
         $timetable->delete();
+
         return response()->json(['success' => true]);
     }
 }

@@ -13,27 +13,39 @@ use Spatie\Permission\Exceptions\PermissionDoesNotExist;
 final class Permissions
 {
     // Students
-    const STUDENTS_VIEW   = 'students.view';
+    const STUDENTS_VIEW = 'students.view';
+
     const STUDENTS_CREATE = 'students.create';
-    const STUDENTS_EDIT   = 'students.edit';
+
+    const STUDENTS_EDIT = 'students.edit';
+
     const STUDENTS_DELETE = 'students.delete';
 
     // Staff
-    const STAFF_VIEW   = 'staff.view';
+    const STAFF_VIEW = 'staff.view';
+
     const STAFF_CREATE = 'staff.create';
-    const STAFF_EDIT   = 'staff.edit';
+
+    const STAFF_EDIT = 'staff.edit';
+
     const STAFF_DELETE = 'staff.delete';
 
     // Academic
     const ACADEMIC_YEARS_MANAGE = 'academic-years.manage';
-    const CLASSES_MANAGE        = 'classes.manage';
-    const SECTIONS_MANAGE       = 'sections.manage';
-    const SUBJECTS_MANAGE       = 'subjects.manage';
-    const TIMETABLES_MANAGE     = 'timetables.manage';
-    const TIMETABLES_VIEW       = 'timetables.view';
+
+    const CLASSES_MANAGE = 'classes.manage';
+
+    const SECTIONS_MANAGE = 'sections.manage';
+
+    const SUBJECTS_MANAGE = 'subjects.manage';
+
+    const TIMETABLES_MANAGE = 'timetables.manage';
+
+    const TIMETABLES_VIEW = 'timetables.view';
 
     // Attendance
     const ATTENDANCE_VIEW = 'attendance.view';
+
     const ATTENDANCE_MARK = 'attendance.mark';
 
     // Gate scan station — deliberately separate from ATTENDANCE_MARK: a gate
@@ -50,68 +62,94 @@ final class Permissions
     const REPORT_COMMENTS_MANAGE = 'report-comments.manage';
 
     // Exams
-    const EXAMS_VIEW    = 'exams.view';
-    const EXAMS_MANAGE  = 'exams.manage';
+    const EXAMS_VIEW = 'exams.view';
+
+    const EXAMS_MANAGE = 'exams.manage';
+
     const EXAMS_PUBLISH = 'exams.publish';
-    const MARKS_ENTRY   = 'marks.entry';
-    const MARKS_VIEW    = 'marks.view';
+
+    const MARKS_ENTRY = 'marks.entry';
+
+    const MARKS_VIEW = 'marks.view';
 
     // Finance
-    const INVOICES_VIEW   = 'invoices.view';
+    const INVOICES_VIEW = 'invoices.view';
+
     const INVOICES_CREATE = 'invoices.create';
+
     const INVOICES_MANAGE = 'invoices.manage';
+
     const PAYMENTS_RECORD = 'payments.record';
-    const FEES_MANAGE     = 'fees.manage';
+
+    const FEES_MANAGE = 'fees.manage';
 
     // Library
-    const BOOKS_MANAGE      = 'books.manage';
-    const BOOKS_VIEW        = 'books.view';
+    const BOOKS_MANAGE = 'books.manage';
+
+    const BOOKS_VIEW = 'books.view';
+
     const BOOK_ISSUES_MANAGE = 'book-issues.manage';
-    const BOOK_ISSUES_VIEW   = 'book-issues.view';
+
+    const BOOK_ISSUES_VIEW = 'book-issues.view';
 
     // Settings & Users
     const SETTINGS_MANAGE = 'settings.manage';
-    const USERS_MANAGE    = 'users.manage';
+
+    const USERS_MANAGE = 'users.manage';
 
     // Admissions
-    const ADMISSIONS_VIEW   = 'admissions.view';
+    const ADMISSIONS_VIEW = 'admissions.view';
+
     const ADMISSIONS_MANAGE = 'admissions.manage';
 
     // Announcements
-    const ANNOUNCEMENTS_VIEW   = 'announcements.view';
+    const ANNOUNCEMENTS_VIEW = 'announcements.view';
+
     const ANNOUNCEMENTS_CREATE = 'announcements.create';
+
     const ANNOUNCEMENTS_MANAGE = 'announcements.manage';
 
     // Messaging
     const MESSAGES_SEND = 'messages.send';
+
     const MESSAGES_VIEW = 'messages.view';
 
     // Homework
     const HOMEWORK_MANAGE = 'homework.manage';
+
     const HOMEWORK_SUBMIT = 'homework.submit';
-    const HOMEWORK_GRADE  = 'homework.grade';
-    const HOMEWORK_VIEW   = 'homework.view'; // read-only oversight (principal)
+
+    const HOMEWORK_GRADE = 'homework.grade';
+
+    const HOMEWORK_VIEW = 'homework.view'; // read-only oversight (principal)
 
     // Transport
     const TRANSPORT_MANAGE = 'transport.manage';
-    const TRANSPORT_VIEW   = 'transport.view';
+
+    const TRANSPORT_VIEW = 'transport.view';
 
     // Leave
-    const LEAVES_VIEW   = 'leaves.view';
+    const LEAVES_VIEW = 'leaves.view';
+
     const LEAVES_SUBMIT = 'leaves.submit';
+
     const LEAVES_MANAGE = 'leaves.manage';
 
     // Analytics & Reports
     const ANALYTICS_VIEW = 'analytics.view';
-    const REPORTS_VIEW   = 'reports.view';
+
+    const REPORTS_VIEW = 'reports.view';
 
     // Term / Annual Consolidated Results
-    const TERM_RESULTS_MANAGE  = 'term-results.manage';
+    const TERM_RESULTS_MANAGE = 'term-results.manage';
+
     const TERM_RESULTS_PUBLISH = 'term-results.publish';
 
     // Documents: ID cards, transcripts, certificates
-    const ID_CARDS_GENERATE  = 'id-cards.generate';
-    const TRANSCRIPTS_VIEW   = 'transcripts.view';
+    const ID_CARDS_GENERATE = 'id-cards.generate';
+
+    const TRANSCRIPTS_VIEW = 'transcripts.view';
+
     const CERTIFICATES_ISSUE = 'certificates.issue';
 
     // Year-end promotion & rollover (irreversible bulk operation — admin/principal only)
@@ -122,8 +160,23 @@ final class Permissions
 
     // Feedback & Complaints — the inbox/dashboard side; submitting is a
     // parent/student role check, not a permission (matches invoices/transcripts).
-    const FEEDBACK_VIEW   = 'feedback.view';
+    const FEEDBACK_VIEW = 'feedback.view';
+
     const FEEDBACK_MANAGE = 'feedback.manage';
+
+    // Surveys — creating/publishing/viewing results is permission-gated;
+    // taking a survey you were targeted by is not (same split as feedback).
+    const SURVEYS_VIEW = 'surveys.view';
+
+    const SURVEYS_MANAGE = 'surveys.manage';
+
+    // Staff evaluations — deliberately separate from STAFF_EDIT: evaluating a
+    // teacher is more sensitive than editing their profile fields, and
+    // STAFF_EDIT today is admin/owner-only, which would wrongly exclude
+    // principal (the natural evaluator) from a permission staff.edit already
+    // doesn't grant them. A teacher sees their OWN finalized evaluation via
+    // a role/ownership check in the controller, not this permission.
+    const STAFF_EVALUATIONS_MANAGE = 'staff-evaluations.manage';
 
     /**
      * Safe permission check for UI gating (nav links, quick-action buttons).
@@ -172,6 +225,8 @@ final class Permissions
             self::AUDIT_VIEW,
             self::ANALYTICS_VIEW, self::REPORTS_VIEW,
             self::FEEDBACK_VIEW, self::FEEDBACK_MANAGE,
+            self::SURVEYS_VIEW, self::SURVEYS_MANAGE,
+            self::STAFF_EVALUATIONS_MANAGE,
         ];
     }
 }

@@ -4,14 +4,15 @@ namespace Database\Seeders;
 
 use App\Support\Permissions as P;
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 class RolePermissionSeeder extends Seeder
 {
     public function run(): void
     {
-        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
         // Create every permission from the single source of truth
         foreach (P::all() as $perm) {
@@ -46,6 +47,8 @@ class RolePermissionSeeder extends Seeder
                 P::AUDIT_VIEW,
                 P::REPORT_COMMENTS_MANAGE,
                 P::FEEDBACK_VIEW, P::FEEDBACK_MANAGE,
+                P::SURVEYS_VIEW, P::SURVEYS_MANAGE,
+                P::STAFF_EVALUATIONS_MANAGE,
             ],
 
             'teacher' => [

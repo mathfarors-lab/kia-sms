@@ -27,6 +27,9 @@
             @if($staff->user->hasRole('teacher'))
             <a href="{{ route('staff.teaching-schedule', $staff) }}" class="btn btn-outline">{{ __('timetable.teaching_schedule') }}</a>
             @endif
+            @can('staff-evaluations.manage')
+            <a href="{{ route('staff-evaluations.index', $staff) }}" class="btn btn-outline">{{ __('staff_evaluations.section_title') }}</a>
+            @endcan
             @can('staff.edit')
             <a href="{{ route('staff.edit', $staff) }}" class="btn btn-outline">{{ __('Edit') }}</a>
             @endcan
@@ -55,4 +58,7 @@
     </div>
 
     @include('documents._list', ['documents' => $staff->issuedDocuments])
+    @include('staff._qualifications', ['staff' => $staff])
+    @include('staff._uploaded_documents', ['staff' => $staff])
+    @include('staff._development-logs', ['staff' => $staff])
 </x-app-layout>

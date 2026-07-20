@@ -17,6 +17,17 @@
         <a href="{{ route('staff.show', $staff) }}" class="btn btn-ghost">{{ __('Back') }}</a>
     </div>
 
+    <div class="kia-stats" style="margin-bottom:1rem">
+        <div class="kia-stat">
+            <div class="kia-stat-label">{{ __('timetable.total_periods_per_week') }}</div>
+            <div class="kia-stat-value">{{ $totalPeriods }}</div>
+        </div>
+        <div class="kia-stat">
+            <div class="kia-stat-label">{{ __('timetable.sections_taught') }}</div>
+            <div class="kia-stat-value">{{ $sectionsTaught }}</div>
+        </div>
+    </div>
+
     <div id="clash-error" class="kia-alert kia-alert-danger" style="display:none"></div>
 
     <div class="kia-card" style="overflow-x:auto">

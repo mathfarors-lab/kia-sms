@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Exports\StaffExport;
-use App\Models\Staff;
-use App\Services\StaffService;
 use App\Http\Requests\Staff\StoreStaffRequest;
 use App\Http\Requests\Staff\UpdateStaffRequest;
+use App\Models\Staff;
+use App\Services\StaffService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
@@ -32,7 +32,7 @@ class StaffController extends Controller
 
         $staff = $this->filteredQuery($request)->get();
 
-        return Excel::download(new StaffExport($staff), 'staff-' . now()->format('Y-m-d') . '.xlsx');
+        return Excel::download(new StaffExport($staff), 'staff-'.now()->format('Y-m-d').'.xlsx');
     }
 
     public function exportPdf(Request $request)
@@ -45,7 +45,7 @@ class StaffController extends Controller
             ->setPaper('a4', 'landscape')
             ->setOptions(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => false]);
 
-        return $pdf->download('staff-' . now()->format('Y-m-d') . '.pdf');
+        return $pdf->download('staff-'.now()->format('Y-m-d').'.pdf');
     }
 
     private function filteredQuery(Request $request)
@@ -55,9 +55,9 @@ class StaffController extends Controller
         if ($search = $request->input('search')) {
             $query->whereHas('user', function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%");
             })->orWhere('staff_code', 'like', "%{$search}%")
-              ->orWhere('department', 'like', "%{$search}%");
+                ->orWhere('department', 'like', "%{$search}%");
         }
 
         if ($dept = $request->input('department')) {
@@ -71,6 +71,7 @@ class StaffController extends Controller
     {
         $this->authorize('staff.create');
         $roles = Role::whereIn('name', ['teacher', 'accountant', 'librarian', 'receptionist', 'principal'])->pluck('name');
+
         return view('staff.create', compact('roles'));
     }
 
@@ -80,14 +81,16 @@ class StaffController extends Controller
             $request->safe()->except('photo'),
             $request->file('photo')
         );
+
         return redirect()->route('staff.show', $staff)
-                         ->with('success', __('Staff member created successfully.'));
+            ->with('success', __('Staff member created successfully.'));
     }
 
     public function show(Staff $staff)
     {
         $this->authorize('staff.view');
-        $staff->load('user', 'issuedDocuments');
+        $staff->load('user', 'issuedDocuments', 'qualifications', 'documents', 'developmentLogs');
+
         return view('staff.show', compact('staff'));
     }
 
@@ -95,6 +98,7 @@ class StaffController extends Controller
     {
         $this->authorize('staff.edit');
         $roles = Role::whereIn('name', ['teacher', 'accountant', 'librarian', 'receptionist', 'principal'])->pluck('name');
+
         return view('staff.edit', compact('staff', 'roles'));
     }
 
@@ -105,14 +109,16 @@ class StaffController extends Controller
             $request->safe()->except('photo'),
             $request->file('photo')
         );
+
         return redirect()->route('staff.show', $staff)
-                         ->with('success', __('Staff updated successfully.'));
+            ->with('success', __('Staff updated successfully.'));
     }
 
     public function destroy(Staff $staff)
     {
         $this->authorize('staff.delete');
         $staff->delete();
+
         return redirect()->route('staff.index')->with('success', __('Staff member removed.'));
     }
 }
