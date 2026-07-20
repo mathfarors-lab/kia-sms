@@ -43,6 +43,7 @@ use App\Http\Controllers\ReportCommentController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ScholarshipController;
 use App\Http\Controllers\SchoolClassController;
+use App\Http\Controllers\SchoolDocumentController;
 use App\Http\Controllers\SectionController;
 use App\Http\Controllers\SemesterController;
 use App\Http\Controllers\SettingController;
@@ -207,6 +208,14 @@ Route::middleware(['auth'])->group(function () {
     // Academic Calendar (G3) — read-only view, open to any authenticated user.
     Route::get('/academic-calendar', [AcademicCalendarController::class, 'index'])->name('academic-calendar.index');
     Route::resource('holidays', HolidayController::class)->except(['show']);
+
+    // General-purpose document repository (G4) — school-wide policies/forms/
+    // templates, distinct from every per-person document already in the app.
+    Route::get('/school-documents', [SchoolDocumentController::class, 'index'])->name('school-documents.index');
+    Route::get('/school-documents/create', [SchoolDocumentController::class, 'create'])->name('school-documents.create');
+    Route::post('/school-documents', [SchoolDocumentController::class, 'store'])->name('school-documents.store');
+    Route::delete('/school-documents/{document}', [SchoolDocumentController::class, 'destroy'])->name('school-documents.destroy');
+    Route::get('/school-documents/{document}/download', [SchoolDocumentController::class, 'download'])->name('school-documents.download');
 
     // Exam Marks
     Route::get('/exam-marks', [ExamMarkController::class, 'index'])->name('exam-marks.index');

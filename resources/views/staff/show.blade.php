@@ -57,6 +57,27 @@
         </div>
     </div>
 
+    @can('staff.edit')
+    <div class="kia-card" style="max-width:600px;margin-top:20px;">
+        <div class="kia-card-header"><h2 class="kia-card-title">{{ __('hr.employment_details') }}</h2></div>
+        <div class="kia-card-body">
+            <table style="width:100%;font-size:.875rem;border-collapse:collapse;">
+                @foreach([
+                    ['label' => __('hr.contract_type'), 'value' => $staff->contract_type ? __('hr.contract_type_'.$staff->contract_type) : '—'],
+                    ['label' => __('hr.contract_end_date'), 'value' => $staff->contract_end_date?->format('d M Y') ?? '—'],
+                    ['label' => __('hr.employment_status'), 'value' => __('hr.employment_status_'.$staff->employment_status)],
+                ] as $row)
+                <tr>
+                    <td style="padding:10px 0;color:var(--muted);width:40%;font-weight:600;font-size:.8rem;text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--line);">{{ $row['label'] }}</td>
+                    <td style="padding:10px 0;border-bottom:1px solid var(--line);">{{ $row['value'] }}</td>
+                </tr>
+                @endforeach
+            </table>
+            <p style="color:var(--muted);font-size:.78rem;margin-top:10px;">{{ __('hr.contract_document_hint') }}</p>
+        </div>
+    </div>
+    @endcan
+
     @include('documents._list', ['documents' => $staff->issuedDocuments])
     @include('staff._qualifications', ['staff' => $staff])
     @include('staff._uploaded_documents', ['staff' => $staff])

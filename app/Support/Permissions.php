@@ -204,6 +204,15 @@ final class Permissions
     // that side at all.
     const DISCIPLINE_MANAGE = 'discipline.manage';
 
+    // General-purpose document repository (policies/forms/templates) —
+    // distinct from every per-person document already in this app (student
+    // documents, staff CVs, ID cards, certificates). Viewing is granted
+    // broadly to staff roles, same spirit as "most staff can see the
+    // employee handbook"; uploading/deleting is admin/principal/owner only.
+    const DOCUMENTS_VIEW = 'documents.view';
+
+    const DOCUMENTS_MANAGE = 'documents.manage';
+
     /**
      * Safe permission check for UI gating (nav links, quick-action buttons).
      * Spatie's User::can() throws PermissionDoesNotExist — a hard 500 — when
@@ -256,6 +265,7 @@ final class Permissions
             self::CURRICULUM_VIEW, self::CURRICULUM_MANAGE,
             self::ACADEMIC_CALENDAR_MANAGE,
             self::DISCIPLINE_MANAGE,
+            self::DOCUMENTS_VIEW, self::DOCUMENTS_MANAGE,
         ];
     }
 }

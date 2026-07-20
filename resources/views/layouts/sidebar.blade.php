@@ -47,7 +47,7 @@
                 || $can(P::FEEDBACK_VIEW)       || $can(P::SURVEYS_VIEW);
     $navOps      = $can(P::BOOKS_VIEW) || $u->can('viewAny', TransportRoute::class)
                 || $can(P::LEAVES_VIEW) || $can(P::STAFF_VIEW) || $can(P::VISITORS_MANAGE)
-                || $myStaffId !== null;
+                || $myStaffId !== null || $can(P::DOCUMENTS_VIEW);
     $navSystem   = $can(P::ANALYTICS_VIEW) || $can(P::REPORTS_VIEW) || $can(P::AUDIT_VIEW)
                 || $can(P::USERS_MANAGE)   || $can(P::SETTINGS_MANAGE);
 @endphp
@@ -433,6 +433,15 @@
                 <path d="M22 21v-1a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
             </svg>
             {{ __('nav.visitors') }}
+        </a>
+        @endif
+
+        @if($can(P::DOCUMENTS_VIEW))
+        <a href="{{ route('school-documents.index') }}" class="kia-nav-item {{ request()->routeIs('school-documents.*') ? 'active' : '' }}">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            </svg>
+            {{ __('school_documents.nav') }}
         </a>
         @endif
         @endif

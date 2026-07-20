@@ -58,6 +58,29 @@
                         <label class="form-label">{{ __('Salary (USD)') }}</label>
                         <input type="number" name="salary" class="form-control" step="0.01" min="0" value="{{ old('salary', $staff->salary) }}">
                     </div>
+                    <div class="form-group">
+                        <label class="form-label">{{ __('hr.contract_type') }}</label>
+                        <select name="contract_type" class="form-control {{ $errors->has('contract_type') ? 'is-invalid' : '' }}">
+                            <option value="">—</option>
+                            @foreach(\App\Models\Staff::CONTRACT_TYPES as $type)
+                            <option value="{{ $type }}" {{ old('contract_type', $staff->contract_type) === $type ? 'selected' : '' }}>{{ __('hr.contract_type_'.$type) }}</option>
+                            @endforeach
+                        </select>
+                        @error('contract_type')<span class="invalid-feedback">{{ $message }}</span>@enderror
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">{{ __('hr.contract_end_date') }}</label>
+                        <input type="date" name="contract_end_date" class="form-control {{ $errors->has('contract_end_date') ? 'is-invalid' : '' }}" value="{{ old('contract_end_date', $staff->contract_end_date?->format('Y-m-d')) }}">
+                        @error('contract_end_date')<span class="invalid-feedback">{{ $message }}</span>@enderror
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">{{ __('hr.employment_status') }}</label>
+                        <select name="employment_status" class="form-control">
+                            @foreach(\App\Models\Staff::EMPLOYMENT_STATUSES as $status)
+                            <option value="{{ $status }}" {{ old('employment_status', $staff->employment_status) === $status ? 'selected' : '' }}>{{ __('hr.employment_status_'.$status) }}</option>
+                            @endforeach
+                        </select>
+                    </div>
 
                     <div class="form-group">
                         <label class="form-label" for="photo">{{ __('Photo') }}</label>

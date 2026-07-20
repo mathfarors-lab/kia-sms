@@ -51,6 +51,7 @@ class RolePermissionSeeder extends Seeder
                 P::STAFF_EVALUATIONS_MANAGE,
                 P::CURRICULUM_VIEW, P::CURRICULUM_MANAGE, P::ACADEMIC_CALENDAR_MANAGE,
                 P::DISCIPLINE_MANAGE,
+                P::DOCUMENTS_VIEW, P::DOCUMENTS_MANAGE,
             ],
 
             'teacher' => [
@@ -66,6 +67,7 @@ class RolePermissionSeeder extends Seeder
                 P::ID_CARDS_GENERATE, P::TRANSCRIPTS_VIEW,
                 P::CURRICULUM_VIEW,
                 P::DISCIPLINE_MANAGE,
+                P::DOCUMENTS_VIEW,
             ],
 
             'accountant' => [
@@ -75,6 +77,7 @@ class RolePermissionSeeder extends Seeder
                 P::MESSAGES_SEND, P::MESSAGES_VIEW,
                 P::REPORTS_VIEW,
                 P::LEAVES_SUBMIT, P::LEAVES_VIEW,
+                P::DOCUMENTS_VIEW,
             ],
 
             'librarian' => [
@@ -82,6 +85,7 @@ class RolePermissionSeeder extends Seeder
                 P::BOOKS_MANAGE, P::BOOKS_VIEW,
                 P::BOOK_ISSUES_MANAGE, P::BOOK_ISSUES_VIEW,
                 P::LEAVES_SUBMIT, P::LEAVES_VIEW,
+                P::DOCUMENTS_VIEW,
             ],
 
             'receptionist' => [
@@ -91,6 +95,7 @@ class RolePermissionSeeder extends Seeder
                 P::MESSAGES_SEND, P::MESSAGES_VIEW,
                 P::LEAVES_SUBMIT, P::LEAVES_VIEW,
                 P::GATE_SCAN, P::VISITORS_MANAGE,
+                P::DOCUMENTS_VIEW,
             ],
 
             'student' => [

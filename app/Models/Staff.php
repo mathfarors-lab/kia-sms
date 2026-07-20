@@ -16,6 +16,10 @@ class Staff extends Model
     use BelongsToBranch;
     use HasFactory, LogsActivity, SoftDeletes;
 
+    const CONTRACT_TYPES = ['full_time', 'part_time', 'contract'];
+
+    const EMPLOYMENT_STATUSES = ['active', 'on_leave', 'terminated'];
+
     protected $fillable = [
         'user_id',
         'staff_code',
@@ -24,6 +28,9 @@ class Staff extends Model
         'photo',
         'joined_at',
         'salary',
+        'contract_type',
+        'contract_end_date',
+        'employment_status',
     ];
 
     protected function casts(): array
@@ -31,6 +38,7 @@ class Staff extends Model
         return [
             'joined_at' => 'date',
             'salary' => 'decimal:2',
+            'contract_end_date' => 'date',
         ];
     }
 
@@ -38,7 +46,10 @@ class Staff extends Model
     {
         // salary excluded — sensitive compensation data must not appear in the audit log viewer
         return LogOptions::defaults()
-            ->logOnly(['user_id', 'staff_code', 'position', 'department', 'photo', 'joined_at'])
+            ->logOnly([
+                'user_id', 'staff_code', 'position', 'department', 'photo', 'joined_at',
+                'contract_type', 'contract_end_date', 'employment_status',
+            ])
             ->logOnlyDirty();
     }
 

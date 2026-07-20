@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Staff;
 
+use App\Models\Staff;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Password;
 
@@ -15,16 +16,19 @@ class StoreStaffRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'       => ['required', 'string', 'max:150'],
-            'email'      => ['required', 'email', 'unique:users,email'],
-            'phone'      => ['nullable', 'string', 'max:20'],
-            'password'   => ['nullable', Password::defaults()],
-            'role'       => ['required', 'string', 'exists:roles,name'],
-            'position'   => ['nullable', 'string', 'max:100'],
+            'name' => ['required', 'string', 'max:150'],
+            'email' => ['required', 'email', 'unique:users,email'],
+            'phone' => ['nullable', 'string', 'max:20'],
+            'password' => ['nullable', Password::defaults()],
+            'role' => ['required', 'string', 'exists:roles,name'],
+            'position' => ['nullable', 'string', 'max:100'],
             'department' => ['nullable', 'string', 'max:100'],
-            'joined_at'  => ['nullable', 'date'],
-            'salary'     => ['nullable', 'numeric', 'min:0'],
-            'photo'      => ['nullable', 'image', 'mimes:jpg,jpeg,png,gif,webp', 'max:2048'],
+            'joined_at' => ['nullable', 'date'],
+            'salary' => ['nullable', 'numeric', 'min:0'],
+            'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,gif,webp', 'max:2048'],
+            'contract_type' => ['nullable', 'in:'.implode(',', Staff::CONTRACT_TYPES)],
+            'contract_end_date' => ['nullable', 'date', 'after:joined_at'],
+            'employment_status' => ['nullable', 'in:'.implode(',', Staff::EMPLOYMENT_STATUSES)],
         ];
     }
 }
