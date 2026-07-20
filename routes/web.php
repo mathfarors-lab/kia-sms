@@ -17,6 +17,7 @@ use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\ConversationController;
 use App\Http\Controllers\CurriculumController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DisciplineIncidentController;
 use App\Http\Controllers\ExamController;
 use App\Http\Controllers\ExamMarkController;
 use App\Http\Controllers\FeedbackController;
@@ -108,6 +109,13 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/students/{student}/documents', [StudentDocumentController::class, 'store'])->name('student-documents.store');
     Route::delete('/student-documents/{document}', [StudentDocumentController::class, 'destroy'])->name('student-documents.destroy');
     Route::get('/student-documents/{document}/download', [StudentDocumentController::class, 'download'])->name('student-documents.download');
+
+    // Discipline incidents (G5) — shared route, internal role/ownership branching per action.
+    Route::get('/students/{student}/discipline-incidents', [DisciplineIncidentController::class, 'index'])->name('discipline-incidents.index');
+    Route::get('/students/{student}/discipline-incidents/create', [DisciplineIncidentController::class, 'create'])->name('discipline-incidents.create');
+    Route::post('/students/{student}/discipline-incidents', [DisciplineIncidentController::class, 'store'])->name('discipline-incidents.store');
+    Route::get('/discipline-incidents/{incident}/edit', [DisciplineIncidentController::class, 'edit'])->name('discipline-incidents.edit');
+    Route::put('/discipline-incidents/{incident}', [DisciplineIncidentController::class, 'update'])->name('discipline-incidents.update');
 
     // Guided transfer / withdrawal — wraps StudentService::update() so the
     // existing leaving-certificate auto-issuance fires exactly as it does

@@ -21,6 +21,9 @@
             </div>
         </div>
         <div class="d-flex gap-2">
+            @can('discipline.manage')
+            <a href="{{ route('discipline-incidents.index', $student) }}" class="btn btn-outline">{{ __('discipline_records.section_title') }}</a>
+            @endcan
             @can('students.edit')
             <a href="{{ route('students.edit', $student) }}" class="btn btn-outline">{{ __('Edit') }}</a>
             <a href="{{ route('students.transfer.form', $student) }}" class="btn btn-outline">{{ __('student_transfer.transfer_action') }}</a>

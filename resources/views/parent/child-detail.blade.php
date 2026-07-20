@@ -70,6 +70,13 @@
     @include('documents._list', ['documents' => $documents])
     @include('students._uploaded_documents', ['student' => $student])
 
+    <div class="kia-card" style="margin-bottom:20px;">
+        <div class="kia-card-header"><h2 class="kia-card-title">{{ __('discipline_records.section_title') }}</h2></div>
+        <div class="kia-card-body">
+            <a href="{{ route('discipline-incidents.index', $student) }}" class="btn btn-outline">{{ __('View') }}</a>
+        </div>
+    </div>
+
     {{-- Published exams --}}
     @if($publishedExams->isNotEmpty())
     <div class="kia-card" style="margin-bottom:20px;">

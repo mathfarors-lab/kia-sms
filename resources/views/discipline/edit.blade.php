@@ -1,0 +1,19 @@
+<x-app-layout>
+    <x-slot name="title">{{ __('discipline_records.edit_incident') }}</x-slot>
+
+    <div class="kia-page-header">
+        <h1 class="kia-page-title">{{ __('discipline_records.edit_incident') }} — {{ $incident->student->name_en }}</h1>
+        <a href="{{ route('discipline-incidents.index', $incident->student) }}" class="btn btn-ghost">{{ __('Back') }}</a>
+    </div>
+
+    <div class="kia-card" style="max-width:560px">
+        <form method="POST" action="{{ route('discipline-incidents.update', $incident) }}" class="kia-form">
+            @csrf @method('PUT')
+            @include('discipline._form')
+            <div class="kia-form-actions">
+                <button type="submit" class="btn btn-primary">{{ __('Save Changes') }}</button>
+                <a href="{{ route('discipline-incidents.index', $incident->student) }}" class="btn btn-ghost">{{ __('Cancel') }}</a>
+            </div>
+        </form>
+    </div>
+</x-app-layout>

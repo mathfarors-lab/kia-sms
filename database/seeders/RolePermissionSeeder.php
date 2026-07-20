@@ -50,6 +50,7 @@ class RolePermissionSeeder extends Seeder
                 P::SURVEYS_VIEW, P::SURVEYS_MANAGE,
                 P::STAFF_EVALUATIONS_MANAGE,
                 P::CURRICULUM_VIEW, P::CURRICULUM_MANAGE, P::ACADEMIC_CALENDAR_MANAGE,
+                P::DISCIPLINE_MANAGE,
             ],
 
             'teacher' => [
@@ -64,6 +65,7 @@ class RolePermissionSeeder extends Seeder
                 P::LEAVES_SUBMIT, P::LEAVES_VIEW,
                 P::ID_CARDS_GENERATE, P::TRANSCRIPTS_VIEW,
                 P::CURRICULUM_VIEW,
+                P::DISCIPLINE_MANAGE,
             ],
 
             'accountant' => [

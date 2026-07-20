@@ -2,17 +2,21 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToBranch;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
-use App\Models\Concerns\BelongsToBranch;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Student extends Model
 {
     use BelongsToBranch;
-    use HasFactory, SoftDeletes, LogsActivity;
+    use HasFactory, LogsActivity, SoftDeletes;
 
     protected $fillable = [
         'user_id',
@@ -38,65 +42,70 @@ class Student extends Model
         return LogOptions::defaults()->logFillable()->logOnlyDirty();
     }
 
-    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function guardians(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function guardians(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'student_guardian', 'student_id', 'guardian_id')
-                    ->withPivot('relation', 'is_primary')
-                    ->withTimestamps();
+            ->withPivot('relation', 'is_primary')
+            ->withTimestamps();
     }
 
-    public function primaryGuardian(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function primaryGuardian(): BelongsToMany
     {
         return $this->guardians()->wherePivot('is_primary', true);
     }
 
-    public function sections(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function sections(): BelongsToMany
     {
         return $this->belongsToMany(Section::class, 'student_section')
-                    ->withPivot('academic_year_id')
-                    ->withTimestamps();
+            ->withPivot('academic_year_id')
+            ->withTimestamps();
     }
 
-    public function invoices(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function invoices(): HasMany
     {
         return $this->hasMany(Invoice::class);
     }
 
-    public function scholarships(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function scholarships(): HasMany
     {
         return $this->hasMany(Scholarship::class);
     }
 
-    public function examMarks(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function examMarks(): HasMany
     {
         return $this->hasMany(ExamMark::class);
     }
 
-    public function examResults(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function examResults(): HasMany
     {
         return $this->hasMany(ExamResult::class);
     }
 
-    public function issuedDocuments(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function issuedDocuments(): HasMany
     {
         return $this->hasMany(IssuedDocument::class);
     }
 
     /** Supporting files uploaded to this student's record (ID scans, medical records, etc.) — distinct from issuedDocuments(), which the school generates and issues. */
-    public function documents(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function documents(): HasMany
     {
         return $this->hasMany(StudentDocument::class)->latest();
     }
 
     /** The admission application this student was converted from, if any (direct creates have none). */
-    public function admissionApplication(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function admissionApplication(): HasOne
     {
         return $this->hasOne(AdmissionApplication::class);
+    }
+
+    public function disciplineIncidents(): HasMany
+    {
+        return $this->hasMany(DisciplineIncident::class)->latest('incident_date');
     }
 
     public function getDisplayNameAttribute(): string

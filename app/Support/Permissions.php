@@ -194,6 +194,16 @@ final class Permissions
     // since a semester is just a sub-period of an academic year.
     const ACADEMIC_CALENDAR_MANAGE = 'academic-calendar.manage';
 
+    // Discipline incidents — unlike homework (teacher-only) or staff
+    // evaluations (principal-only), both teacher and principal actively log
+    // incidents here, just scoped differently in the controller: a teacher
+    // may only log/view incidents for students in their own sections
+    // (homeroom or subject-taught), principal/admin/owner see and manage
+    // everything. A parent's access is an ownership check via wards(), same
+    // as every other parent-facing record in this app — no permission for
+    // that side at all.
+    const DISCIPLINE_MANAGE = 'discipline.manage';
+
     /**
      * Safe permission check for UI gating (nav links, quick-action buttons).
      * Spatie's User::can() throws PermissionDoesNotExist — a hard 500 — when
@@ -245,6 +255,7 @@ final class Permissions
             self::STAFF_EVALUATIONS_MANAGE,
             self::CURRICULUM_VIEW, self::CURRICULUM_MANAGE,
             self::ACADEMIC_CALENDAR_MANAGE,
+            self::DISCIPLINE_MANAGE,
         ];
     }
 }
