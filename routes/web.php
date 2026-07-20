@@ -41,6 +41,7 @@ use App\Http\Controllers\ExamController;
 use App\Http\Controllers\ExamMarkController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\FeedbackDashboardController;
+use App\Http\Controllers\StudentTransferController;
 use App\Http\Controllers\TermResultController;
 use App\Http\Controllers\IdCardController;
 use App\Http\Controllers\TranscriptController;
@@ -94,6 +95,14 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/students/{student}/documents', [StudentDocumentController::class, 'store'])->name('student-documents.store');
     Route::delete('/student-documents/{document}', [StudentDocumentController::class, 'destroy'])->name('student-documents.destroy');
     Route::get('/student-documents/{document}/download', [StudentDocumentController::class, 'download'])->name('student-documents.download');
+
+    // Guided transfer / withdrawal — wraps StudentService::update() so the
+    // existing leaving-certificate auto-issuance fires exactly as it does
+    // for a direct status edit.
+    Route::get('/students/{student}/transfer',  [StudentTransferController::class, 'transferForm'])->name('students.transfer.form');
+    Route::post('/students/{student}/transfer', [StudentTransferController::class, 'transfer'])->name('students.transfer');
+    Route::get('/students/{student}/withdraw',  [StudentTransferController::class, 'withdrawForm'])->name('students.withdraw.form');
+    Route::post('/students/{student}/withdraw', [StudentTransferController::class, 'withdraw'])->name('students.withdraw');
 
     // Staff
     Route::resource('staff', StaffController::class);

@@ -23,6 +23,8 @@
         <div class="d-flex gap-2">
             @can('students.edit')
             <a href="{{ route('students.edit', $student) }}" class="btn btn-outline">{{ __('Edit') }}</a>
+            <a href="{{ route('students.transfer.form', $student) }}" class="btn btn-outline">{{ __('student_transfer.transfer_action') }}</a>
+            <a href="{{ route('students.withdraw.form', $student) }}" class="btn btn-outline">{{ __('student_transfer.withdraw_action') }}</a>
             @endcan
             @can('students.delete')
             <form method="POST" action="{{ route('students.destroy', $student) }}" onsubmit="return confirm('{{ __('Delete this student?') }}')">
