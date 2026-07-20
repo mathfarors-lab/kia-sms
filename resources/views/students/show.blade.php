@@ -82,6 +82,15 @@
         </div>
     </div>
 
+    @if(auth()->user()->hasRole(['admin', 'accountant', 'principal']))
+    <div class="kia-card" style="margin-top:20px;">
+        <div class="kia-card-header"><h2 class="kia-card-title">{{ __('documents.billing_statement') }}</h2></div>
+        <div class="kia-card-body">
+            <a href="{{ route('billing-statement.show', $student) }}" class="btn btn-outline">{{ __('documents.billing_statement') }}</a>
+        </div>
+    </div>
+    @endif
+
     @include('documents._list', ['documents' => $student->issuedDocuments])
     @include('students._uploaded_documents', ['student' => $student])
 </x-app-layout>

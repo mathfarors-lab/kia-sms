@@ -33,4 +33,17 @@ return [
     'enrollment_preview_note' => 'Preview of enrollment confirmation letter. Click "Download PDF" to generate.',
     'leaving_preview_note'    => 'Preview of leaving certificate. Click "Download PDF" to generate.',
     'graduation_preview_note' => 'Preview of graduation certificate. Click "Download PDF" to generate.',
+
+    // Billing statement
+    'billing_statement'   => 'Billing Statement',
+    'billing_history'     => 'Billing History',
+    'total_charged'       => 'Total Charged',
+    'total_paid'          => 'Total Paid',
+    'current_balance'     => 'Current Balance',
+    'date'                => 'Date',
+    'description'         => 'Description',
+    'charge'              => 'Charge',
+    'payment'             => 'Payment',
+    'running_balance'     => 'Running Balance',
+    'no_billing_history'  => 'No billing history on record.',
 ];

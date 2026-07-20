@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\StudentsExport;
 use App\Models\Student;
 use App\Services\StudentService;
 use App\Http\Requests\Student\StoreStudentRequest;
 use App\Http\Requests\Student\UpdateStudentRequest;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class StudentController extends Controller
 {
@@ -16,6 +19,35 @@ class StudentController extends Controller
     {
         $this->authorize('students.view');
 
+        $students = $this->filteredQuery($request)->latest()->paginate(20)->withQueryString();
+
+        return view('students.index', compact('students'));
+    }
+
+    public function exportExcel(Request $request)
+    {
+        $this->authorize('students.view');
+
+        $students = $this->filteredQuery($request)->latest()->get();
+
+        return Excel::download(new StudentsExport($students), 'students-' . now()->format('Y-m-d') . '.xlsx');
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $this->authorize('students.view');
+
+        $students = $this->filteredQuery($request)->latest()->get();
+
+        $pdf = Pdf::loadView('pdf.students-list', compact('students'))
+            ->setPaper('a4', 'landscape')
+            ->setOptions(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => false]);
+
+        return $pdf->download('students-' . now()->format('Y-m-d') . '.pdf');
+    }
+
+    private function filteredQuery(Request $request)
+    {
         $query = Student::query()->with('user');
 
         if ($search = $request->input('search')) {
@@ -34,9 +66,7 @@ class StudentController extends Controller
             $query->where('gender', $gender);
         }
 
-        $students = $query->latest()->paginate(20)->withQueryString();
-
-        return view('students.index', compact('students'));
+        return $query;
     }
 
     public function create()

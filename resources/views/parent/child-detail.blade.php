@@ -88,7 +88,10 @@
     {{-- Invoices --}}
     @if($invoices->isNotEmpty())
     <div class="kia-card">
-        <div class="kia-card-header"><h2 class="kia-card-title">{{ __('Invoices') }}</h2></div>
+        <div class="kia-card-header" style="display:flex;justify-content:space-between;align-items:center;">
+            <h2 class="kia-card-title">{{ __('Invoices') }}</h2>
+            <a href="{{ route('billing-statement.show', $student) }}" class="btn btn-sm btn-outline">{{ __('documents.billing_statement') }}</a>
+        </div>
         <div class="kia-table-wrap">
             <table class="kia-table">
                 <thead>

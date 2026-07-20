@@ -2,14 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\AdmissionsExport;
 use App\Http\Requests\Admission\StoreAdmissionRequest;
 use App\Http\Requests\Admission\UpdateAdmissionRequest;
 use App\Models\AcademicYear;
 use App\Models\AdmissionApplication;
 use App\Models\SchoolClass;
 use App\Services\AdmissionService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AdmissionController extends Controller
 {
@@ -19,12 +22,7 @@ class AdmissionController extends Controller
     {
         $this->authorize('admissions.view');
 
-        $applications = AdmissionApplication::with(['desiredClass', 'academicYear'])
-            ->when($request->status, fn ($q) => $q->where('status', $request->status))
-            ->when($request->search, fn ($q) => $q->where(fn ($qq) => $qq
-                ->where('name_en', 'like', "%{$request->search}%")
-                ->orWhere('name_km', 'like', "%{$request->search}%")
-                ->orWhere('application_no', 'like', "%{$request->search}%")))
+        $applications = $this->filteredQuery($request)
             ->latest()
             ->paginate(20)
             ->withQueryString();
@@ -34,6 +32,38 @@ class AdmissionController extends Controller
             ->pluck('total', 'status');
 
         return view('admissions.index', compact('applications', 'counts'));
+    }
+
+    public function exportExcel(Request $request)
+    {
+        $this->authorize('admissions.view');
+
+        $applications = $this->filteredQuery($request)->latest()->get();
+
+        return Excel::download(new AdmissionsExport($applications), 'admissions-' . now()->format('Y-m-d') . '.xlsx');
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $this->authorize('admissions.view');
+
+        $applications = $this->filteredQuery($request)->latest()->get();
+
+        $pdf = Pdf::loadView('pdf.admissions-list', compact('applications'))
+            ->setPaper('a4', 'landscape')
+            ->setOptions(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => false]);
+
+        return $pdf->download('admissions-' . now()->format('Y-m-d') . '.pdf');
+    }
+
+    private function filteredQuery(Request $request)
+    {
+        return AdmissionApplication::with(['desiredClass', 'academicYear'])
+            ->when($request->status, fn ($q) => $q->where('status', $request->status))
+            ->when($request->search, fn ($q) => $q->where(fn ($qq) => $qq
+                ->where('name_en', 'like', "%{$request->search}%")
+                ->orWhere('name_km', 'like', "%{$request->search}%")
+                ->orWhere('application_no', 'like', "%{$request->search}%")));
     }
 
     public function create()

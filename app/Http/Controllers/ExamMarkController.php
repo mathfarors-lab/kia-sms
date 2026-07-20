@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ExamMarksExport;
 use App\Models\Exam;
 use App\Models\ExamMark;
 use App\Models\Section;
 use App\Models\Student;
 use App\Models\Subject;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ExamMarkController extends Controller
 {
@@ -22,6 +25,38 @@ class ExamMarkController extends Controller
     {
         $this->authorize('marks.entry');
 
+        [$subjects, $students, $marks] = $this->gridData($exam, $section);
+
+        return view('exam-marks.grid', compact('exam', 'section', 'subjects', 'students', 'marks'));
+    }
+
+    public function exportExcel(Exam $exam, Section $section)
+    {
+        $this->authorize('marks.entry');
+
+        [$subjects, $students, $marks] = $this->gridData($exam, $section);
+
+        return Excel::download(
+            new ExamMarksExport($students, $subjects, $marks),
+            'exam-marks-' . $exam->id . '-' . $section->id . '.xlsx'
+        );
+    }
+
+    public function exportPdf(Exam $exam, Section $section)
+    {
+        $this->authorize('marks.entry');
+
+        [$subjects, $students, $marks] = $this->gridData($exam, $section);
+
+        $pdf = Pdf::loadView('pdf.exam-marks-grid', compact('exam', 'section', 'subjects', 'students', 'marks'))
+            ->setPaper('a4', 'landscape')
+            ->setOptions(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => false]);
+
+        return $pdf->download('exam-marks-' . $exam->id . '-' . $section->id . '.pdf');
+    }
+
+    private function gridData(Exam $exam, Section $section): array
+    {
         $subjects = $section->schoolClass->subjects()->orderBy('name_en')->get();
         $students = $section->students()->orderBy('name_en')->get();
 
@@ -32,7 +67,7 @@ class ExamMarkController extends Controller
             ->groupBy('student_id')
             ->map(fn ($rows) => $rows->keyBy('subject_id'));
 
-        return view('exam-marks.grid', compact('exam', 'section', 'subjects', 'students', 'marks'));
+        return [$subjects, $students, $marks];
     }
 
     public function save(Request $request, Exam $exam, Section $section)

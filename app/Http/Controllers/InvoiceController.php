@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\InvoicesListExport;
 use App\Models\AcademicYear;
 use App\Models\Invoice;
 use App\Models\SchoolClass;
 use App\Services\InvoiceService;
 use App\Services\KhqrService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
 
 class InvoiceController extends Controller
 {
@@ -19,31 +22,54 @@ class InvoiceController extends Controller
 
     public function index(Request $request)
     {
+        $invoices = $this->filteredQuery($request)->paginate(25)->withQueryString();
+        return view('invoices.index', compact('invoices'));
+    }
+
+    public function exportExcel(Request $request)
+    {
+        $invoices = $this->filteredQuery($request)->get();
+
+        return Excel::download(new InvoicesListExport($invoices), 'invoices-' . now()->format('Y-m-d') . '.xlsx');
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $invoices = $this->filteredQuery($request)->get();
+
+        $pdf = Pdf::loadView('pdf.invoices-list', compact('invoices'))
+            ->setPaper('a4', 'landscape')
+            ->setOptions(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => false]);
+
+        return $pdf->download('invoices-' . now()->format('Y-m-d') . '.pdf');
+    }
+
+    private function filteredQuery(Request $request)
+    {
         $user = Auth::user();
 
         if ($user->hasRole(['admin', 'accountant', 'principal'])) {
             $this->authorize('invoices.view');
-            $query = Invoice::with(['student', 'academicYear'])
+            return Invoice::with(['student', 'academicYear'])
                 ->when($request->status, fn ($q) => $q->where('status', $request->status))
                 ->when($request->search, fn ($q) => $q->where('number', 'like', '%' . $request->search . '%'))
                 ->latest();
-        } elseif ($user->hasRole(['parent', 'student'])) {
+        }
+
+        if ($user->hasRole(['parent', 'student'])) {
             $studentId = $user->hasRole('student')
                 ? $user->student?->id
                 : $user->wards()->pluck('students.id');
 
-            $query = Invoice::with(['student', 'academicYear'])
+            return Invoice::with(['student', 'academicYear'])
                 ->when(is_array($studentId) || $studentId instanceof \Illuminate\Support\Collection
                     ? true : false,
                     fn ($q) => $q->whereIn('student_id', $studentId),
                     fn ($q) => $q->where('student_id', $studentId),
                 )->latest();
-        } else {
-            abort(403);
         }
 
-        $invoices = $query->paginate(25)->withQueryString();
-        return view('invoices.index', compact('invoices'));
+        abort(403);
     }
 
     public function show(Invoice $invoice)

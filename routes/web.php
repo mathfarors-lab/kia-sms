@@ -42,6 +42,7 @@ use App\Http\Controllers\ExamMarkController;
 use App\Http\Controllers\TermResultController;
 use App\Http\Controllers\IdCardController;
 use App\Http\Controllers\TranscriptController;
+use App\Http\Controllers\BillingStatementController;
 use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\PromotionController;
 use App\Http\Controllers\NotificationController;
@@ -86,12 +87,16 @@ Route::middleware(['auth'])->group(function () {
 
     // Students
     Route::resource('students', StudentController::class);
+    Route::get('/students/export/excel', [StudentController::class, 'exportExcel'])->name('students.export-excel');
+    Route::get('/students/export/pdf', [StudentController::class, 'exportPdf'])->name('students.export-pdf');
     Route::post('/students/{student}/documents', [StudentDocumentController::class, 'store'])->name('student-documents.store');
     Route::delete('/student-documents/{document}', [StudentDocumentController::class, 'destroy'])->name('student-documents.destroy');
     Route::get('/student-documents/{document}/download', [StudentDocumentController::class, 'download'])->name('student-documents.download');
 
     // Staff
     Route::resource('staff', StaffController::class);
+    Route::get('/staff/export/excel', [StaffController::class, 'exportExcel'])->name('staff.export-excel');
+    Route::get('/staff/export/pdf', [StaffController::class, 'exportPdf'])->name('staff.export-pdf');
 
     // Settings
     Route::get('/settings',   [SettingController::class, 'index'])->name('settings.index');
@@ -140,6 +145,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/exam-marks', [ExamMarkController::class, 'index'])->name('exam-marks.index');
     Route::get('/exams/{exam}/sections/{section}/marks', [ExamMarkController::class, 'grid'])->name('exam-marks.grid');
     Route::post('/exams/{exam}/sections/{section}/marks', [ExamMarkController::class, 'save'])->name('exam-marks.save');
+    Route::get('/exams/{exam}/sections/{section}/marks/export/excel', [ExamMarkController::class, 'exportExcel'])->name('exam-marks.export-excel');
+    Route::get('/exams/{exam}/sections/{section}/marks/export/pdf', [ExamMarkController::class, 'exportPdf'])->name('exam-marks.export-pdf');
 
     // Per-exam report cards
     Route::get('/exams/{exam}/students/{student}/report-card', [ReportCardController::class, 'show'])->name('report-card.show');
@@ -181,6 +188,12 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/student/{student}/pdf', [TranscriptController::class, 'pdf'])->name('pdf');
     });
 
+    // Student billing statement — full invoice/payment ledger with running balance
+    Route::prefix('billing-statement')->name('billing-statement.')->group(function () {
+        Route::get('/student/{student}', [BillingStatementController::class, 'show'])->name('show');
+        Route::get('/student/{student}/pdf', [BillingStatementController::class, 'pdf'])->name('pdf');
+    });
+
     // Certificates (admin/principal only)
     Route::prefix('certificates')->name('certificates.')->group(function () {
         Route::get('/student/{student}/enrollment', [CertificateController::class, 'enrollment'])->name('enrollment');
@@ -197,6 +210,8 @@ Route::middleware(['auth'])->group(function () {
 
     // Invoices
     Route::get('/invoices', [InvoiceController::class, 'index'])->name('invoices.index');
+    Route::get('/invoices/export/excel', [InvoiceController::class, 'exportExcel'])->name('invoices.export-excel');
+    Route::get('/invoices/export/pdf', [InvoiceController::class, 'exportPdf'])->name('invoices.export-pdf');
     Route::get('/invoices/generate', [InvoiceController::class, 'create'])->name('invoices.create');
     Route::post('/invoices/generate', [InvoiceController::class, 'generate'])->name('invoices.generate');
     Route::get('/invoices/{invoice}', [InvoiceController::class, 'show'])->name('invoices.show');
@@ -311,6 +326,8 @@ Route::middleware(['auth'])->group(function () {
     // Admissions pipeline (receptionist/principal/admin)
     Route::prefix('admissions')->name('admissions.')->group(function () {
         Route::get('/',            [AdmissionController::class, 'index'])->name('index');
+        Route::get('/export/excel', [AdmissionController::class, 'exportExcel'])->name('export-excel');
+        Route::get('/export/pdf',   [AdmissionController::class, 'exportPdf'])->name('export-pdf');
         Route::get('/new',         [AdmissionController::class, 'create'])->name('create');
         Route::post('/',           [AdmissionController::class, 'store'])->name('store');
         Route::get('/{admission}', [AdmissionController::class, 'show'])->name('show');

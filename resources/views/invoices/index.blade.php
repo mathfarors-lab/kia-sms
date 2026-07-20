@@ -6,9 +6,16 @@
             <h1 class="kia-page-title">Invoices</h1>
             <p class="kia-page-sub">{{ $invoices->total() }} total</p>
         </div>
-        @can('invoices.create')
-        <a href="{{ route('invoices.create') }}" class="btn btn-primary">Generate Invoices</a>
-        @endcan
+        <div style="display:flex;gap:.5rem">
+            <a href="{{ route('invoices.export-excel', request()->query()) }}" class="btn btn-ghost">↓ Excel</a>
+            <a href="{{ route('invoices.export-pdf', request()->query()) }}" class="btn btn-ghost" target="_blank">↓ PDF</a>
+            @if(auth()->user()->hasRole('student') && auth()->user()->student)
+            <a href="{{ route('billing-statement.show', auth()->user()->student) }}" class="btn btn-ghost">{{ __('documents.billing_statement') }}</a>
+            @endif
+            @can('invoices.create')
+            <a href="{{ route('invoices.create') }}" class="btn btn-primary">Generate Invoices</a>
+            @endcan
+        </div>
     </div>
 
     @if(session('success'))

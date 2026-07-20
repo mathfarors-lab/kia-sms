@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\StaffExport;
 use App\Models\Staff;
 use App\Services\StaffService;
 use App\Http\Requests\Staff\StoreStaffRequest;
 use App\Http\Requests\Staff\UpdateStaffRequest;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 use Spatie\Permission\Models\Role;
 
 class StaffController extends Controller
@@ -17,6 +20,36 @@ class StaffController extends Controller
     {
         $this->authorize('staff.view');
 
+        $staff = $this->filteredQuery($request)->paginate(20)->withQueryString();
+        $departments = Staff::distinct()->pluck('department')->filter()->sort()->values();
+
+        return view('staff.index', compact('staff', 'departments'));
+    }
+
+    public function exportExcel(Request $request)
+    {
+        $this->authorize('staff.view');
+
+        $staff = $this->filteredQuery($request)->get();
+
+        return Excel::download(new StaffExport($staff), 'staff-' . now()->format('Y-m-d') . '.xlsx');
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $this->authorize('staff.view');
+
+        $staff = $this->filteredQuery($request)->get();
+
+        $pdf = Pdf::loadView('pdf.staff-list', compact('staff'))
+            ->setPaper('a4', 'landscape')
+            ->setOptions(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => false]);
+
+        return $pdf->download('staff-' . now()->format('Y-m-d') . '.pdf');
+    }
+
+    private function filteredQuery(Request $request)
+    {
         $query = Staff::with('user')->orderBy('id');
 
         if ($search = $request->input('search')) {
@@ -31,10 +64,7 @@ class StaffController extends Controller
             $query->where('department', $dept);
         }
 
-        $staff = $query->paginate(20)->withQueryString();
-        $departments = Staff::distinct()->pluck('department')->filter()->sort()->values();
-
-        return view('staff.index', compact('staff', 'departments'));
+        return $query;
     }
 
     public function create()

@@ -3,9 +3,13 @@
 
     <div class="kia-page-header">
         <div><h1 class="kia-page-title">{{ __('admissions.title') }}</h1></div>
-        @can('admissions.manage')
-        <a href="{{ route('admissions.create') }}" class="btn btn-primary">+ {{ __('admissions.new_application') }}</a>
-        @endcan
+        <div style="display:flex;gap:.5rem">
+            <a href="{{ route('admissions.export-excel', request()->query()) }}" class="btn btn-ghost">↓ Excel</a>
+            <a href="{{ route('admissions.export-pdf', request()->query()) }}" class="btn btn-ghost" target="_blank">↓ PDF</a>
+            @can('admissions.manage')
+            <a href="{{ route('admissions.create') }}" class="btn btn-primary">+ {{ __('admissions.new_application') }}</a>
+            @endcan
+        </div>
     </div>
 
     <p style="color:var(--muted);font-size:.875rem;max-width:70ch;margin:-8px 0 16px;">{{ __('admissions.relationship_note') }}</p>

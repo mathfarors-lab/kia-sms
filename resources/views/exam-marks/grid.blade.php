@@ -6,7 +6,11 @@
             <h1 class="kia-page-title">{{ $exam->name }}</h1>
             <p class="kia-page-sub">Section: {{ $section->schoolClass->name ?? '' }} / {{ $section->name }}</p>
         </div>
-        <a href="{{ route('exam-marks.index') }}" class="btn btn-ghost">← Back</a>
+        <div style="display:flex;gap:.5rem">
+            <a href="{{ route('exam-marks.export-excel', [$exam, $section]) }}" class="btn btn-ghost">↓ Excel</a>
+            <a href="{{ route('exam-marks.export-pdf', [$exam, $section]) }}" class="btn btn-ghost" target="_blank">↓ PDF</a>
+            <a href="{{ route('exam-marks.index') }}" class="btn btn-ghost">← Back</a>
+        </div>
     </div>
 
     @if(session('success'))
