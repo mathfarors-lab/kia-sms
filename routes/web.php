@@ -54,6 +54,7 @@ use App\Http\Controllers\StaffEvaluationController;
 use App\Http\Controllers\StaffQualificationController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\StudentDocumentController;
+use App\Http\Controllers\StudentImportController;
 use App\Http\Controllers\StudentPortalController;
 use App\Http\Controllers\StudentTransferController;
 use App\Http\Controllers\SubjectController;
@@ -107,6 +108,8 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('students', StudentController::class);
     Route::get('/students/export/excel', [StudentController::class, 'exportExcel'])->name('students.export-excel');
     Route::get('/students/export/pdf', [StudentController::class, 'exportPdf'])->name('students.export-pdf');
+    Route::get('/students/import', [StudentImportController::class, 'showForm'])->name('students.import');
+    Route::post('/students/import', [StudentImportController::class, 'import'])->name('students.import.store');
     Route::post('/students/{student}/documents', [StudentDocumentController::class, 'store'])->name('student-documents.store');
     Route::delete('/student-documents/{document}', [StudentDocumentController::class, 'destroy'])->name('student-documents.destroy');
     Route::get('/student-documents/{document}/download', [StudentDocumentController::class, 'download'])->name('student-documents.download');

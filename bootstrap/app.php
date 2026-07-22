@@ -21,7 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // resolve without the branch context would fetch other branches' rows
         // by direct URL (the exact multi-tenancy leak M1 exists to prevent).
         $middleware->priority([
-            \Illuminate\Cookie\Middleware\EncryptCookies::class,
+            \App\Http\Middleware\BypassEncryptCookies::class,
             \Illuminate\Session\Middleware\StartSession::class,
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \App\Http\Middleware\SetBranchContext::class,
