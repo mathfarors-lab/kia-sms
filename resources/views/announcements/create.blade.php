@@ -25,7 +25,9 @@
                 <div class="form-group">
                     <label class="form-label">Audience *</label>
                     <select name="audience" class="form-control" id="audience-select">
-                        <option value="all">All</option>
+                        @if($canBroadcastAll)
+                            <option value="all">All</option>
+                        @endif
                         <option value="class">Specific Section</option>
                         <option value="grade">Specific Grade</option>
                     </select>

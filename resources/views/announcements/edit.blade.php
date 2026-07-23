@@ -24,7 +24,7 @@
                 <div class="form-group">
                     <label class="form-label">Audience</label>
                     <select name="audience" class="form-control" id="audience-select">
-                        @foreach(['all','class','grade'] as $opt)
+                        @foreach(($canBroadcastAll ? ['all','class','grade'] : ['class','grade']) as $opt)
                             <option value="{{ $opt }}" @selected(old('audience', $announcement->audience) === $opt)>{{ ucfirst($opt) }}</option>
                         @endforeach
                     </select>

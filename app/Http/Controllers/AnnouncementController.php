@@ -28,15 +28,15 @@ class AnnouncementController extends Controller
     {
         $this->authorize('create', Announcement::class);
 
-        $classes  = SchoolClass::orderBy('name')->get();
-        $sections = Section::with('schoolClass')->orderBy('name')->get();
+        [$classes, $sections, $canBroadcastAll] = $this->audienceOptions();
 
-        return view('announcements.create', compact('classes', 'sections'));
+        return view('announcements.create', compact('classes', 'sections', 'canBroadcastAll'));
     }
 
     public function store(StoreAnnouncementRequest $request)
     {
         $this->authorize('create', Announcement::class);
+        $this->authorizeAudience($request->user(), $request->input('audience'), $request->input('target_id'));
 
         $data = $request->validated();
         $data['posted_by'] = $request->user()->id;
@@ -61,15 +61,16 @@ class AnnouncementController extends Controller
     {
         $this->authorize('update', $announcement);
 
-        $classes  = SchoolClass::orderBy('name')->get();
-        $sections = Section::with('schoolClass')->orderBy('name')->get();
+        [$classes, $sections, $canBroadcastAll] = $this->audienceOptions();
 
-        return view('announcements.edit', compact('announcement', 'classes', 'sections'));
+        return view('announcements.edit', compact('announcement', 'classes', 'sections', 'canBroadcastAll'));
     }
 
     public function update(StoreAnnouncementRequest $request, Announcement $announcement)
     {
         $this->authorize('update', $announcement);
+        $this->authorizeAudience($request->user(), $request->input('audience'), $request->input('target_id'));
+
         $announcement->update($request->validated());
 
         return redirect()->route('announcements.show', $announcement)
@@ -92,5 +93,59 @@ class AnnouncementController extends Controller
 
         return redirect()->route('announcements.show', $announcement)
             ->with('success', __('engagement.announcement_published'));
+    }
+
+    /**
+     * The class/section pickers, scoped to a teacher's own sections so the
+     * form itself can't offer what authorizeAudience() would reject anyway.
+     * canBroadcastAll is likewise UX only — the server-side enforcement is
+     * authorizeAudience(), not this.
+     */
+    private function audienceOptions(): array
+    {
+        $user = auth()->user();
+
+        $classesQuery  = SchoolClass::orderBy('name');
+        $sectionsQuery = Section::with('schoolClass')->orderBy('name');
+        $canBroadcastAll = true;
+
+        if ($user->hasRole('teacher')) {
+            $mySectionIds = $user->staff?->accessibleSectionIds() ?? collect();
+            $sectionsQuery->whereIn('id', $mySectionIds);
+            $classesQuery->whereIn('id', Section::whereIn('id', $mySectionIds)->pluck('school_class_id'));
+            $canBroadcastAll = false;
+        }
+
+        return [$classesQuery->get(), $sectionsQuery->get(), $canBroadcastAll];
+    }
+
+    /**
+     * ANNOUNCEMENTS_CREATE only proves a teacher may post an announcement
+     * SOMEWHERE — it does not scope WHO receives it. Without this, a
+     * teacher could submit audience=all (school-wide) or any section/grade
+     * they don't teach, and publish() — which they can call on their own
+     * record — would actually fan out notifications to those recipients via
+     * AnnouncementService::recipientQuery(). Principal/admin are the only
+     * roles meant to broadcast beyond their own sections.
+     */
+    private function authorizeAudience($user, ?string $audience, $targetId): void
+    {
+        if (! $user->hasRole('teacher')) {
+            return;
+        }
+
+        abort_if($audience === 'all', 403);
+
+        $mySectionIds = $user->staff?->accessibleSectionIds() ?? collect();
+
+        if ($audience === 'class') {
+            abort_unless($mySectionIds->contains((int) $targetId), 403);
+            return;
+        }
+
+        if ($audience === 'grade') {
+            $myClassIds = Section::whereIn('id', $mySectionIds)->pluck('school_class_id');
+            abort_unless($myClassIds->contains((int) $targetId), 403);
+        }
     }
 }

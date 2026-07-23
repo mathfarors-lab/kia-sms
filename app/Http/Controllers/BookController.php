@@ -64,7 +64,16 @@ class BookController extends Controller
     public function show(Book $book)
     {
         $this->authorize('view', $book);
-        $issues = $book->issues()->with('student')->latest()->paginate(10);
+
+        // BOOKS_VIEW (which gates reaching this page at all) is held broadly
+        // — teacher, student, receptionist. The issue history below exposes
+        // OTHER students' names, due dates, and fines, so it's gated
+        // separately behind the librarian/admin-tier viewIssueHistory
+        // ability rather than assumed to follow from mere catalog access.
+        $issues = auth()->user()->can('viewIssueHistory', $book)
+            ? $book->issues()->with('student')->latest()->paginate(10)
+            : $book->issues()->whereRaw('0 = 1')->paginate(10);
+
         return view('books.show', compact('book', 'issues'));
     }
 

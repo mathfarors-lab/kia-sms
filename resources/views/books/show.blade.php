@@ -34,6 +34,7 @@
         </div>
     </div>
 
+    @can('viewIssueHistory', $book)
     <div class="kia-card">
         <div class="kia-card-header"><h3 class="kia-card-title">Issue History</h3></div>
         <div class="kia-table-wrap">
@@ -77,4 +78,5 @@
         </div>
         <div style="padding:1rem">{{ $issues->links() }}</div>
     </div>
+    @endcan
 </x-app-layout>
