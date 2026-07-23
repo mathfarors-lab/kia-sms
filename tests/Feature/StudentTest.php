@@ -3,10 +3,12 @@
 namespace Tests\Feature;
 
 use App\Models\AcademicYear;
+use App\Models\ClassSubject;
 use App\Models\SchoolClass;
 use App\Models\Section;
 use App\Models\Staff;
 use App\Models\Student;
+use App\Models\Subject;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -139,6 +141,48 @@ class StudentTest extends TestCase
         $response->assertOk();
         $response->assertSee('Own Student');
         $response->assertDontSee('Other Student');
+    }
+
+    public function test_teacher_with_multiple_sections_sees_students_from_all_of_them(): void
+    {
+        // Homeroom of one section UNION subject-taught of a second, unrelated
+        // section — the list must union both, not just the homeroom half.
+        $year = AcademicYear::create([
+            'name' => '2026-2027', 'start_date' => '2026-08-01', 'end_date' => '2027-05-31', 'is_active' => true,
+        ]);
+
+        $teacherUser = User::factory()->create(['status' => 'active']);
+        $teacherUser->assignRole('teacher');
+        $teacherStaff = Staff::create([
+            'user_id' => $teacherUser->id, 'staff_code' => 'ST-'.uniqid(), 'position' => 'Teacher', 'department' => 'Academics',
+        ]);
+
+        $homeroomClass = SchoolClass::create(['name' => 'Grade 7', 'level' => 'Grade 7', 'capacity' => 30]);
+        $homeroomSection = Section::create(['school_class_id' => $homeroomClass->id, 'name' => 'A', 'class_teacher_id' => $teacherStaff->id]);
+
+        $taughtClass = SchoolClass::create(['name' => 'Grade 9', 'level' => 'Grade 9', 'capacity' => 30]);
+        $taughtSection = Section::create(['school_class_id' => $taughtClass->id, 'name' => 'A']);
+        $subject = Subject::create(['name_en' => 'Math', 'name_km' => 'M', 'code' => 'M1', 'full_mark' => 100, 'coefficient' => 1]);
+        ClassSubject::create(['school_class_id' => $taughtClass->id, 'subject_id' => $subject->id, 'teacher_id' => $teacherStaff->id]);
+
+        $unrelatedClass = SchoolClass::create(['name' => 'Grade 11', 'level' => 'Grade 11', 'capacity' => 30]);
+        $unrelatedSection = Section::create(['school_class_id' => $unrelatedClass->id, 'name' => 'A']);
+
+        $homeroomStudent = Student::factory()->create(['name_en' => 'Homeroom Student']);
+        $homeroomStudent->sections()->attach($homeroomSection->id, ['academic_year_id' => $year->id]);
+
+        $taughtStudent = Student::factory()->create(['name_en' => 'Taught Student']);
+        $taughtStudent->sections()->attach($taughtSection->id, ['academic_year_id' => $year->id]);
+
+        $unrelatedStudent = Student::factory()->create(['name_en' => 'Unrelated Student']);
+        $unrelatedStudent->sections()->attach($unrelatedSection->id, ['academic_year_id' => $year->id]);
+
+        $response = $this->actingAs($teacherUser)->get(route('students.index'));
+
+        $response->assertOk();
+        $response->assertSee('Homeroom Student');
+        $response->assertSee('Taught Student');
+        $response->assertDontSee('Unrelated Student');
     }
 
     public function test_teacher_with_no_assigned_section_sees_no_students(): void

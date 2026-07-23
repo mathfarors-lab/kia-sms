@@ -3,9 +3,11 @@
 namespace Tests\Feature;
 
 use App\Jobs\SendAbsenceAlerts;
+use App\Models\AcademicYear;
 use App\Models\Attendance;
 use App\Models\SchoolClass;
 use App\Models\Section;
+use App\Models\Staff;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -106,5 +108,93 @@ class AttendanceTest extends TestCase
 
         $this->assertCount(1, Attendance::all());
         $this->assertDatabaseHas('attendances', ['student_id' => $this->student1->id, 'status' => 'absent']);
+    }
+
+    // ── Section scoping (mark form roster + section-access authorization) ────
+
+    private function makeTeacherWithHomeroom(Section $section): User
+    {
+        $teacherUser = User::factory()->create(['status' => 'active']);
+        $teacherUser->assignRole('teacher');
+        $staff = Staff::create([
+            'user_id' => $teacherUser->id, 'staff_code' => 'ST-'.uniqid(), 'position' => 'Teacher', 'department' => 'Academics',
+        ]);
+        $section->update(['class_teacher_id' => $staff->id]);
+
+        return $teacherUser;
+    }
+
+    public function test_mark_form_shows_only_that_sections_roster_not_every_enrolled_student(): void
+    {
+        $year = AcademicYear::create([
+            'name' => '2026-2027', 'start_date' => '2026-08-01', 'end_date' => '2027-05-31', 'is_active' => true,
+        ]);
+        $this->student1->sections()->attach($this->section->id, ['academic_year_id' => $year->id]);
+        $this->student2->sections()->attach($this->section->id, ['academic_year_id' => $year->id]);
+
+        $otherClass = SchoolClass::create(['name' => 'Grade 11', 'level' => 'High School', 'capacity' => 30]);
+        $otherSection = Section::create(['school_class_id' => $otherClass->id, 'name' => 'Section A']);
+        $elsewhere = Student::create(['student_code' => 'KIA-003', 'name_en' => 'Carol', 'gender' => 'female', 'status' => 'enrolled']);
+        $elsewhere->sections()->attach($otherSection->id, ['academic_year_id' => $year->id]);
+
+        $response = $this->actingAs($this->admin)->get(route('attendance.mark', $this->section));
+
+        $response->assertOk();
+        $response->assertSee('Alice');
+        $response->assertSee('Bob');
+        $response->assertDontSee('Carol');
+    }
+
+    public function test_teacher_sees_only_their_own_sections_roster(): void
+    {
+        $year = AcademicYear::create([
+            'name' => '2026-2027', 'start_date' => '2026-08-01', 'end_date' => '2027-05-31', 'is_active' => true,
+        ]);
+        $this->student1->sections()->attach($this->section->id, ['academic_year_id' => $year->id]);
+        $teacher = $this->makeTeacherWithHomeroom($this->section);
+
+        $response = $this->actingAs($teacher)->get(route('attendance.mark', $this->section));
+
+        $response->assertOk();
+        $response->assertSee('Alice');
+    }
+
+    public function test_teacher_cannot_view_mark_form_for_a_section_they_dont_teach(): void
+    {
+        $otherClass = SchoolClass::create(['name' => 'Grade 11', 'level' => 'High School', 'capacity' => 30]);
+        $otherSection = Section::create(['school_class_id' => $otherClass->id, 'name' => 'Section A']);
+        $teacher = $this->makeTeacherWithHomeroom($otherSection);
+
+        $this->actingAs($teacher)
+             ->get(route('attendance.mark', $this->section))
+             ->assertForbidden();
+    }
+
+    public function test_teacher_cannot_submit_attendance_for_a_section_they_dont_teach(): void
+    {
+        $otherClass = SchoolClass::create(['name' => 'Grade 11', 'level' => 'High School', 'capacity' => 30]);
+        $otherSection = Section::create(['school_class_id' => $otherClass->id, 'name' => 'Section A']);
+        $teacher = $this->makeTeacherWithHomeroom($otherSection);
+
+        $response = $this->actingAs($teacher)->post(route('attendance.store', $this->section), [
+            'section_id' => $this->section->id,
+            'date'       => today()->toDateString(),
+            'rows'       => [
+                ['student_id' => $this->student1->id, 'status' => 'present', 'remark' => ''],
+            ],
+        ]);
+
+        $response->assertForbidden();
+        $this->assertCount(0, Attendance::all());
+    }
+
+    public function test_principal_can_still_mark_attendance_for_any_section(): void
+    {
+        $principal = User::factory()->create(['status' => 'active']);
+        $principal->assignRole('principal');
+
+        $this->actingAs($principal)
+             ->get(route('attendance.mark', $this->section))
+             ->assertOk();
     }
 }
