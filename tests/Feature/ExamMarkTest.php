@@ -119,6 +119,36 @@ class ExamMarkTest extends TestCase
         $response->assertForbidden();
     }
 
+    // ── Section-level authorization ─────────────────────────────────────────
+    // marks.entry only proves a teacher may enter marks SOMEWHERE — these
+    // confirm authorizeSectionAccess() actually blocks a section they aren't
+    // homeroom/subject-taught for, not just hides the link in the UI.
+
+    public function test_teacher_cannot_access_mark_grid_for_a_section_they_dont_teach(): void
+    {
+        $otherClass = SchoolClass::create(['name' => 'Grade 11', 'level' => 'High', 'capacity' => 30]);
+        $otherSection = Section::create(['school_class_id' => $otherClass->id, 'name' => 'B']);
+
+        $response = $this->actingAs($this->teacher)
+            ->get(route('exam-marks.grid', [$this->exam, $otherSection]));
+
+        $response->assertForbidden();
+    }
+
+    public function test_teacher_cannot_save_marks_for_a_section_they_dont_teach(): void
+    {
+        $otherClass = SchoolClass::create(['name' => 'Grade 11', 'level' => 'High', 'capacity' => 30]);
+        $otherSection = Section::create(['school_class_id' => $otherClass->id, 'name' => 'B']);
+
+        $response = $this->actingAs($this->teacher)
+            ->post(route('exam-marks.save', [$this->exam, $otherSection]), [
+                'marks' => [$this->student->id => [$this->subject->id => 90]],
+            ]);
+
+        $response->assertForbidden();
+        $this->assertDatabaseMissing('exam_marks', ['exam_id' => $this->exam->id, 'score' => 90]);
+    }
+
     // ── Per-subject max score (not a flat 100) ──────────────────────────────
 
     public function test_score_exceeding_the_subjects_own_full_mark_is_rejected(): void
