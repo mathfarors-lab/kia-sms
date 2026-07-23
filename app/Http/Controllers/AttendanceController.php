@@ -16,8 +16,17 @@ class AttendanceController extends Controller
 
     public function index(Request $request)
     {
-        $this->authorize('attendance.view');
-        $sections = Section::with(['schoolClass', 'classTeacher.user'])
+        // attendance.view (not .mark) is what student/parent hold, for their
+        // OWN attendance via student.attendance / parent child-detail —
+        // neither route touches this method. This page is a staff tool for
+        // picking a section to manage, so it must gate on the same
+        // permission the sidebar link already assumes (attendance.mark);
+        // gating on the broader .view let student/parent load it directly
+        // by URL and see every section's teacher and daily counts.
+        $this->authorize('attendance.mark');
+        $user = auth()->user();
+
+        $query = Section::with(['schoolClass', 'classTeacher.user'])
             ->withCount([
                 'attendances as today_present' => function ($q) {
                     $q->whereDate('date', today())->where('status', 'present');
@@ -25,8 +34,16 @@ class AttendanceController extends Controller
                 'attendances as today_absent' => function ($q) {
                     $q->whereDate('date', today())->where('status', 'absent');
                 },
-            ])
-            ->paginate(20);
+            ]);
+
+        // Same convention as StudentController / authorizeSectionAccess():
+        // teacher is the one attendance.mark holder scoped to their own
+        // sections. Admin/principal see everything, as their role requires.
+        if ($user->hasRole('teacher')) {
+            $query->whereIn('id', $user->staff?->accessibleSectionIds() ?? collect());
+        }
+
+        $sections = $query->paginate(20);
 
         return view('attendance.index', compact('sections'));
     }

@@ -197,4 +197,54 @@ class AttendanceTest extends TestCase
              ->get(route('attendance.mark', $this->section))
              ->assertOk();
     }
+
+    // ── Index picker scoping ────────────────────────────────────────────────
+    // The index is a staff tool for picking a section to manage, gated the
+    // same as the sidebar link that leads to it (attendance.mark) — not the
+    // broader attendance.view that student/parent hold for their OWN record.
+
+    public function test_teacher_sees_only_their_own_sections_in_the_index(): void
+    {
+        $otherClass = SchoolClass::create(['name' => 'Grade 11', 'level' => 'High School', 'capacity' => 30]);
+        Section::create(['school_class_id' => $otherClass->id, 'name' => 'Section B']);
+        $teacher = $this->makeTeacherWithHomeroom($this->section);
+
+        $response = $this->actingAs($teacher)->get(route('attendance.index'));
+
+        $response->assertOk();
+        $response->assertSee($this->section->schoolClass->name);
+        $response->assertDontSee('Grade 11');
+    }
+
+    public function test_admin_sees_every_section_in_the_index(): void
+    {
+        $otherClass = SchoolClass::create(['name' => 'Grade 11', 'level' => 'High School', 'capacity' => 30]);
+        Section::create(['school_class_id' => $otherClass->id, 'name' => 'Section B']);
+
+        $response = $this->actingAs($this->admin)->get(route('attendance.index'));
+
+        $response->assertOk();
+        $response->assertSee($this->section->schoolClass->name);
+        $response->assertSee('Grade 11');
+    }
+
+    public function test_student_cannot_reach_the_staff_attendance_index(): void
+    {
+        $student = User::factory()->create(['status' => 'active']);
+        $student->assignRole('student');
+
+        $this->actingAs($student)
+             ->get(route('attendance.index'))
+             ->assertForbidden();
+    }
+
+    public function test_parent_cannot_reach_the_staff_attendance_index(): void
+    {
+        $parent = User::factory()->create(['status' => 'active']);
+        $parent->assignRole('parent');
+
+        $this->actingAs($parent)
+             ->get(route('attendance.index'))
+             ->assertForbidden();
+    }
 }
