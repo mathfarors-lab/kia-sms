@@ -107,11 +107,14 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Students
+    // Import routes MUST be registered before the resource route below —
+    // Route::resource's GET /students/{student} would otherwise shadow
+    // GET /students/import (matching "import" as the {student} wildcard).
+    Route::get('/students/import', [StudentImportController::class, 'showForm'])->name('students.import');
+    Route::post('/students/import', [StudentImportController::class, 'import'])->name('students.import.store');
     Route::resource('students', StudentController::class);
     Route::get('/students/export/excel', [StudentController::class, 'exportExcel'])->name('students.export-excel');
     Route::get('/students/export/pdf', [StudentController::class, 'exportPdf'])->name('students.export-pdf');
-    Route::get('/students/import', [StudentImportController::class, 'showForm'])->name('students.import');
-    Route::post('/students/import', [StudentImportController::class, 'import'])->name('students.import.store');
     Route::post('/students/{student}/documents', [StudentDocumentController::class, 'store'])->name('student-documents.store');
     Route::delete('/student-documents/{document}', [StudentDocumentController::class, 'destroy'])->name('student-documents.destroy');
     Route::get('/student-documents/{document}/download', [StudentDocumentController::class, 'download'])->name('student-documents.download');
