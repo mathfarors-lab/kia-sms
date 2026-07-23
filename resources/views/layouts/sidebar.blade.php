@@ -275,6 +275,32 @@
             {{ __('nav.term_results') }}
         </a>
         @endif
+
+        {{-- School-wide ranking — administrator-level view across all grades,
+             separate from Term Results (per-student report cards) and Academic
+             Analytics (aggregate charts); this is the actual sortable rank list. --}}
+        @if($can(P::TERM_RESULTS_MANAGE))
+        <a href="{{ route('school-ranking.index') }}" class="kia-nav-item {{ request()->routeIs('school-ranking.*') ? 'active' : '' }}">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/><path d="M6 9a4 4 0 0 1-4-4V4h4"/><path d="M18 9a4 4 0 0 0 4-4V4h-4"/>
+            </svg>
+            {{ __('nav.school_ranking') }}
+        </a>
+
+        {{-- Same idea as School Ranking above, but for consolidated semester/
+             annual results instead of a single exam — school-wide + grade-level
+             rank across the whole term, not just one test. --}}
+        <a href="{{ route('term-ranking.index') }}" class="kia-nav-item {{ request()->routeIs('term-ranking.*') ? 'active' : '' }}">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M12 2v4"/><path d="m6.8 4.8 2.8 2.8"/><path d="M2 12h4"/><path d="m4.8 17.2 2.8-2.8"/>
+                <path d="M12 22v-4"/><path d="m17.2 17.2-2.8-2.8"/><path d="M22 12h-4"/><path d="m19.2 4.8-2.8 2.8"/>
+                <circle cx="12" cy="12" r="3"/>
+            </svg>
+            {{ __('nav.term_ranking') }}
+        </a>
+        @endif
         @endif
 
         {{-- ── Finance ─────────────────────────────────────────────────── --}}

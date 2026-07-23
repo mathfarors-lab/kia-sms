@@ -7,6 +7,7 @@ use App\Models\Exam;
 use App\Models\ExamMark;
 use App\Models\SchoolClass;
 use App\Models\Section;
+use App\Models\Staff;
 use App\Models\Student;
 use App\Models\Subject;
 use App\Models\User;
@@ -34,10 +35,17 @@ class ExamMarkTest extends TestCase
 
         $this->teacher = User::factory()->create(['status' => 'active']);
         $this->teacher->assignRole('teacher');
+        $teacherStaff = Staff::create([
+            'user_id' => $this->teacher->id, 'staff_code' => 'ST-'.uniqid(),
+            'position' => 'Teacher', 'department' => 'Academics',
+        ]);
 
         $year = AcademicYear::create(['name' => 'Y1', 'start_date' => '2025-09-01', 'end_date' => '2026-06-30', 'is_active' => true]);
         $class = SchoolClass::create(['name' => 'Grade 10', 'level' => 'High', 'capacity' => 30]);
-        $this->section = Section::create(['school_class_id' => $class->id, 'name' => 'A']);
+        // Homeroom teacher of this section — allowedSectionIds() in
+        // ExamMarkController grants marks-entry access via this or a
+        // class_subject.teacher_id row; this test uses homeroom.
+        $this->section = Section::create(['school_class_id' => $class->id, 'name' => 'A', 'class_teacher_id' => $teacherStaff->id]);
         $this->subject = Subject::create(['name_en' => 'Math', 'name_km' => 'M', 'code' => 'M1', 'full_mark' => 100, 'coefficient' => 1]);
 
         $sUser = User::factory()->create(['status' => 'active']);
@@ -109,5 +117,43 @@ class ExamMarkTest extends TestCase
             ->get(route('exam-marks.grid', [$this->exam, $this->section]));
 
         $response->assertForbidden();
+    }
+
+    // ── Per-subject max score (not a flat 100) ──────────────────────────────
+
+    public function test_score_exceeding_the_subjects_own_full_mark_is_rejected(): void
+    {
+        $lowMarkSubject = Subject::create(['name_en' => 'Art', 'name_km' => 'A', 'code' => 'A1', 'full_mark' => 50, 'coefficient' => 1]);
+        \DB::table('class_subject')->insert([
+            'school_class_id' => $this->section->school_class_id, 'subject_id' => $lowMarkSubject->id,
+        ]);
+
+        $response = $this->actingAs($this->teacher)
+            ->post(route('exam-marks.save', [$this->exam, $this->section]), [
+                'marks' => [$this->student->id => [$lowMarkSubject->id => 75]],
+            ]);
+
+        $response->assertSessionHasErrors("marks.{$this->student->id}.{$lowMarkSubject->id}");
+        $this->assertDatabaseMissing('exam_marks', [
+            'exam_id' => $this->exam->id, 'subject_id' => $lowMarkSubject->id,
+        ]);
+    }
+
+    public function test_score_within_the_subjects_own_full_mark_is_accepted(): void
+    {
+        $lowMarkSubject = Subject::create(['name_en' => 'Art', 'name_km' => 'A', 'code' => 'A2', 'full_mark' => 50, 'coefficient' => 1]);
+        \DB::table('class_subject')->insert([
+            'school_class_id' => $this->section->school_class_id, 'subject_id' => $lowMarkSubject->id,
+        ]);
+
+        $response = $this->actingAs($this->teacher)
+            ->post(route('exam-marks.save', [$this->exam, $this->section]), [
+                'marks' => [$this->student->id => [$lowMarkSubject->id => 45]],
+            ]);
+
+        $response->assertRedirect();
+        $this->assertDatabaseHas('exam_marks', [
+            'exam_id' => $this->exam->id, 'subject_id' => $lowMarkSubject->id, 'score' => 45,
+        ]);
     }
 }

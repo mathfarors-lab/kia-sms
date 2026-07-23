@@ -44,6 +44,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ScholarshipController;
 use App\Http\Controllers\SchoolClassController;
 use App\Http\Controllers\SchoolDocumentController;
+use App\Http\Controllers\SchoolRankingController;
 use App\Http\Controllers\SectionController;
 use App\Http\Controllers\SemesterController;
 use App\Http\Controllers\SettingController;
@@ -61,6 +62,7 @@ use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\SurveyController;
 use App\Http\Controllers\SurveyResponseController;
 use App\Http\Controllers\SurveyResultController;
+use App\Http\Controllers\TermRankingController;
 use App\Http\Controllers\TermResultController;
 use App\Http\Controllers\TimetableController;
 use App\Http\Controllers\TranscriptController;
@@ -241,6 +243,27 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{academicYear}/{semesterSlug}/{student}/pdf', [TermResultController::class, 'pdf'])->name('pdf');
         Route::get('/{academicYear}/{semesterSlug}/{student}/remark', [TermResultController::class, 'editRemark'])->name('remark.edit');
         Route::patch('/{academicYear}/{semesterSlug}/{student}/remark', [TermResultController::class, 'updateRemark'])->name('remark.update');
+    });
+
+    // School-wide ranking — per-exam ranking table across all sections/grades,
+    // downloadable by the administrator. Rides on published ExamResult rows
+    // already computed by GradingService; adds a school-wide + per-grade rank.
+    Route::prefix('school-ranking')->name('school-ranking.')->group(function () {
+        Route::get('/', [SchoolRankingController::class, 'index'])->name('index');
+        Route::get('/exams/{exam}', [SchoolRankingController::class, 'examRanking'])->name('exam');
+        Route::get('/exams/{exam}/export/excel', [SchoolRankingController::class, 'examRankingExcel'])->name('exam.excel');
+        Route::get('/exams/{exam}/export/pdf', [SchoolRankingController::class, 'examRankingPdf'])->name('exam.pdf');
+    });
+
+    // Term/annual ranking — same idea as school-ranking, but over consolidated
+    // TermResult rows instead of a single Exam. term_results.rank (see
+    // TermGradingService) is scoped to one section only; school_rank/class_rank
+    // here are computed fresh across every section, same tie-sharing rule.
+    Route::prefix('term-ranking')->name('term-ranking.')->group(function () {
+        Route::get('/', [TermRankingController::class, 'index'])->name('index');
+        Route::get('/{academicYear}/{semesterSlug}', [TermRankingController::class, 'show'])->name('show');
+        Route::get('/{academicYear}/{semesterSlug}/export/excel', [TermRankingController::class, 'excel'])->name('excel');
+        Route::get('/{academicYear}/{semesterSlug}/export/pdf', [TermRankingController::class, 'pdf'])->name('pdf');
     });
 
     // Report-card comment bank (M4)

@@ -40,7 +40,7 @@ class HomeworkController extends Controller
         $this->authorize('create', Homework::class);
 
         $sections = Section::with('schoolClass')->get();
-        $subjects = Subject::orderBy('name')->get();
+        $subjects = Subject::orderBy('name_en')->get();
 
         return view('homework.create', compact('sections', 'subjects'));
     }
@@ -50,12 +50,12 @@ class HomeworkController extends Controller
         $this->authorize('create', Homework::class);
 
         $data = $request->validated();
-        $data['teacher_id']   = $request->user()->staff->id;
+        $data['teacher_id'] = $request->user()->staff->id;
         $data['published_at'] = $request->boolean('publish_now') ? now() : null;
 
         $attachment = $request->file('attachment');
         if ($attachment) {
-            $data['attachment_path']          = $this->service->storeAttachment($attachment, 'homework');
+            $data['attachment_path'] = $this->service->storeAttachment($attachment, 'homework');
             $data['attachment_original_name'] = $attachment->getClientOriginalName();
         }
 
@@ -71,7 +71,7 @@ class HomeworkController extends Controller
     {
         $this->authorize('view', $homework);
 
-        $user       = $request->user();
+        $user = $request->user();
         $submission = null;
 
         if ($user->hasRole('student') && $user->student) {
@@ -110,7 +110,7 @@ class HomeworkController extends Controller
         $this->authorize('grade', $submission);
 
         $request->validate([
-            'grade'    => ['required', 'integer', 'min:0', 'max:100'],
+            'grade' => ['required', 'integer', 'min:0', 'max:100'],
             'feedback' => ['nullable', 'string', 'max:2000'],
         ]);
 
@@ -124,7 +124,10 @@ class HomeworkController extends Controller
     {
         $this->authorize('view', $homework);
 
-        if (! $homework->attachment_path) abort(404);
+        if (! $homework->attachment_path) {
+            abort(404);
+        }
+
         // Anyone who can view the homework can download its attachment
         return response()->download(
             $this->service->downloadPath($homework->attachment_path),
