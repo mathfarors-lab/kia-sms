@@ -14,7 +14,6 @@ use App\Models\Setting;
 use App\Models\Timetable;
 use App\Services\AnalyticsService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Spatie\Activitylog\Models\Activity;
 
 class DashboardController extends Controller
@@ -101,10 +100,7 @@ class DashboardController extends Controller
 
         // Own sections = homeroom (class_teacher_id) UNION sections of classes
         // this teacher is assigned a subject in (class_subject.teacher_id).
-        $homeroomSectionIds = $staff->homeroomSections()->pluck('id');
-        $taughtClassIds     = DB::table('class_subject')->where('teacher_id', $staff->id)->pluck('school_class_id');
-        $taughtSectionIds   = Section::whereIn('school_class_id', $taughtClassIds)->pluck('id');
-        $sectionIds         = $homeroomSectionIds->merge($taughtSectionIds)->unique();
+        $sectionIds = $staff->accessibleSectionIds();
 
         $activeYear = AcademicYear::where('is_active', true)->first();
         $markedTodaySectionIds = Attendance::whereIn('section_id', $sectionIds)

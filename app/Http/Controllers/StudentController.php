@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\StudentsExport;
+use App\Models\AcademicYear;
 use App\Models\Student;
 use App\Services\StudentService;
 use App\Http\Requests\Student\StoreStudentRequest;
@@ -49,6 +50,25 @@ class StudentController extends Controller
     private function filteredQuery(Request $request)
     {
         $query = Student::query()->with('user');
+
+        // students.view is shared broadly (accountant, receptionist, librarian
+        // all legitimately need every student). Teachers are the one role that
+        // must be scoped to their own homeroom + subject-taught sections —
+        // without this, "Students" showed the entire school to every teacher.
+        $user = auth()->user();
+        if ($user->hasRole('teacher') && $user->staff) {
+            $sectionIds = $user->staff->accessibleSectionIds();
+            $activeYear = AcademicYear::where('is_active', true)->first();
+
+            $query->whereHas('sections', function ($q) use ($sectionIds, $activeYear) {
+                // wherePivot() doesn't compile correctly inside a whereHas
+                // closure — it needs the pivot table's real column name here.
+                $q->whereIn('sections.id', $sectionIds);
+                if ($activeYear) {
+                    $q->where('student_section.academic_year_id', $activeYear->id);
+                }
+            });
+        }
 
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {

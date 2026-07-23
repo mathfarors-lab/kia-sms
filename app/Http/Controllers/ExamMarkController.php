@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Exports\ExamMarksExport;
 use App\Models\AcademicYear;
-use App\Models\ClassSubject;
 use App\Models\Exam;
 use App\Models\ExamMark;
 use App\Models\Section;
@@ -173,15 +172,7 @@ class ExamMarkController extends Controller
     /** Section IDs a teacher may enter marks for: their homeroom + any class they teach a subject in. */
     private function allowedSectionIds(?Staff $staff): Collection
     {
-        if (! $staff) {
-            return collect();
-        }
-
-        $homeroom = Section::where('class_teacher_id', $staff->id)->pluck('id');
-        $subjectClassIds = ClassSubject::where('teacher_id', $staff->id)->pluck('school_class_id');
-        $subjectSections = Section::whereIn('school_class_id', $subjectClassIds)->pluck('id');
-
-        return $homeroom->merge($subjectSections)->unique()->values();
+        return $staff?->accessibleSectionIds() ?? collect();
     }
 
     /**

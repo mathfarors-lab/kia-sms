@@ -2,8 +2,12 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
+use App\Models\AcademicYear;
+use App\Models\SchoolClass;
+use App\Models\Section;
+use App\Models\Staff;
 use App\Models\Student;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -99,5 +103,67 @@ class StudentTest extends TestCase
 
         $response->assertRedirect(route('students.index'));
         $this->assertSoftDeleted('students', ['id' => $student->id]);
+    }
+
+    // ── Teacher scoping ──────────────────────────────────────────────────────
+    // students.view is shared with accountant/receptionist/librarian, who
+    // legitimately need every student. Teacher is the one role that must be
+    // scoped to their own homeroom + subject-taught sections.
+
+    public function test_teacher_sees_only_students_in_their_own_section(): void
+    {
+        $year = AcademicYear::create([
+            'name' => '2026-2027', 'start_date' => '2026-08-01', 'end_date' => '2027-05-31', 'is_active' => true,
+        ]);
+
+        $teacherUser = User::factory()->create(['status' => 'active']);
+        $teacherUser->assignRole('teacher');
+        $teacherStaff = Staff::create([
+            'user_id' => $teacherUser->id, 'staff_code' => 'ST-'.uniqid(), 'position' => 'Teacher', 'department' => 'Academics',
+        ]);
+
+        $ownClass = SchoolClass::create(['name' => 'Grade 7', 'level' => 'Grade 7', 'capacity' => 30]);
+        $ownSection = Section::create(['school_class_id' => $ownClass->id, 'name' => 'A', 'class_teacher_id' => $teacherStaff->id]);
+
+        $otherClass = SchoolClass::create(['name' => 'Grade 8', 'level' => 'Grade 8', 'capacity' => 30]);
+        $otherSection = Section::create(['school_class_id' => $otherClass->id, 'name' => 'A']);
+
+        $ownStudent = Student::factory()->create(['name_en' => 'Own Student']);
+        $ownStudent->sections()->attach($ownSection->id, ['academic_year_id' => $year->id]);
+
+        $otherStudent = Student::factory()->create(['name_en' => 'Other Student']);
+        $otherStudent->sections()->attach($otherSection->id, ['academic_year_id' => $year->id]);
+
+        $response = $this->actingAs($teacherUser)->get(route('students.index'));
+
+        $response->assertOk();
+        $response->assertSee('Own Student');
+        $response->assertDontSee('Other Student');
+    }
+
+    public function test_teacher_with_no_assigned_section_sees_no_students(): void
+    {
+        $teacherUser = User::factory()->create(['status' => 'active']);
+        $teacherUser->assignRole('teacher');
+        Staff::create([
+            'user_id' => $teacherUser->id, 'staff_code' => 'ST-'.uniqid(), 'position' => 'Teacher', 'department' => 'Academics',
+        ]);
+
+        Student::factory()->create(['name_en' => 'Unrelated Student']);
+
+        $this->actingAs($teacherUser)
+             ->get(route('students.index'))
+             ->assertOk()
+             ->assertDontSee('Unrelated Student');
+    }
+
+    public function test_admin_still_sees_every_student_regardless_of_section(): void
+    {
+        Student::factory()->create(['name_en' => 'Unassigned Student']);
+
+        $this->actingAs($this->admin)
+             ->get(route('students.index'))
+             ->assertOk()
+             ->assertSee('Unassigned Student');
     }
 }

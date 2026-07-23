@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Collection;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -62,6 +63,16 @@ class Staff extends Model
     public function homeroomSections(): HasMany
     {
         return $this->hasMany(Section::class, 'class_teacher_id');
+    }
+
+    /** Sections this staff member may act on: own homeroom, plus any class they teach a subject in. */
+    public function accessibleSectionIds(): Collection
+    {
+        $homeroom = $this->homeroomSections()->pluck('id');
+        $taughtClassIds = ClassSubject::where('teacher_id', $this->id)->pluck('school_class_id');
+        $taughtSections = Section::whereIn('school_class_id', $taughtClassIds)->pluck('id');
+
+        return $homeroom->merge($taughtSections)->unique()->values();
     }
 
     public function issuedDocuments(): HasMany
