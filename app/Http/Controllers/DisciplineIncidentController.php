@@ -3,15 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Discipline\StoreDisciplineIncidentRequest;
-use App\Models\AcademicYear;
 use App\Models\DisciplineIncident;
-use App\Models\Section;
 use App\Models\Student;
 use App\Models\User;
 use App\Notifications\DisciplineIncidentLogged;
 use App\Support\Permissions as P;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class DisciplineIncidentController extends Controller
 {
@@ -88,30 +85,6 @@ class DisciplineIncidentController extends Controller
             return;
         }
 
-        abort_unless($this->teacherCanAccessStudent($user, $student), 403);
-    }
-
-    private function teacherCanAccessStudent(User $user, Student $student): bool
-    {
-        $staff = $user->staff;
-        if (! $staff) {
-            return false;
-        }
-
-        $activeYear = AcademicYear::where('is_active', true)->first();
-        if (! $activeYear) {
-            return false;
-        }
-
-        $homeroomSectionIds = $staff->homeroomSections()->pluck('id');
-        $taughtClassIds = DB::table('class_subject')->where('teacher_id', $staff->id)->pluck('school_class_id');
-        $taughtSectionIds = Section::whereIn('school_class_id', $taughtClassIds)->pluck('id');
-        $sectionIds = $homeroomSectionIds->merge($taughtSectionIds)->unique();
-
-        return DB::table('student_section')
-            ->where('student_id', $student->id)
-            ->where('academic_year_id', $activeYear->id)
-            ->whereIn('section_id', $sectionIds)
-            ->exists();
+        abort_unless($user->staff && $user->staff->canAccessStudent($student), 403);
     }
 }

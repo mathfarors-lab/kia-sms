@@ -18,13 +18,15 @@
     $u = auth()->user();
     $can = fn (string $perm) => \App\Support\Permissions::userCan($u, $perm);
 
-    // Teacher's own homeroom section, if any — resolved once here so the
-    // "My Timetable" link can point straight at it instead of a picker page.
-    // timetables.view only ever grants read-only access to THIS section
-    // (enforced again in TimetableController); timetables.manage (admin/
-    // principal) already reaches any section via the Classes drill-down.
+    // Teacher's own accessible section (homeroom OR subject-taught), if
+    // any — resolved once here so the "My Timetable" link can point
+    // straight at it instead of a picker page. timetables.view only ever
+    // grants read-only access to sections this teacher can reach
+    // (enforced again in TimetableController via the same accessible-
+    // section check); timetables.manage (admin/principal) already reaches
+    // any section via the Classes drill-down.
     $myTimetableSection = ($can(P::TIMETABLES_VIEW) && $u->staff)
-        ? \App\Models\Section::where('class_teacher_id', $u->staff->id)->first()
+        ? \App\Models\Section::whereIn('id', $u->staff->accessibleSectionIds())->first()
         : null;
 
     // Any staff member (not just teachers) may have evaluation records —

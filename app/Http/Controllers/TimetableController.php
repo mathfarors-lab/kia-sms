@@ -83,7 +83,10 @@ class TimetableController extends Controller
     {
         $user = auth()->user();
         $canManage = $user->can('timetables.manage');
-        $isOwnSection = $user->staff && $section->class_teacher_id === $user->staff->id;
+        // accessibleSectionIds(), not a raw class_teacher_id check — a
+        // subject-taught (non-homeroom) teacher legitimately needs to see
+        // their own periods in a section they don't hold homeroom for.
+        $isOwnSection = $user->staff && $user->staff->accessibleSectionIds()->contains($section->id);
 
         if (! $canManage && ! ($user->can('timetables.view') && $isOwnSection)) {
             abort(403);

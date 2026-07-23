@@ -102,6 +102,7 @@ class IdCardController extends Controller
     public function batchPreview(Section $section)
     {
         $this->authorize(P::ID_CARDS_GENERATE);
+        $this->authorizeSectionAccess($section);
 
         $year  = AcademicYear::where('is_active', true)->first();
         $stuQ  = $section->students();
@@ -127,6 +128,7 @@ class IdCardController extends Controller
     public function batchPdf(Section $section)
     {
         $this->authorize(P::ID_CARDS_GENERATE);
+        $this->authorizeSectionAccess($section);
 
         $year  = AcademicYear::where('is_active', true)->first();
         $stuQ  = $section->students();
@@ -159,7 +161,12 @@ class IdCardController extends Controller
     {
         $user = Auth::user();
 
-        if ($user->hasRole(['admin', 'principal', 'teacher', 'receptionist'])) {
+        if ($user->hasRole(['admin', 'principal', 'receptionist'])) {
+            return;
+        }
+
+        if ($user->hasRole('teacher')) {
+            abort_unless($user->staff && $user->staff->canAccessStudent($student), 403);
             return;
         }
 
@@ -195,5 +202,25 @@ class IdCardController extends Controller
 
         // Any staff member may always view/download their own card.
         abort_unless($staff->user_id === $user->id, 403);
+    }
+
+    /**
+     * ID_CARDS_GENERATE only proves a user may generate cards SOMEWHERE — it
+     * does not scope WHICH section. Without this, any teacher could batch-
+     * generate the entire roster's cards for any section by guessing the
+     * URL. Admin/principal/receptionist are the only roles meant to reach
+     * any section; a teacher is scoped to their own.
+     */
+    private function authorizeSectionAccess(Section $section): void
+    {
+        $user = Auth::user();
+
+        if (! $user->hasRole('teacher')) {
+            return;
+        }
+
+        if (! $user->staff || ! $user->staff->accessibleSectionIds()->contains($section->id)) {
+            abort(403);
+        }
     }
 }

@@ -75,6 +75,19 @@ class Staff extends Model
         return $homeroom->merge($taughtSections)->unique()->values();
     }
 
+    /** Whether $student is currently enrolled in a section this staff member can access. */
+    public function canAccessStudent(Student $student): bool
+    {
+        $activeYear = AcademicYear::where('is_active', true)->first();
+
+        $query = $student->sections()->whereIn('sections.id', $this->accessibleSectionIds());
+        if ($activeYear) {
+            $query->wherePivot('academic_year_id', $activeYear->id);
+        }
+
+        return $query->exists();
+    }
+
     public function issuedDocuments(): HasMany
     {
         return $this->hasMany(IssuedDocument::class);

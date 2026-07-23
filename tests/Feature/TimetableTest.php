@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\ClassSubject;
 use App\Models\SchoolClass;
 use App\Models\Section;
 use App\Models\Staff;
@@ -87,6 +88,27 @@ class TimetableTest extends TestCase
         $this->actingAs($user)
             ->get(route('timetable.show', $otherSection))
             ->assertForbidden();
+    }
+
+    /**
+     * A teacher who teaches a SUBJECT in a class but isn't its homeroom
+     * teacher must still be able to view that section's own timetable —
+     * previously blocked because the check only looked at class_teacher_id.
+     */
+    public function test_subject_taught_teacher_can_view_a_section_they_dont_hold_homeroom_for(): void
+    {
+        [$user, $staff] = $this->makeTeacher();
+        $section = $this->makeSection(); // no homeroom teacher assigned
+        $subject = $this->makeSubject();
+        ClassSubject::create([
+            'school_class_id' => $section->school_class_id,
+            'subject_id'      => $subject->id,
+            'teacher_id'      => $staff->id,
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('timetable.show', $section))
+            ->assertOk();
     }
 
     public function test_teacher_cannot_add_slot_even_on_own_section(): void

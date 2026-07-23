@@ -2,6 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Models\AcademicYear;
+use App\Models\SchoolClass;
+use App\Models\Section;
+use App\Models\Staff;
 use App\Models\Student;
 use App\Models\StudentDocument;
 use App\Models\User;
@@ -48,6 +52,24 @@ class StudentDocumentTest extends TestCase
             'relation' => 'parent', 'is_primary' => true,
             'created_at' => now(), 'updated_at' => now(),
         ]);
+    }
+
+    private function makeTeacherOfSection(Student $student): User
+    {
+        $year = AcademicYear::where('is_active', true)->first()
+            ?? AcademicYear::create(['name' => 'Y', 'start_date' => '2026-01-01', 'end_date' => '2026-12-31', 'is_active' => true]);
+        $class = SchoolClass::create(['name' => 'Grade '.uniqid(), 'level' => 'High', 'capacity' => 30]);
+        $section = Section::create(['school_class_id' => $class->id, 'name' => 'A']);
+        $section->students()->attach($student->id, ['academic_year_id' => $year->id]);
+
+        $teacherUser = User::factory()->create(['status' => 'active']);
+        $teacherUser->assignRole('teacher');
+        $staff = Staff::create([
+            'user_id' => $teacherUser->id, 'staff_code' => 'ST-'.uniqid(), 'position' => 'Teacher', 'department' => 'Academics',
+        ]);
+        $section->update(['class_teacher_id' => $staff->id]);
+
+        return $teacherUser;
     }
 
     // ── Upload ───────────────────────────────────────────────────────────────
@@ -220,6 +242,39 @@ class StudentDocumentTest extends TestCase
         ]);
 
         $this->actingAs($studentUser)
+            ->get(route('student-documents.download', $doc))
+            ->assertForbidden();
+    }
+
+    public function test_teacher_can_download_a_document_of_their_own_student(): void
+    {
+        $student = $this->makeStudent();
+        $teacher = $this->makeTeacherOfSection($student);
+
+        Storage::disk('local')->put('students/documents/x.pdf', 'contents');
+        $doc = StudentDocument::create([
+            'student_id' => $student->id, 'label' => 'X',
+            'path' => 'students/documents/x.pdf', 'original_name' => 'x.pdf',
+        ]);
+
+        $this->actingAs($teacher)
+            ->get(route('student-documents.download', $doc))
+            ->assertOk();
+    }
+
+    public function test_teacher_cannot_download_a_document_of_a_student_not_theirs(): void
+    {
+        $student = $this->makeStudent(); // not attached to any section this teacher teaches
+        $otherStudent = $this->makeStudent();
+        $teacher = $this->makeTeacherOfSection($otherStudent);
+
+        Storage::disk('local')->put('students/documents/x.pdf', 'contents');
+        $doc = StudentDocument::create([
+            'student_id' => $student->id, 'label' => 'X',
+            'path' => 'students/documents/x.pdf', 'original_name' => 'x.pdf',
+        ]);
+
+        $this->actingAs($teacher)
             ->get(route('student-documents.download', $doc))
             ->assertForbidden();
     }

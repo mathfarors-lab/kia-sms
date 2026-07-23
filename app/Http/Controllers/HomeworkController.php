@@ -39,7 +39,12 @@ class HomeworkController extends Controller
     {
         $this->authorize('create', Homework::class);
 
-        $sections = Section::with('schoolClass')->get();
+        $user = $request->user();
+        $sectionsQuery = Section::with('schoolClass');
+        if ($user->hasRole('teacher') && $user->staff) {
+            $sectionsQuery->whereIn('id', $user->staff->accessibleSectionIds());
+        }
+        $sections = $sectionsQuery->get();
         $subjects = Subject::orderBy('name_en')->get();
 
         return view('homework.create', compact('sections', 'subjects'));
@@ -48,6 +53,7 @@ class HomeworkController extends Controller
     public function store(StoreHomeworkRequest $request)
     {
         $this->authorize('create', Homework::class);
+        $this->authorizeSectionAccess((int) $request->input('section_id'));
 
         $data = $request->validated();
         $data['teacher_id'] = $request->user()->staff->id;
@@ -133,5 +139,24 @@ class HomeworkController extends Controller
             $this->service->downloadPath($homework->attachment_path),
             $homework->attachment_original_name ?? 'attachment'
         );
+    }
+
+    /**
+     * The create policy only proves a user may create homework SOMEWHERE —
+     * it does not scope WHICH section. Without this, a teacher could submit
+     * a crafted request naming any section in the school, even though the
+     * create() form itself only ever offers their own.
+     */
+    private function authorizeSectionAccess(int $sectionId): void
+    {
+        $user = auth()->user();
+
+        if (! $user->hasRole('teacher')) {
+            return;
+        }
+
+        if (! $user->staff || ! $user->staff->accessibleSectionIds()->contains($sectionId)) {
+            abort(403);
+        }
     }
 }

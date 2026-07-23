@@ -68,6 +68,16 @@ class IdCardTest extends TestCase
         return $section;
     }
 
+    private function makeTeacher(): User
+    {
+        $user = User::factory()->create(['status' => 'active']);
+        $user->assignRole('teacher');
+        Staff::create([
+            'user_id' => $user->id, 'staff_code' => 'ST-' . uniqid(), 'position' => 'Teacher', 'department' => 'Academics',
+        ]);
+        return $user;
+    }
+
     private function makeStaff(string $role = 'teacher'): Staff
     {
         return app(StaffService::class)->store([
@@ -194,18 +204,65 @@ class IdCardTest extends TestCase
             ->assertSee('data-student-code="' . $s2->student_code . '"', false);
     }
 
-    /** Teacher can generate ID cards (has id-cards.generate permission). */
-    public function test_teacher_can_view_student_id_card(): void
+    /** Teacher can view a student's ID card — but only a student in their own accessible section. */
+    public function test_teacher_can_view_student_id_card_in_their_own_section(): void
     {
         $year = $this->makeYear();
         [, $student] = $this->makeStudentUser();
+        $section = $this->attachToSection($student, $year);
 
-        $teacher = User::factory()->create();
-        $teacher->assignRole('teacher');
+        $teacher = $this->makeTeacher();
+        $section->update(['class_teacher_id' => $teacher->staff->id]);
 
         $this->actingAs($teacher)
             ->get(route('id-cards.student.show', $student))
             ->assertOk();
+    }
+
+    /** A teacher outside the student's section cannot view their ID card. */
+    public function test_teacher_cannot_view_student_id_card_outside_their_section(): void
+    {
+        $year = $this->makeYear();
+        [, $student] = $this->makeStudentUser();
+        $this->attachToSection($student, $year);
+
+        $teacher = $this->makeTeacher();
+
+        $this->actingAs($teacher)
+            ->get(route('id-cards.student.show', $student))
+            ->assertForbidden();
+    }
+
+    /** Teacher can batch-preview their own section's ID cards. */
+    public function test_teacher_can_batch_preview_their_own_section(): void
+    {
+        $year    = $this->makeYear();
+        $class   = SchoolClass::create(['name' => 'Grade Own', 'level' => 'High', 'capacity' => 30]);
+        $section = Section::create(['school_class_id' => $class->id, 'name' => 'A']);
+
+        [, $s1] = $this->makeStudentUser();
+        $section->students()->attach($s1->id, ['academic_year_id' => $year->id]);
+
+        $teacher = $this->makeTeacher();
+        $section->update(['class_teacher_id' => $teacher->staff->id]);
+
+        $this->actingAs($teacher)
+            ->get(route('id-cards.batch.preview', $section))
+            ->assertOk()
+            ->assertSee($s1->student_code);
+    }
+
+    /** A teacher cannot batch-generate ID cards for a section that isn't theirs. */
+    public function test_teacher_cannot_batch_preview_a_section_they_dont_teach(): void
+    {
+        $class   = SchoolClass::create(['name' => 'Grade Other', 'level' => 'High', 'capacity' => 30]);
+        $section = Section::create(['school_class_id' => $class->id, 'name' => 'A']);
+
+        $teacher = $this->makeTeacher();
+
+        $this->actingAs($teacher)
+            ->get(route('id-cards.batch.preview', $section))
+            ->assertForbidden();
     }
 
     /** Viewing a student ID card auto-backfills an IssuedDocument record. */

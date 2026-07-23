@@ -57,6 +57,14 @@ class StudentDocumentController extends Controller
     {
         $user = $request->user();
 
+        // students.view is shared broadly (accountant, receptionist, librarian
+        // all legitimately need every student). Teacher is the one holder
+        // that must be scoped to their own accessible students.
+        if ($user->hasRole('teacher')) {
+            abort_unless($user->staff && $user->staff->canAccessStudent($document->student), 403);
+            return;
+        }
+
         if ($user->can(P::STUDENTS_VIEW)) {
             return;
         }

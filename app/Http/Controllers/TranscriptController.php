@@ -99,7 +99,12 @@ class TranscriptController extends Controller
     {
         $user = Auth::user();
 
-        if ($user->hasRole(['admin', 'principal', 'teacher'])) {
+        if ($user->hasRole(['admin', 'principal'])) {
+            return;
+        }
+
+        if ($user->hasRole('teacher')) {
+            abort_unless($user->staff && $user->staff->canAccessStudent($student), 403);
             return;
         }
 

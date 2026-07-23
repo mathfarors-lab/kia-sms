@@ -6,6 +6,7 @@ use App\Models\AcademicYear;
 use App\Models\GradeScale;
 use App\Models\SchoolClass;
 use App\Models\Section;
+use App\Models\Staff;
 use App\Models\Student;
 use App\Models\TermResult;
 use App\Models\User;
@@ -70,6 +71,17 @@ class TranscriptTest extends TestCase
         $section = Section::create(['school_class_id' => $class->id, 'name' => 'A']);
         $section->students()->attach($student->id, ['academic_year_id' => $year->id]);
         return $section;
+    }
+
+    private function makeTeacherWithHomeroom(Section $section): User
+    {
+        $teacherUser = User::factory()->create(['status' => 'active']);
+        $teacherUser->assignRole('teacher');
+        $staff = Staff::create([
+            'user_id' => $teacherUser->id, 'staff_code' => 'ST-'.uniqid(), 'position' => 'Teacher', 'department' => 'Academics',
+        ]);
+        $section->update(['class_teacher_id' => $staff->id]);
+        return $teacherUser;
     }
 
     private function publishedResult(Student $student, AcademicYear $year, Section $section, int $semester): TermResult
@@ -188,6 +200,35 @@ class TranscriptTest extends TestCase
 
         $this->actingAs($parentUser)
             ->get(route('transcripts.show', $studentA))
+            ->assertForbidden();
+    }
+
+    /** A teacher can view the transcript of a student in their own section. */
+    public function test_teacher_can_view_transcript_of_their_own_student(): void
+    {
+        $year = $this->makeYear();
+        [, $student] = $this->makeStudentUser();
+        $section = $this->makeSection($year, $student);
+        $teacher = $this->makeTeacherWithHomeroom($section);
+
+        $this->actingAs($teacher)
+            ->get(route('transcripts.show', $student))
+            ->assertOk();
+    }
+
+    /** A teacher cannot view the transcript of a student outside their sections. */
+    public function test_teacher_cannot_view_transcript_of_a_student_not_theirs(): void
+    {
+        $year = $this->makeYear();
+        [, $student] = $this->makeStudentUser();
+        $this->makeSection($year, $student);
+
+        [, $otherTeachersStudent] = $this->makeStudentUser();
+        $otherSection = $this->makeSection($year, $otherTeachersStudent);
+        $teacher = $this->makeTeacherWithHomeroom($otherSection);
+
+        $this->actingAs($teacher)
+            ->get(route('transcripts.show', $student))
             ->assertForbidden();
     }
 }
