@@ -68,7 +68,14 @@ class DashboardController extends Controller
         // Not cached — an activity feed that's minutes stale defeats its own purpose.
         $recentActivity = Activity::with('causer')->latest()->limit(8)->get();
 
-        return view('dashboard.admin', compact('stats', 'recentActivity'));
+        $attendanceTrend  = $year ? $this->analytics->attendanceTrendLast7Days($year) : [];
+        $enrollmentByClass = $year ? $this->analytics->enrollmentByClass($year) : [];
+        $feeCollected      = $this->analytics->totalCollectedAmount();
+        $feePending        = $this->analytics->outstandingTotal();
+
+        return view('dashboard.admin', compact(
+            'stats', 'recentActivity', 'attendanceTrend', 'enrollmentByClass', 'feeCollected', 'feePending'
+        ));
     }
 
     public function principal()

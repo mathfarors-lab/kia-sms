@@ -45,7 +45,9 @@ class AttendanceController extends Controller
 
         $sections = $query->paginate(20);
 
-        return view('attendance.index', compact('sections'));
+        $activeYear = AcademicYear::where('is_active', true)->first();
+
+        return view('attendance.index', compact('sections', 'activeYear'));
     }
 
     public function markForm(Section $section)

@@ -14,6 +14,12 @@
         @endcan
     </div>
 
+    <div class="kia-tabs">
+        <span class="kia-tab active">Exams</span>
+        <a href="{{ route('exam-marks.index') }}" class="kia-tab">Mark Entry</a>
+        <a href="{{ route('term-results.index') }}" class="kia-tab">Results</a>
+    </div>
+
     @if(session('success'))
         <div class="kia-alert kia-alert-success">{{ session('success') }}</div>
     @endif

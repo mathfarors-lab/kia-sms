@@ -29,18 +29,18 @@
                     @php $slot = $timetables->get($day . '_' . $period)?->first(); @endphp
                     <td style="padding:.25rem">
                         @if($slot)
-                        <div class="kia-slot-filled" data-id="{{ $slot->id }}" style="background:var(--kia-accent-soft,#eef2ff);border-radius:.5rem;padding:.4rem .6rem;font-size:.8rem;{{ $canManage ? 'cursor:pointer' : '' }}" @if($canManage) onclick="removeSlot({{ $slot->id }}, this)" @endif>
+                        <div class="kia-slot-filled" data-id="{{ $slot->id }}" style="background:#EDEFFC;border:1px solid var(--royal);border-radius:.5rem;padding:.4rem .6rem;font-size:.8rem;{{ $canManage ? 'cursor:pointer' : '' }}" @if($canManage) onclick="removeSlot({{ $slot->id }}, this)" @endif>
                             <strong>{{ $slot->subject->name_en }}</strong><br>
                             <small>{{ $slot->teacher?->user?->name ?? 'No teacher' }}</small>
                             @if($slot->room)<br><small>{{ $slot->room }}</small>@endif
                         </div>
                         @elseif($canManage)
-                        <div class="kia-slot-empty" style="min-height:56px;border:1.5px dashed var(--kia-border,#e2e8f0);border-radius:.5rem;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--kia-text-muted,#94a3b8);font-size:.75rem"
+                        <div class="kia-slot-empty" style="min-height:56px;border:1.5px dashed var(--line);border-radius:.5rem;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);font-size:.75rem"
                              onclick="openModal('{{ $day }}', {{ $period }}, this)">
                             +
                         </div>
                         @else
-                        <div style="min-height:56px;border:1.5px dashed var(--kia-border,#e2e8f0);border-radius:.5rem"></div>
+                        <div style="min-height:56px;border:1.5px dashed var(--line);border-radius:.5rem"></div>
                         @endif
                     </td>
                     @endforeach

@@ -64,6 +64,19 @@
                     </div>
 
                     <div class="form-group">
+                        <label class="form-label" for="section_id">{{ __('Class / Section') }}</label>
+                        <select id="section_id" name="section_id" class="form-control {{ $errors->has('section_id') ? 'is-invalid' : '' }}">
+                            <option value="">{{ __('— Not assigned yet —') }}</option>
+                            @foreach($sections as $section)
+                            <option value="{{ $section->id }}" {{ old('section_id') == $section->id ? 'selected' : '' }}>
+                                {{ $section->schoolClass?->name }} - {{ $section->name }}
+                            </option>
+                            @endforeach
+                        </select>
+                        @error('section_id')<span class="invalid-feedback">{{ $message }}</span>@enderror
+                    </div>
+
+                    <div class="form-group">
                         <label class="form-label" for="photo">{{ __('Photo') }}</label>
                         <input type="file" id="photo" name="photo" class="form-control {{ $errors->has('photo') ? 'is-invalid' : '' }}"
                                accept="image/*" onchange="previewPhoto(this)">
@@ -81,9 +94,9 @@
                     @error('address')<span class="invalid-feedback">{{ $message }}</span>@enderror
                 </div>
 
-                <div style="display:flex;gap:12px;padding-top:8px;">
+                <div style="display:flex;gap:10px;justify-content:flex-end;padding-top:8px;">
+                    <a href="{{ route('students.index') }}" class="btn btn-outline">{{ __('Cancel') }}</a>
                     <button type="submit" class="btn btn-primary">{{ __('Create Student') }}</button>
-                    <a href="{{ route('students.index') }}" class="btn btn-ghost">{{ __('Cancel') }}</a>
                 </div>
             </form>
         </div>

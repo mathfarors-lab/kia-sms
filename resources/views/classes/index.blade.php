@@ -38,6 +38,7 @@
                             <a href="{{ route('classes.sections.index', $class) }}" class="btn btn-sm btn-ghost">
                                 {{ $class->sections_count }} sections
                             </a>
+                            <span style="color:var(--muted);font-size:.8rem;">· {{ $class->students_count }} students</span>
                         </td>
                         <td class="text-right">
                             <a href="{{ route('classes.show', $class) }}" class="btn btn-sm btn-ghost">View</a>

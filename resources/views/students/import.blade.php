@@ -11,9 +11,28 @@
         <h1 class="kia-page-title">{{ __('Import Students from Excel') }}</h1>
     </div>
 
+    <div class="kia-card" style="max-width:760px;margin-bottom:20px;">
+        <div class="kia-card-header">
+            <h2 class="kia-card-title">{{ __('Step 1 — Download the Template') }}</h2>
+        </div>
+        <div class="kia-card-body">
+            <p style="margin:0 0 12px;color:var(--muted);font-size:.875rem;">
+                {{ __('Start from the official template so your columns and headers match exactly what the importer expects.') }}
+            </p>
+            <a href="{{ route('students.import.template') }}" class="btn btn-outline">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right:6px;display:inline;vertical-align:-3px;">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                {{ __('Download Template (.xlsx)') }}
+            </a>
+        </div>
+    </div>
+
     <div class="kia-card" style="max-width:760px;">
         <div class="kia-card-header">
-            <h2 class="kia-card-title">{{ __('Upload Student Data') }}</h2>
+            <h2 class="kia-card-title">{{ __('Step 2 — Upload Student Data') }}</h2>
         </div>
         <div class="kia-card-body">
             @if($errors->any())
@@ -75,7 +94,7 @@
                     @error('file')<span class="invalid-feedback">{{ $message }}</span>@enderror
                 </div>
 
-                <div class="form-info" style="background:#f5f5f5;padding:1rem;border-radius:0.5rem;margin-bottom:2rem;">
+                <div class="form-info" style="background:var(--paper);padding:1rem;border-radius:0.5rem;margin-bottom:2rem;">
                     <h3 style="margin:0 0 0.5rem 0;font-size:0.95rem;">{{ __('Excel File Format') }}</h3>
                     <p style="margin:0.5rem 0;font-size:0.875rem;">{{ __('Your Excel file should have the following columns:') }}</p>
                     <ul style="margin:0.5rem 0;padding-left:20px;font-size:0.875rem;">
@@ -85,6 +104,8 @@
                         <li><strong>gender</strong> (optional) - male, female, or other</li>
                         <li><strong>date_of_birth</strong> (optional) - Date in format YYYY-MM-DD or DD/MM/YYYY</li>
                         <li><strong>address</strong> (optional) - Student address</li>
+                        <li><strong>class_name</strong> (optional) - Must exactly match an existing class name, e.g. "Grade 5"</li>
+                        <li><strong>section_name</strong> (optional) - Must exactly match an existing section name within that class, e.g. "Section A". Both class_name and section_name must be given together to assign a class/section.</li>
                     </ul>
                 </div>
 

@@ -18,16 +18,21 @@
             <h2 class="kia-section-title" style="padding:1rem 1.25rem .5rem">Sections ({{ $class->sections->count() }})</h2>
             <div class="kia-table-wrap">
                 <table class="kia-table">
-                    <thead><tr><th>Section</th><th>Class Teacher</th><th></th></tr></thead>
+                    <thead><tr><th>Section</th><th>Class Teacher</th><th>Students</th><th></th></tr></thead>
                     <tbody>
                         @forelse($class->sections as $section)
                         <tr>
                             <td>{{ $section->name }}</td>
                             <td>{{ $section->classTeacher?->user?->name ?? '—' }}</td>
+                            <td>
+                                <a href="{{ route('sections.show', $section) }}" class="btn btn-sm btn-ghost">
+                                    {{ $section->students_count }} students
+                                </a>
+                            </td>
                             <td><a href="{{ route('timetable.show', $section) }}" class="btn btn-sm btn-ghost">Timetable</a></td>
                         </tr>
                         @empty
-                        <tr><td colspan="3" class="text-center">No sections.</td></tr>
+                        <tr><td colspan="4" class="text-center">No sections.</td></tr>
                         @endforelse
                     </tbody>
                 </table>

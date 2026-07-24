@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exports\StudentsExport;
 use App\Models\AcademicYear;
+use App\Models\Section;
 use App\Models\Student;
 use App\Services\StudentService;
 use App\Http\Requests\Student\StoreStudentRequest;
@@ -49,7 +50,14 @@ class StudentController extends Controller
 
     private function filteredQuery(Request $request)
     {
-        $query = Student::query()->with('user');
+        $activeYear = AcademicYear::where('is_active', true)->first();
+
+        $query = Student::query()->with('user')->with(['sections' => function ($q) use ($activeYear) {
+            if ($activeYear) {
+                $q->where('student_section.academic_year_id', $activeYear->id);
+            }
+            $q->with('schoolClass');
+        }]);
 
         // students.view is shared broadly (accountant, receptionist, librarian
         // all legitimately need every student). Teachers are the one role that
@@ -58,7 +66,6 @@ class StudentController extends Controller
         $user = auth()->user();
         if ($user->hasRole('teacher') && $user->staff) {
             $sectionIds = $user->staff->accessibleSectionIds();
-            $activeYear = AcademicYear::where('is_active', true)->first();
 
             $query->whereHas('sections', function ($q) use ($sectionIds, $activeYear) {
                 // wherePivot() doesn't compile correctly inside a whereHas
@@ -82,6 +89,15 @@ class StudentController extends Controller
             $query->where('status', $status);
         }
 
+        if ($sectionId = $request->input('section_id')) {
+            $query->whereHas('sections', function ($q) use ($sectionId, $activeYear) {
+                $q->where('sections.id', $sectionId);
+                if ($activeYear) {
+                    $q->where('student_section.academic_year_id', $activeYear->id);
+                }
+            });
+        }
+
         if ($gender = $request->input('gender')) {
             $query->where('gender', $gender);
         }
@@ -92,7 +108,8 @@ class StudentController extends Controller
     public function create()
     {
         $this->authorize('students.create');
-        return view('students.create');
+        $sections = $this->sectionOptions();
+        return view('students.create', compact('sections'));
     }
 
     public function store(StoreStudentRequest $request)
@@ -109,14 +126,46 @@ class StudentController extends Controller
     public function show(Student $student)
     {
         $this->authorize('students.view');
-        $student->load('guardians', 'issuedDocuments', 'admissionApplication', 'documents');
-        return view('students.show', compact('student'));
+
+        $activeYear = AcademicYear::where('is_active', true)->first();
+
+        $student->load([
+            'guardians', 'issuedDocuments', 'admissionApplication', 'documents',
+            'sections' => function ($q) use ($activeYear) {
+                if ($activeYear) {
+                    $q->where('student_section.academic_year_id', $activeYear->id);
+                }
+                $q->with('schoolClass', 'classTeacher.user');
+            },
+        ]);
+
+        return view('students.show', compact('student', 'activeYear'));
     }
 
     public function edit(Student $student)
     {
         $this->authorize('students.edit');
-        return view('students.edit', compact('student'));
+
+        $sections   = $this->sectionOptions();
+        $activeYear = AcademicYear::where('is_active', true)->first();
+
+        $currentSectionId = $activeYear
+            ? $student->sections()->wherePivot('academic_year_id', $activeYear->id)->value('sections.id')
+            : null;
+
+        return view('students.edit', compact('student', 'sections', 'currentSectionId'));
+    }
+
+    /** "Class Name - Section Name" options for the section-assignment dropdown, grouped by class order. */
+    private function sectionOptions()
+    {
+        return Section::with('schoolClass')
+            ->get()
+            ->sortBy([
+                fn ($s) => $s->schoolClass?->level ?? '',
+                fn ($s) => $s->name,
+            ])
+            ->values();
     }
 
     public function update(UpdateStudentRequest $request, Student $student)

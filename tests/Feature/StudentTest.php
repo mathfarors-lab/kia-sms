@@ -210,4 +210,71 @@ class StudentTest extends TestCase
              ->assertOk()
              ->assertSee('Unassigned Student');
     }
+
+    // ── Class/section assignment from the student form ──────────────────────
+
+    private function makeSection(string $className = 'Grade 7'): Section
+    {
+        $class = SchoolClass::create(['name' => $className, 'level' => $className, 'capacity' => 30]);
+
+        return Section::create(['school_class_id' => $class->id, 'name' => 'A']);
+    }
+
+    public function test_creating_a_student_with_a_section_id_enrolls_them_in_the_active_year(): void
+    {
+        $year = AcademicYear::create(['name' => 'Y1', 'start_date' => '2025-09-01', 'end_date' => '2026-06-30', 'is_active' => true]);
+        $section = $this->makeSection();
+
+        $this->actingAs($this->admin)->post(route('students.store'), [
+            'name_en' => 'New Student', 'gender' => 'male', 'status' => 'enrolled', 'section_id' => $section->id,
+        ]);
+
+        $student = Student::where('name_en', 'New Student')->first();
+        $this->assertNotNull($student);
+        $this->assertTrue($student->sections()->wherePivot('academic_year_id', $year->id)->where('sections.id', $section->id)->exists());
+    }
+
+    public function test_editing_a_students_section_replaces_not_duplicates_the_current_year_row(): void
+    {
+        $year = AcademicYear::create(['name' => 'Y1', 'start_date' => '2025-09-01', 'end_date' => '2026-06-30', 'is_active' => true]);
+        $oldSection = $this->makeSection('Grade 7');
+        $newSection = $this->makeSection('Grade 8');
+
+        $student = Student::factory()->create();
+        $student->sections()->attach($oldSection->id, ['academic_year_id' => $year->id]);
+
+        $this->actingAs($this->admin)->patch(route('students.update', $student), [
+            'name_en' => $student->name_en, 'gender' => $student->gender, 'status' => 'enrolled', 'section_id' => $newSection->id,
+        ]);
+
+        $rows = $student->sections()->wherePivot('academic_year_id', $year->id)->get();
+        $this->assertCount(1, $rows);
+        $this->assertSame($newSection->id, $rows->first()->id);
+    }
+
+    public function test_clearing_a_students_section_removes_the_current_year_assignment(): void
+    {
+        $year = AcademicYear::create(['name' => 'Y1', 'start_date' => '2025-09-01', 'end_date' => '2026-06-30', 'is_active' => true]);
+        $section = $this->makeSection();
+
+        $student = Student::factory()->create();
+        $student->sections()->attach($section->id, ['academic_year_id' => $year->id]);
+
+        $this->actingAs($this->admin)->patch(route('students.update', $student), [
+            'name_en' => $student->name_en, 'gender' => $student->gender, 'status' => 'enrolled', 'section_id' => '',
+        ]);
+
+        $this->assertCount(0, $student->sections()->wherePivot('academic_year_id', $year->id)->get());
+    }
+
+    public function test_teacher_cannot_reach_the_student_edit_form(): void
+    {
+        $teacher = User::factory()->create(['status' => 'active']);
+        $teacher->assignRole('teacher');
+        $student = Student::factory()->create();
+
+        $this->actingAs($teacher)
+            ->get(route('students.edit', $student))
+            ->assertForbidden();
+    }
 }

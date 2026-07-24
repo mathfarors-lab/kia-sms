@@ -24,6 +24,7 @@
                         <th>Section</th>
                         <th>Class Teacher</th>
                         <th></th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -31,18 +32,19 @@
                     <tr>
                         <td>{{ $section->name }}</td>
                         <td>{{ $section->classTeacher?->user?->name ?? '—' }}</td>
+                        <td><a href="{{ route('sections.show', $section) }}" class="btn btn-sm btn-primary">View Students</a></td>
                         <td class="text-right">
                             <a href="{{ route('timetable.show', $section) }}" class="btn btn-sm btn-ghost">Timetable</a>
                             <a href="{{ route('attendance.mark', $section) }}" class="btn btn-sm btn-ghost">Attendance</a>
-                            <a href="{{ route('classes.sections.edit', [$class, $section]) }}" class="btn btn-sm btn-ghost">Edit</a>
-                            <form method="POST" action="{{ route('classes.sections.destroy', [$class, $section]) }}" style="display:inline" onsubmit="return confirm('Delete section?')">
+                            <a href="{{ route('sections.edit', $section) }}" class="btn btn-sm btn-ghost">Edit</a>
+                            <form method="POST" action="{{ route('sections.destroy', $section) }}" style="display:inline" onsubmit="return confirm('Delete section?')">
                                 @csrf @method('DELETE')
                                 <button class="btn btn-sm btn-danger">Delete</button>
                             </form>
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="3" class="text-center">No sections yet.</td></tr>
+                    <tr><td colspan="4" class="text-center">No sections yet.</td></tr>
                     @endforelse
                 </tbody>
             </table>

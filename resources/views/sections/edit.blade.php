@@ -7,7 +7,7 @@
     </div>
 
     <div class="kia-card" style="max-width:560px">
-        <form method="POST" action="{{ route('classes.sections.update', [$class, $section]) }}">
+        <form method="POST" action="{{ route('sections.update', $section) }}">
             @csrf @method('PUT')
             <input type="hidden" name="school_class_id" value="{{ $class->id }}">
             <div class="form-group">

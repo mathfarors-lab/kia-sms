@@ -176,6 +176,82 @@ class AnalyticsService
         });
     }
 
+    /** Daily present-rate for the last 7 days (today inclusive) — feeds the admin dashboard trend chart. */
+    public function attendanceTrendLast7Days(AcademicYear $year, int $ttl = 300): array
+    {
+        $key = "analytics:attendance-trend-7d:{$year->id}:" . now()->toDateString() . ':' . BranchContext::cacheKeySuffix();
+
+        return Cache::remember($key, $ttl, function () use ($year) {
+            $start = now()->subDays(6)->startOfDay();
+
+            $rows = BranchContext::apply(
+                DB::table('attendances')
+                    ->join('student_section', function ($j) {
+                        $j->on('student_section.student_id', '=', 'attendances.student_id')
+                          ->on('student_section.section_id', '=', 'attendances.section_id');
+                    })
+                    ->where('student_section.academic_year_id', $year->id)
+                    ->where('attendances.date', '>=', $start->toDateString()),
+                'attendances.branch_id'
+            )->selectRaw("
+                    attendances.date as date,
+                    COUNT(*) as total,
+                    SUM(CASE WHEN attendances.status = 'present' THEN 1 ELSE 0 END) as present
+                ")
+                ->groupBy('attendances.date')
+                ->get()
+                ->keyBy(fn ($row) => \Illuminate\Support\Carbon::parse($row->date)->toDateString());
+
+            $trend = [];
+            for ($i = 6; $i >= 0; $i--) {
+                $date = now()->subDays($i);
+                $row  = $rows->get($date->toDateString());
+
+                $trend[] = [
+                    'label' => $date->format('M d'),
+                    'rate'  => ($row && $row->total > 0) ? round($row->present / $row->total * 100, 1) : 0,
+                ];
+            }
+
+            return $trend;
+        });
+    }
+
+    /** Active-enrolled student count per class, in class display order — feeds the admin dashboard enrollment chart. */
+    public function enrollmentByClass(AcademicYear $year, int $ttl = 300): array
+    {
+        $key = "analytics:enrollment-by-class:{$year->id}:" . BranchContext::cacheKeySuffix();
+
+        return Cache::remember($key, $ttl, function () use ($year) {
+            // SchoolClass carries BelongsToBranch, whose global scope already
+            // filters to the active branch — no explicit BranchContext::apply needed here.
+            $classes = \App\Models\SchoolClass::query()->orderBy('level')->get();
+
+            return $classes->map(function ($class) use ($year) {
+                $count = DB::table('student_section')
+                    ->join('sections', 'sections.id', '=', 'student_section.section_id')
+                    ->join('students', 'students.id', '=', 'student_section.student_id')
+                    ->where('sections.school_class_id', $class->id)
+                    ->where('student_section.academic_year_id', $year->id)
+                    ->where('students.status', 'enrolled')
+                    ->distinct()
+                    ->count('student_section.student_id');
+
+                return ['class_name' => $class->name, 'student_count' => $count];
+            })->toArray();
+        });
+    }
+
+    /** All-time total collected across every payment — the "Collected" half of the fee-collection pie. */
+    public function totalCollectedAmount(int $ttl = 300): float
+    {
+        $key = 'analytics:total-collected-amount:' . BranchContext::cacheKeySuffix();
+
+        return Cache::remember($key, $ttl, function () {
+            return (float) (BranchContext::apply(DB::table('payments'))->sum('amount') ?? 0);
+        });
+    }
+
     /**
      * "Arrivals Today" dashboard widget data: live counts + a recent-scans
      * feed. Deliberately NOT cached (unlike every other method here) — the

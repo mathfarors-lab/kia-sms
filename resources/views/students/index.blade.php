@@ -21,6 +21,9 @@
 
     {{-- Filters --}}
     <form method="GET" class="kia-filter-bar">
+        @if(request('section_id'))
+        <input type="hidden" name="section_id" value="{{ request('section_id') }}">
+        @endif
         <input type="search" name="search" class="form-control" placeholder="{{ __('Search name or code…') }}" value="{{ request('search') }}">
         <select name="status" class="form-control" style="min-width:140px;">
             <option value="">{{ __('All statuses') }}</option>
@@ -34,7 +37,7 @@
             <option value="female" {{ request('gender') == 'female' ? 'selected' : '' }}>{{ __('Female') }}</option>
         </select>
         <button type="submit" class="btn btn-outline btn-sm">{{ __('Filter') }}</button>
-        @if(request()->hasAny(['search','status','gender']))
+        @if(request()->hasAny(['search','status','gender','section_id']))
         <a href="{{ route('students.index') }}" class="btn btn-ghost btn-sm">{{ __('Clear') }}</a>
         @endif
     </form>
@@ -46,6 +49,7 @@
                     <tr>
                         <th>{{ __('Student') }}</th>
                         <th>{{ __('Code') }}</th>
+                        <th>{{ __('Class - Section') }}</th>
                         <th>{{ __('Gender') }}</th>
                         <th>{{ __('Date of Birth') }}</th>
                         <th>{{ __('Status') }}</th>
@@ -69,6 +73,13 @@
                             </div>
                         </td>
                         <td><span class="mono">{{ $student->student_code }}</span></td>
+                        <td>
+                            @if($student->sections->isNotEmpty())
+                                {{ $student->sections->first()->schoolClass?->name }} - {{ $student->sections->first()->name }}
+                            @else
+                                <span style="color:var(--muted);">—</span>
+                            @endif
+                        </td>
                         <td>{{ ucfirst($student->gender) }}</td>
                         <td>{{ $student->date_of_birth?->format('d M Y') ?? '—' }}</td>
                         <td>
@@ -90,7 +101,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6">
+                        <td colspan="7">
                             <div class="kia-empty">
                                 <h3>{{ __('No students found') }}</h3>
                                 @can('students.create')

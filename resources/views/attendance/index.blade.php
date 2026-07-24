@@ -8,6 +8,15 @@
         </div>
     </div>
 
+    <div class="kia-tabs">
+        <span class="kia-tab active">Mark Attendance</span>
+        @can(\App\Support\Permissions::REPORTS_VIEW)
+        @if($activeYear)
+        <a href="{{ route('reports.attendance', ['year_id' => $activeYear->id]) }}" class="kia-tab">Analytics</a>
+        @endif
+        @endcan
+    </div>
+
     @if(session('success'))
         <div class="kia-alert kia-alert-success">{{ session('success') }}</div>
     @endif

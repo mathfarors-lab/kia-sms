@@ -12,6 +12,16 @@
         </a>
     </div>
 
+    <div class="kia-tabs">
+        <span class="kia-tab active">Fee Structures</span>
+        @can('invoices.manage')
+        <a href="{{ route('invoices.index') }}" class="kia-tab">Collect Payment</a>
+        @endcan
+        @can(\App\Support\Permissions::REPORTS_VIEW)
+        <a href="{{ route('finance.report') }}" class="kia-tab">Payment History</a>
+        @endcan
+    </div>
+
     @if(session('success'))
         <div class="kia-alert kia-alert-success">{{ session('success') }}</div>
     @endif

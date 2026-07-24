@@ -20,6 +20,7 @@ class StoreStudentRequest extends FormRequest
             'date_of_birth' => ['nullable', 'date', 'before:today'],
             'address'       => ['nullable', 'string', 'max:500'],
             'status'        => ['required', 'in:enrolled,transferred,graduated,dropped'],
+            'section_id'    => ['nullable', 'exists:sections,id'],
             'photo'         => ['nullable', 'image', 'mimes:jpg,jpeg,png,gif,webp', 'max:2048'],
         ];
     }

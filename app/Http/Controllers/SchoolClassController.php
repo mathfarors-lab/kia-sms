@@ -10,7 +10,11 @@ class SchoolClassController extends Controller
     public function index()
     {
         $this->authorize('classes.manage');
-        $classes = SchoolClass::withCount('sections')->latest()->paginate(20);
+        $classes = SchoolClass::withCount('sections')
+            ->withCount(['sections as students_count' => function ($q) {
+                $q->join('student_section', 'student_section.section_id', '=', 'sections.id');
+            }])
+            ->latest()->paginate(20);
         return view('classes.index', compact('classes'));
     }
 
@@ -32,6 +36,13 @@ class SchoolClassController extends Controller
     {
         $this->authorize('classes.manage');
         $class->load(['sections.classTeacher.user', 'subjects']);
+
+        $class->sections->each(function ($section) {
+            $section->students_count = \Illuminate\Support\Facades\DB::table('student_section')
+                ->where('section_id', $section->id)
+                ->count();
+        });
+
         return view('classes.show', compact('class'));
     }
 

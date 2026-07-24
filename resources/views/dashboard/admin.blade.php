@@ -17,6 +17,13 @@
         </div>
     </div>
 
+    {{-- Quick actions — top button row, mirrors the desktop app's dashboard toolbar --}}
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;">
+        <a href="{{ route('students.create') }}" class="btn btn-primary">{{ __('+ Add Student') }}</a>
+        <a href="{{ route('attendance.index') }}" class="btn btn-outline">{{ __('Mark Attendance') }}</a>
+        <a href="{{ route('invoices.index') }}" class="btn btn-outline">{{ __('Collect Fee') }}</a>
+    </div>
+
     {{-- KPI Stats --}}
     <div class="kia-stats">
         <div class="kia-stat">
@@ -68,16 +75,87 @@
         </div>
     </div>
 
-    {{-- Quick actions --}}
+    {{-- Attendance trend + enrollment by class --}}
+    <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-bottom:16px;">
+        <div class="kia-card">
+            <div class="kia-card-header">
+                <h2 class="kia-card-title">{{ __('Attendance Trend (last 7 days)') }}</h2>
+            </div>
+            <div class="kia-card-body">
+                <div style="position:relative;height:280px;">
+                    <canvas data-kia-chart="{{ json_encode([
+                        'type' => 'line',
+                        'data' => [
+                            'labels' => array_column($attendanceTrend, 'label'),
+                            'datasets' => [[
+                                'label' => __('Attendance %'),
+                                'data' => array_column($attendanceTrend, 'rate'),
+                                'borderColor' => '#5B6EF5',
+                                'backgroundColor' => 'rgba(91,110,245,.15)',
+                                'fill' => true,
+                                'tension' => .3,
+                                'pointRadius' => 4,
+                            ]],
+                        ],
+                        'options' => ['maintainAspectRatio' => false, 'scales' => ['y' => ['min' => 0, 'max' => 100]]],
+                    ]) }}"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="kia-card">
+            <div class="kia-card-header">
+                <h2 class="kia-card-title">{{ __('Enrollment by Class') }}</h2>
+            </div>
+            <div class="kia-card-body">
+                <div style="position:relative;height:280px;">
+                    <canvas data-kia-chart="{{ json_encode([
+                        'type' => 'bar',
+                        'data' => [
+                            'labels' => array_column($enrollmentByClass, 'class_name'),
+                            'datasets' => [[
+                                'label' => __('Students'),
+                                'data' => array_column($enrollmentByClass, 'student_count'),
+                                'backgroundColor' => '#7B5CF0',
+                                'borderRadius' => 4,
+                                'maxBarThickness' => 34,
+                            ]],
+                        ],
+                        'options' => ['maintainAspectRatio' => false, 'plugins' => ['legend' => ['display' => false]]],
+                    ]) }}"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Fee collection status --}}
     <div class="kia-card" style="margin-bottom:24px;">
         <div class="kia-card-header">
-            <h2 class="kia-card-title">{{ __('Quick Actions') }}</h2>
+            <h2 class="kia-card-title">{{ __('Fee Collection Status') }}</h2>
+        </div>
+        <div class="kia-card-body" style="max-width:420px;margin:0 auto;">
+            <div style="position:relative;height:240px;">
+                <canvas data-kia-chart="{{ json_encode([
+                    'type' => 'pie',
+                    'data' => [
+                        'labels' => [__('Collected'), __('Pending')],
+                        'datasets' => [[
+                            'data' => [$feeCollected, $feePending],
+                            'backgroundColor' => ['#1E8A55', '#E5A64A'],
+                        ]],
+                    ],
+                    'options' => ['maintainAspectRatio' => false, 'plugins' => ['legend' => ['position' => 'right']]],
+                ]) }}"></canvas>
+            </div>
+        </div>
+    </div>
+
+    {{-- More actions --}}
+    <div class="kia-card" style="margin-bottom:24px;">
+        <div class="kia-card-header">
+            <h2 class="kia-card-title">{{ __('More Actions') }}</h2>
         </div>
         <div class="kia-card-body" style="display:flex;gap:12px;flex-wrap:wrap;">
-            <a href="{{ route('students.create') }}" class="btn btn-primary">
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                {{ __('Add Student') }}
-            </a>
             <a href="{{ route('staff.create') }}" class="btn btn-outline">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                 {{ __('Add Staff') }}

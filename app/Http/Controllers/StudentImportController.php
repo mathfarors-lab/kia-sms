@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\StudentImportTemplateExport;
 use App\Imports\StudentsImport;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
@@ -12,6 +13,12 @@ class StudentImportController extends Controller
     {
         $this->authorize('students.create');
         return view('students.import');
+    }
+
+    public function downloadTemplate()
+    {
+        $this->authorize('students.create');
+        return Excel::download(new StudentImportTemplateExport(), 'student-import-template.xlsx');
     }
 
     public function import(Request $request)

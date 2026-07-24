@@ -8,6 +8,12 @@
         </div>
     </div>
 
+    <div class="kia-tabs">
+        <a href="{{ route('exams.index') }}" class="kia-tab">Exams</a>
+        <a href="{{ route('exam-marks.index') }}" class="kia-tab">Mark Entry</a>
+        <span class="kia-tab active">Results</span>
+    </div>
+
     {{-- Year / Semester selector --}}
     <div class="kia-card" style="margin-bottom:20px;">
         <div class="kia-card-body">

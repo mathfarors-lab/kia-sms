@@ -60,6 +60,18 @@
                     </div>
 
                     <div class="form-group">
+                        <label class="form-label" for="section_id">{{ __('Class / Section') }}</label>
+                        <select id="section_id" name="section_id" class="form-control">
+                            <option value="">{{ __('— Not assigned yet —') }}</option>
+                            @foreach($sections as $section)
+                            <option value="{{ $section->id }}" {{ old('section_id', $currentSectionId) == $section->id ? 'selected' : '' }}>
+                                {{ $section->schoolClass?->name }} - {{ $section->name }}
+                            </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="form-group">
                         <label class="form-label" for="photo">{{ __('Photo') }}</label>
                         @if($student->photo)
                         <div style="margin-bottom:8px;">
@@ -79,9 +91,9 @@
                     <textarea id="address" name="address" class="form-control" rows="3">{{ old('address', $student->address) }}</textarea>
                 </div>
 
-                <div style="display:flex;gap:12px;padding-top:8px;">
+                <div style="display:flex;gap:10px;justify-content:flex-end;padding-top:8px;">
+                    <a href="{{ route('students.show', $student) }}" class="btn btn-outline">{{ __('Cancel') }}</a>
                     <button type="submit" class="btn btn-primary">{{ __('Save Changes') }}</button>
-                    <a href="{{ route('students.show', $student) }}" class="btn btn-ghost">{{ __('Cancel') }}</a>
                 </div>
             </form>
         </div>

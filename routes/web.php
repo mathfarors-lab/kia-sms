@@ -112,6 +112,7 @@ Route::middleware(['auth'])->group(function () {
     // Route::resource's GET /students/{student} would otherwise shadow
     // GET /students/import (matching "import" as the {student} wildcard).
     Route::get('/students/import', [StudentImportController::class, 'showForm'])->name('students.import');
+    Route::get('/students/import/template', [StudentImportController::class, 'downloadTemplate'])->name('students.import.template');
     Route::post('/students/import', [StudentImportController::class, 'import'])->name('students.import.store');
     Route::resource('students', StudentController::class);
     Route::get('/students/export/excel', [StudentController::class, 'exportExcel'])->name('students.export-excel');

@@ -17,12 +17,20 @@
         <div class="kia-alert kia-alert-success">{{ session('success') }}</div>
     @endif
 
-    <div class="kia-card">
-        <form method="POST" action="{{ route('attendance.store', $section) }}">
-            @csrf
-            <input type="hidden" name="section_id" value="{{ $section->id }}">
-            <input type="hidden" name="date" value="{{ $today->toDateString() }}">
+    <form method="POST" action="{{ route('attendance.store', $section) }}">
+        @csrf
+        <input type="hidden" name="section_id" value="{{ $section->id }}">
+        <input type="hidden" name="date" value="{{ $today->toDateString() }}">
 
+        @if($students->isNotEmpty())
+        <div style="display:flex;gap:10px;justify-content:flex-end;margin-bottom:16px;">
+            <button type="button" class="btn btn-outline" onclick="markAll('present')">Mark All Present</button>
+            <button type="button" class="btn btn-outline" onclick="markAll('absent')">Mark All Absent</button>
+            <button type="submit" class="btn btn-primary">Save Attendance</button>
+        </div>
+        @endif
+
+        <div class="kia-card">
             <div class="kia-table-wrap">
                 <table class="kia-table">
                     <thead>
@@ -63,16 +71,8 @@
                     </tbody>
                 </table>
             </div>
-
-            @if($students->isNotEmpty())
-            <div style="padding:1rem;display:flex;gap:.75rem;align-items:center">
-                <button type="submit" class="btn btn-primary">Save Attendance</button>
-                <button type="button" class="btn btn-ghost" onclick="markAll('present')">All Present</button>
-                <button type="button" class="btn btn-ghost" onclick="markAll('absent')">All Absent</button>
-            </div>
-            @endif
-        </form>
-    </div>
+        </div>
+    </form>
 
     <script>
     function markAll(status) {

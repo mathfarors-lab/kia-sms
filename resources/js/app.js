@@ -1,4 +1,5 @@
 import './bootstrap';
+import './kia-charts';
 
 import Alpine from 'alpinejs';
 

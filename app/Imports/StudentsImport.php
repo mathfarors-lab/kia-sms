@@ -2,6 +2,9 @@
 
 namespace App\Imports;
 
+use App\Models\AcademicYear;
+use App\Models\SchoolClass;
+use App\Models\Section;
 use App\Models\Student;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToCollection;
@@ -42,6 +45,8 @@ class StudentsImport implements ToCollection, WithHeadingRow, SkipsEmptyRows, Wi
         $gender = strtolower(trim($row['gender'] ?? 'male'));
         $dob = $this->parseDate($row['date_of_birth'] ?? $row['dob'] ?? null);
         $address = trim($row['address'] ?? '');
+        $className = trim($row['class_name'] ?? '');
+        $sectionName = trim($row['section_name'] ?? '');
 
         // Validate required fields
         if (empty($studentCode)) {
@@ -61,8 +66,36 @@ class StudentsImport implements ToCollection, WithHeadingRow, SkipsEmptyRows, Wi
             throw new \Exception("Row $rowNumber: Student code '$studentCode' already exists");
         }
 
+        // Resolve class/section BEFORE creating the student, so a bad
+        // reference (or a missing active academic year) never leaves a
+        // half-imported, unplaced student behind — the template and the
+        // on-page instructions both document these as real, working
+        // columns, so a silent no-op here would be worse than a clear error.
+        $section = null;
+        $activeYear = null;
+        if ($className !== '' || $sectionName !== '') {
+            if ($className === '' || $sectionName === '') {
+                throw new \Exception("Row $rowNumber: class_name and section_name must both be given together to assign a class/section");
+            }
+
+            $class = SchoolClass::where('name', $className)->first();
+            if (!$class) {
+                throw new \Exception("Row $rowNumber: no class named '$className' exists");
+            }
+
+            $section = Section::where('school_class_id', $class->id)->where('name', $sectionName)->first();
+            if (!$section) {
+                throw new \Exception("Row $rowNumber: no section named '$sectionName' exists in class '$className'");
+            }
+
+            $activeYear = AcademicYear::where('is_active', true)->first();
+            if (!$activeYear) {
+                throw new \Exception("Row $rowNumber: cannot assign class/section — no active academic year is set");
+            }
+        }
+
         // Create student
-        Student::create([
+        $student = Student::create([
             'student_code' => $studentCode,
             'name_en' => $nameEn,
             'name_km' => $nameKm ?: null,
@@ -71,6 +104,10 @@ class StudentsImport implements ToCollection, WithHeadingRow, SkipsEmptyRows, Wi
             'address' => $address ?: null,
             'status' => 'enrolled',
         ]);
+
+        if ($section) {
+            $student->sections()->attach($section->id, ['academic_year_id' => $activeYear->id]);
+        }
 
         $this->successCount++;
     }

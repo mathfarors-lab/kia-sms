@@ -38,6 +38,39 @@
         </div>
     </div>
 
+    <div class="kia-card" style="margin-bottom:20px;">
+        <div class="kia-card-header"><h2 class="kia-card-title">{{ __('Academic Info') }}</h2></div>
+        <div class="kia-card-body">
+            @if($student->sections->isNotEmpty())
+                @php $section = $student->sections->first(); @endphp
+                <div class="kia-stats" style="grid-template-columns:repeat(3, 1fr);">
+                    <div class="kia-stat" style="box-shadow:none;border:1px solid var(--line);">
+                        <div class="kia-stat-label">{{ __('Class') }}</div>
+                        <div class="kia-stat-value" style="font-size:1.3rem;">{{ $section->schoolClass?->name ?? '—' }}</div>
+                    </div>
+                    <div class="kia-stat" style="box-shadow:none;border:1px solid var(--line);">
+                        <div class="kia-stat-label">{{ __('Section') }}</div>
+                        <div class="kia-stat-value" style="font-size:1.3rem;">{{ $section->name }}</div>
+                    </div>
+                    <div class="kia-stat" style="box-shadow:none;border:1px solid var(--line);">
+                        <div class="kia-stat-label">{{ __('Class Teacher') }}</div>
+                        <div class="kia-stat-value" style="font-size:1.3rem;">{{ $section->classTeacher?->user?->name ?? '—' }}</div>
+                    </div>
+                </div>
+                @if($activeYear)
+                <p style="color:var(--muted);font-size:.8rem;margin-top:12px;">{{ __('Academic Year') }}: {{ $activeYear->name }}</p>
+                @endif
+            @else
+                <p style="color:var(--muted);font-size:.875rem;">
+                    {{ __('Not assigned to a class/section for the current academic year.') }}
+                    @can('students.edit')
+                    <a href="{{ route('students.edit', $student) }}">{{ __('Assign one') }}</a>
+                    @endcan
+                </p>
+            @endif
+        </div>
+    </div>
+
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;flex-wrap:wrap;">
         <div class="kia-card">
             <div class="kia-card-header"><h2 class="kia-card-title">{{ __('Personal Details') }}</h2></div>

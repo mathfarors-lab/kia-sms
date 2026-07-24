@@ -2,10 +2,12 @@
 
 namespace App\Services;
 
+use App\Models\AcademicYear;
 use App\Models\IssuedDocument;
 use App\Models\Student;
 use App\Models\Setting;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class StudentService
@@ -45,6 +47,9 @@ class StudentService
 
     public function store(array $data, ?UploadedFile $photo = null): Student
     {
+        $sectionId = $data['section_id'] ?? null;
+        unset($data['section_id']);
+
         $data['student_code'] = $this->generateCode();
 
         if ($photo) {
@@ -52,6 +57,10 @@ class StudentService
         }
 
         $student = Student::create($data);
+
+        if ($sectionId) {
+            $this->assignSection($student, (int) $sectionId);
+        }
 
         // Both direct creation and admission conversion (which calls this
         // same store()) land here — one hook covers both trigger points.
@@ -65,6 +74,13 @@ class StudentService
 
     public function update(Student $student, array $data, ?UploadedFile $photo = null): Student
     {
+        // array_key_exists (not isset) so an explicit "— None —" submission
+        // (null) still clears the assignment, but callers that never mention
+        // section_id at all (e.g. other internal update() callers) leave it alone.
+        $hasSectionId = array_key_exists('section_id', $data);
+        $sectionId    = $data['section_id'] ?? null;
+        unset($data['section_id']);
+
         if ($photo) {
             if ($student->photo) {
                 Storage::disk('local')->delete($student->photo);
@@ -73,6 +89,10 @@ class StudentService
         }
 
         $student->update($data);
+
+        if ($hasSectionId) {
+            $this->assignSection($student, $sectionId ? (int) $sectionId : null);
+        }
 
         // Covers a manual status edit (the edit form allows any of the four
         // statuses) — PromotionService::execute() covers the bulk-rollover path.
@@ -93,5 +113,33 @@ class StudentService
             Storage::disk('local')->delete($student->photo);
         }
         $student->delete();
+    }
+
+    /**
+     * Enrolls/moves/unenrolls a student's current-year section. A student has
+     * at most one section per academic year, so this always replaces
+     * (delete-then-insert) rather than adding a second row.
+     */
+    private function assignSection(Student $student, ?int $sectionId): void
+    {
+        $activeYear = AcademicYear::where('is_active', true)->first();
+        if (!$activeYear) {
+            return;
+        }
+
+        DB::table('student_section')
+            ->where('student_id', $student->id)
+            ->where('academic_year_id', $activeYear->id)
+            ->delete();
+
+        if ($sectionId) {
+            DB::table('student_section')->insert([
+                'student_id'       => $student->id,
+                'section_id'       => $sectionId,
+                'academic_year_id' => $activeYear->id,
+                'created_at'       => now(),
+                'updated_at'       => now(),
+            ]);
+        }
     }
 }
