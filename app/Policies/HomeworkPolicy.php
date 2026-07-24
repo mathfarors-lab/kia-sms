@@ -26,7 +26,14 @@ class HomeworkPolicy
         return $user->hasRole('student') && $user->student !== null;
     }
 
-    /** Can the user open this specific homework (and, by extension, download its attachment)? */
+    /**
+     * Can the user open this specific homework (and, by extension, download
+     * its attachment)? Teacher is scoped to their own sections (homeroom +
+     * subject-taught), not just homework they personally created — a
+     * subject teacher reasonably needs to see what else is assigned to a
+     * class they teach. update()/grade() stay creator-only below; viewing
+     * is the only thing widened here.
+     */
     public function view(User $user, Homework $hw): bool
     {
         if ($user->hasAnyRole(['admin', 'principal'])) {
@@ -34,7 +41,7 @@ class HomeworkPolicy
         }
 
         if ($user->hasRole('teacher')) {
-            return $user->staff && $hw->teacher_id === $user->staff->id;
+            return $user->staff && $user->staff->accessibleSectionIds()->contains($hw->section_id);
         }
 
         if ($user->hasRole('student') && $user->student) {

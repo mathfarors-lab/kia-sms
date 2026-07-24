@@ -119,4 +119,54 @@ class HomeworkTest extends TestCase
         $response->assertRedirect();
         $this->assertDatabaseHas('homework', ['section_id' => $section->id]);
     }
+
+    // ── Viewing: scoped to the teacher's own sections, not just their own creations ──
+
+    private function makeHomeworkFor(Section $section, ?int $teacherId = null): Homework
+    {
+        $subject = Subject::create(['name_en' => 'Math', 'name_km' => 'M', 'code' => 'M-'.uniqid(), 'full_mark' => 100, 'coefficient' => 1]);
+        $creator = $teacherId ?? Staff::create([
+            'user_id' => User::factory()->create(['status' => 'active'])->id,
+            'staff_code' => 'ST-'.uniqid(), 'position' => 'Teacher', 'department' => 'Academics',
+        ])->id;
+
+        return Homework::create([
+            'section_id' => $section->id, 'subject_id' => $subject->id, 'teacher_id' => $creator,
+            'title' => 'Chapter 1 exercises', 'description' => 'Do the odd problems.',
+            'due_date' => now()->addWeek(), 'published_at' => now(),
+        ]);
+    }
+
+    public function test_a_different_teacher_of_the_same_section_can_view_homework_they_didnt_create(): void
+    {
+        $section = $this->makeSection('Grade 7');
+        $homework = $this->makeHomeworkFor($section); // created by some other teacher
+        $viewingTeacher = $this->makeTeacherWithHomeroom($section);
+
+        $this->actingAs($viewingTeacher)
+            ->get(route('homework.show', $homework))
+            ->assertOk();
+    }
+
+    public function test_a_teacher_of_a_different_section_cannot_view_the_homework(): void
+    {
+        $section = $this->makeSection('Grade 7');
+        $homework = $this->makeHomeworkFor($section);
+        $unrelatedTeacher = $this->makeTeacherWithHomeroom($this->makeSection('Grade 8'));
+
+        $this->actingAs($unrelatedTeacher)
+            ->get(route('homework.show', $homework))
+            ->assertForbidden();
+    }
+
+    public function test_the_creating_teacher_can_still_view_their_own_homework(): void
+    {
+        $section = $this->makeSection('Grade 7');
+        $teacher = $this->makeTeacherWithHomeroom($section);
+        $homework = $this->makeHomeworkFor($section, $teacher->staff->id);
+
+        $this->actingAs($teacher)
+            ->get(route('homework.show', $homework))
+            ->assertOk();
+    }
 }
