@@ -57,4 +57,5 @@ return [
     'owner_section' => 'ម្ចាស់',
     'owner_dashboard' => 'ផ្ទាំងម្ចាស់',
     'branches' => 'សាខា',
+    'role_guide' => 'មគ្គុទ្ទេសក៍តួនាទី',
 ];

@@ -57,4 +57,5 @@ return [
     'owner_section' => 'Owner',
     'owner_dashboard' => 'Owner Dashboard',
     'branches' => 'Branches',
+    'role_guide' => 'Role & Interface Guide',
 ];

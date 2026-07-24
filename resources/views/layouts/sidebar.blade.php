@@ -540,6 +540,16 @@
             {{ __('nav.settings') }}
         </a>
         @endif
+
+        @if($can(P::USERS_MANAGE))
+        <a href="{{ route('role-guide.index') }}" class="kia-nav-item {{ request()->routeIs('role-guide.*') ? 'active' : '' }}">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/>
+                <rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>
+            </svg>
+            {{ __('nav.role_guide') }}
+        </a>
+        @endif
         @endif
 
         {{-- ── Student portal ──────────────────────────────────────────── --}}

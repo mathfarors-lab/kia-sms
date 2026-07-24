@@ -41,6 +41,7 @@ use App\Http\Controllers\PromotionController;
 use App\Http\Controllers\ReportCardController;
 use App\Http\Controllers\ReportCommentController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\RoleGuideController;
 use App\Http\Controllers\ScholarshipController;
 use App\Http\Controllers\SchoolClassController;
 use App\Http\Controllers\SchoolDocumentController;
@@ -486,6 +487,9 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('users', UserController::class)->except(['show']);
     Route::post('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
     Route::post('/users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
+
+    // Role & Interface Guide (admin only — same USERS_MANAGE gate as user management)
+    Route::get('/role-guide', [RoleGuideController::class, 'index'])->name('role-guide.index');
 
     // Parent portal
     Route::get('/parent/children', [ParentPortalController::class, 'children'])->name('parent.children');
